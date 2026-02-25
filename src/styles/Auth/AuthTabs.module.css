@@ -1,0 +1,28 @@
+.authTabs {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 0.25rem;
+}
+
+.authTab {
+  border: none;
+  background: transparent;
+  padding: 0.65rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #00b4ff;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.authTab:hover {
+  background: rgba(15, 23, 42, 0.12);
+}
+
+.authTabActive {
+  background: #00b4ff;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgb(136, 219, 255);
+}

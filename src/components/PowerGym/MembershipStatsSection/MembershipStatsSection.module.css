@@ -1,0 +1,102 @@
+.membershipSection {
+  background: var(--powergym-light);
+}
+
+.membershipCard {
+  margin-top: 100px;
+  border: 2px solid var(--powergym-primary);
+}
+.statusBadge {
+  padding: var(--powergym-spacing-xs) var(--powergym-spacing-sm);
+  border-radius: var(--powergym-radius-md);
+  color: var(--powergym-white);
+  font-size: var(--powergym-font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.membershipType {
+  color: #1a1a1a;
+  margin: 0;
+  text-align: center;
+}
+
+.statsGrid {
+  gap: var(--powergym-spacing-lg);
+}
+
+.statItem {
+  padding: var(--powergym-spacing-md);
+  background: var(--powergym-light);
+  border-radius: var(--powergym-radius-md);
+  border: 1px solid rgb(0, 180, 255);
+}
+
+.statLabel {
+  display: block;
+  color: var(--powergym-text-light);
+  margin-bottom: var(--powergym-spacing-xs);
+  font-weight: 500;
+}
+
+.statValue {
+  display: block;
+  font-size: var(--powergym-font-2xl);
+  font-weight: 700;
+  color: var(--powergym-primary);
+  line-height: 1;
+}
+
+.statValueHighlight {
+  color: #08a8ec;
+  animation: pulse 2s infinite;
+}
+
+.statUnit {
+  font-size: var(--powergym-font-sm);
+  color: var(--powergym-text-light);
+  font-weight: 500;
+}
+
+.noMembershipCard {
+  border: 2px dashed var(--powergym-text-muted);
+  background: var(--powergym-white);
+}
+
+.noMembershipIcon {
+  font-size: 4rem;
+  margin-bottom: var(--powergym-spacing-md);
+  opacity: 0.7;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cardContent {
+    padding: var(--powergym-spacing-lg);
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--powergym-spacing-md);
+  }
+  
+  .statItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+  }
+  
+  .statValue {
+    font-size: var(--powergym-font-xl);
+  }
+}

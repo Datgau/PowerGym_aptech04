@@ -1,0 +1,91 @@
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navContainer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 0;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+.navItem:hover {
+  background: #f8f9fa;
+}
+
+.navItem.active {
+  color: #ff4444;
+}
+
+.navItem.active .navIcon {
+  transform: scale(1.1);
+}
+
+.navIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.navLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1;
+}
+
+.navItem.active .navLabel {
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .navContainer {
+    padding: 0.25rem 0;
+  }
+  
+  .navItem {
+    padding: 0.25rem 0.5rem;
+    min-width: 50px;
+  }
+  
+  .navIcon {
+    font-size: 1.25rem;
+  }
+  
+  .navLabel {
+    font-size: 0.7rem;
+  }
+}
+
+/* Add padding to body when bottom nav is present */
+body {
+  padding-bottom: 80px;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-bottom: 70px;
+  }
+}

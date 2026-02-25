@@ -1,0 +1,83 @@
+.authForm {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.formInput {
+  border: 1px solid #d0d5dd;
+  border-radius: 16px;
+  padding: 0.85rem 1.1rem;
+  font-size: 1rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #00b4ff;
+  box-shadow: 0 0 0 4px rgb(196, 231, 248);
+}
+
+.formInputPassword {
+  padding-right: 3rem;
+}
+
+.formExtra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #0f172a;
+}
+
+.link {
+  color: #00b4ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.authSubmit {
+  border: none;
+  border-radius: 18px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1366ba 0%, #00b4ff 40%, #1366ba 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.authSubmit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgb(19, 102, 186);
+}
+
+.authSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

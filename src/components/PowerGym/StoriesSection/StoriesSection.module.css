@@ -1,0 +1,46 @@
+.storySlider {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 10px 40px;
+}
+
+.storySlider::-webkit-scrollbar {
+  display: none;
+}
+
+.storyItem {
+  min-width: 320px;
+  flex-shrink: 0;
+}
+
+.arrowLeft,
+.arrowRight {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  z-index: 2;
+}
+
+.arrowLeft {
+  left: 0;
+}
+
+.arrowRight {
+  right: 0;
+}
+
+.viewMoreCard {
+  height: 500px;
+  border: 2px dashed #00b4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.viewMoreCard:hover {
+  background: rgba(0, 180, 255, 0.08);
+}

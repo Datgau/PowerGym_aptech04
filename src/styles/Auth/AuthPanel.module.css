@@ -1,0 +1,131 @@
+@keyframes floatShape {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.authPanelAccent {
+  background: linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%);
+  box-shadow:
+          0 20px 45px rgb(3, 63, 90),
+          0 4px 15px rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  color: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  isolation: isolate;
+  min-height: 520px;
+  border-radius: 32px;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.authPanelAccent::before,
+.authPanelAccent::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: floatShape 6s ease-in-out infinite;
+  z-index: -1;
+}
+
+.authPanelAccent::after {
+  inset: 10px;
+  animation-delay: 1.5s;
+  opacity: 0.5;
+}
+
+.authLogo {
+  font-size: 1.1rem;
+  letter-spacing: 0.4rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.authLogo::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffeb8b;
+  box-shadow: 0 0 16px rgb(255, 235, 139);
+}
+
+.authPanelAccent h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin: 0;
+}
+
+.authPanelAccent p {
+  margin: 0;
+  max-width: 460px;
+  color: rgba(248, 251, 255, 0.8);
+}
+
+.authHighlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.authHighlights li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.authHighlights li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffeb8b;
+  box-shadow: 0 0 12px rgb(255, 235, 139);
+}
+
+.authCommunity {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avatarStack {
+  display: flex;
+}
+
+.avatarStack span {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  margin-left: -12px;
+  color: #fff;
+}
+
+.avatarStack span:first-child {
+  margin-left: 0;
+}
+
+.authCommunity strong {
+  font-size: 1.5rem;
+  display: block;
+}

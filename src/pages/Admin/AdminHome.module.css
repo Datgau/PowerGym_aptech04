@@ -1,0 +1,113 @@
+.adminHome {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #1a0000 0%, #8b0000 40%, #ff4444 100%);
+  color: white;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.header p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.quickActions {
+  margin: 2rem 0;
+}
+
+.quickActions h2 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: currentColor;
+}
+
+.actionIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.actionTitle {
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .adminHome {
+    padding: 0.5rem;
+  }
+  
+  .header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header p {
+    font-size: 1rem;
+  }
+
+  .actionsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .actionCard {
+    padding: 1rem;
+  }
+
+  .actionIcon {
+    font-size: 1.5rem;
+  }
+
+  .actionTitle {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,135 @@
+.packagesContainer {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.packagesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.packageCard {
+  position: relative;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.packageCard:hover {
+  border-color: var(--package-color, #ff4444);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.packageCard.popular {
+  border-color: var(--package-color, #ff4444);
+  background: linear-gradient(135deg, #fff 0%, #fff8f8 100%);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--package-color, #ff4444);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.packageHeader {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.packageName {
+  margin: 0 0 0.5rem 0;
+  color: #1a0000;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.packageDuration {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.packagePrice {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--package-color, #ff4444);
+  line-height: 1;
+}
+
+.originalPrice {
+  display: block;
+  font-size: 1rem;
+  color: #999;
+  text-decoration: line-through;
+  margin-top: 0.25rem;
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+}
+
+.feature {
+  padding: 0.5rem 0;
+  color: #333;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #eee;
+}
+
+.feature:last-child {
+  border-bottom: none;
+}
+
+.selectButton {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--package-color, #ff4444);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selectButton:hover {
+  background: color-mix(in srgb, var(--package-color, #ff4444) 85%, black);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .packagesGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .packageCard {
+    padding: 1rem;
+  }
+}
