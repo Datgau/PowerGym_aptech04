@@ -39,16 +39,16 @@ const TopHeader: React.FC = () => {
   const menuItems = isAdmin ? [
     { label: 'DASHBOARD', path: '/admin/dashboard' },
     { label: 'ADMIN HOME', path: '/admin' },
-    { label: 'THÀNH VIÊN', path: '/admin/members' },
-    { label: 'GÓI TẬP', path: '/admin/packages' },
-    { label: 'BÁO CÁO', path: '/admin/reports' },
-    { label: 'CÀI ĐẶT', path: '/admin/settings' }
+    { label: 'MEMBERS', path: '/admin/members' },
+    { label: 'PACKAGES', path: '/admin/packages' },
+    { label: 'REPORTS', path: '/admin/reports' },
+    { label: 'SETTINGS', path: '/admin/settings' }
   ] : [
-    { label: 'CLB', path: '/club' },
-    { label: 'DỊCH VỤ', path: '/services' },
-    { label: 'CHÍNH SÁCH GIÁ', path: '/pricing' },
-    { label: 'TIN TỨC', path: '/news' },
-    { label: 'KHUYẾN MÃI', path: '/promotions' },
+    { label: 'CLUB', path: '/club' },
+    { label: 'SERVICES', path: '/services' },
+    { label: 'PRICING', path: '/pricing' },
+    { label: 'NEWS', path: '/news' },
+    { label: 'PROMOTIONS', path: '/promotions' },
     { label: 'CITIREWARDS', path: '/rewards' }
   ];
 
@@ -88,7 +88,7 @@ const TopHeader: React.FC = () => {
         <div className={styles.rightSection}>
           {!isAdmin && (
             <button className={styles.registerButton}>
-              ĐĂNG KÍ TẬP THỬ
+              FREE TRIAL
             </button>
           )}
           
@@ -110,7 +110,7 @@ const TopHeader: React.FC = () => {
                   <div className={styles.userDetails}>
                     <span className={styles.userName}>{user.fullName || 'Anonymus'}</span>
                     <span className={styles.userRole}>
-                      {isAdmin ? 'Quản trị viên' : 'Thành viên'}
+                      {isAdmin ? 'Administrator' : 'Member'}
                     </span>
                   </div>
                 </div>
@@ -120,9 +120,9 @@ const TopHeader: React.FC = () => {
                 </button>
               </>
             ) : (
-              // Hiển thị nút đăng nhập khi chưa đăng nhập
+              // Display login button when not logged in
               <button className={styles.loginButton} onClick={handleLogin}>
-                Đăng nhập
+                Login
               </button>
             )}
           </div>
@@ -156,12 +156,12 @@ const TopHeader: React.FC = () => {
           ))}
           {!isAdmin && (
             <button className={styles.mobileRegisterButton}>
-              ĐĂNG KÍ TẬP THỬ
+              FREE TRIAL
             </button>
           )}
           {!user && (
             <button className={styles.mobileLoginButton} onClick={handleLogin}>
-              Đăng nhập
+              Login
             </button>
           )}
         </div>

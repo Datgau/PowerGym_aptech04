@@ -39,8 +39,8 @@ export const usePackageSelection = ({
       setNotification({
         id: 'package-success',
         type: 'success',
-        title: 'Đăng ký thành công',
-        message: `Bạn đã đăng ký gói ${selectedPackage.name} thành công!`,
+        title: 'Registration successful',
+        message: `You have successfully registered for ${selectedPackage.name} package!`,
         autoHide: true,
         duration: 5000
       });
@@ -50,8 +50,8 @@ export const usePackageSelection = ({
       setNotification({
         id: 'package-error',
         type: 'error',
-        title: 'Đăng ký thất bại',
-        message: error instanceof Error ? error.message : 'Vui lòng thử lại sau',
+        title: 'Registration failed',
+        message: error instanceof Error ? error.message : 'Please try again later',
         autoHide: true,
         duration: 5000
       });

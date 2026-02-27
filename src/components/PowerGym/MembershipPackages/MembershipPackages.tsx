@@ -20,7 +20,7 @@ interface MembershipPackagesProps {
 const MembershipPackages: React.FC<MembershipPackagesProps> = ({ packages, onSelectPackage }) => {
   return (
     <div className={styles.packagesContainer}>
-      <h3 className={styles.title}>Gói gia hạn</h3>
+      <h3 className={styles.title}>Renewal Packages</h3>
       
       <div className={styles.packagesGrid}>
         {packages.map((pkg) => (
@@ -30,7 +30,7 @@ const MembershipPackages: React.FC<MembershipPackagesProps> = ({ packages, onSel
             style={{ '--package-color': pkg.color || '#ff4444' } as React.CSSProperties}
           >
             {pkg.isPopular && (
-              <div className={styles.popularBadge}>Phổ biến</div>
+              <div className={styles.popularBadge}>Popular</div>
             )}
             
             <div className={styles.packageHeader}>
@@ -57,7 +57,7 @@ const MembershipPackages: React.FC<MembershipPackagesProps> = ({ packages, onSel
               className={styles.selectButton}
               onClick={() => onSelectPackage(pkg.id)}
             >
-              Chọn gói
+              Select Package
             </button>
           </div>
         ))}

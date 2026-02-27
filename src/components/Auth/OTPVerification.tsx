@@ -20,15 +20,15 @@ const OTPVerification = ({ email, onSubmit, onBack, submitting }: OTPVerificatio
   return (
     <div>
       <div>
-        <h2 className={loginStyles.authCardTitle}>Xác thực tài khoản</h2>
+        <h2 className={loginStyles.authCardTitle}>Verify Account</h2>
         <p className={loginStyles.authCardSubtitle}>
-          Mã OTP đã được gửi đến email <strong>{email}</strong>
+          OTP code has been sent to <strong>{email}</strong>
         </p>
       </div>
 
       <form className={styles.authForm} onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label htmlFor="otp-code">Mã OTP (6 số)</label>
+          <label htmlFor="otp-code">OTP Code (6 digits)</label>
           <input
             id="otp-code"
             className={styles.formInput}
@@ -42,7 +42,7 @@ const OTPVerification = ({ email, onSubmit, onBack, submitting }: OTPVerificatio
         </div>
 
         <button className={styles.authSubmit} type="submit" disabled={submitting}>
-          {submitting ? "Đang xác thực..." : "Xác thực OTP"}
+          {submitting ? "Verifying..." : "Verify OTP"}
         </button>
 
         <button
@@ -52,7 +52,7 @@ const OTPVerification = ({ email, onSubmit, onBack, submitting }: OTPVerificatio
           disabled={submitting}
           style={{ marginTop: '0.75rem', background: '#6b7280' }}
         >
-          Quay lại
+          Go Back
         </button>
       </form>
     </div>

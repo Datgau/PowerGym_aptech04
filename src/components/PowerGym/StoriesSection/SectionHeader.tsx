@@ -17,7 +17,7 @@ const SectionHeader: React.FC = () => {
           textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
         }}
       >
-        CÂU CHUYỆN HỘI VIÊN
+        MEMBER STORIES
       </Typography>
       <Typography
         variant="h6"
@@ -30,7 +30,7 @@ const SectionHeader: React.FC = () => {
           textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
         }}
       >
-        POWERGYM luôn tạo điều kiện tốt nhất để giúp hội viên có thể thành công, tiến bộ mỗi ngày
+        POWERGYM always creates the best conditions to help members succeed and progress every day
       </Typography>
     </Box>
   );

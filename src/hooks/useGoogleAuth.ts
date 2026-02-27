@@ -23,7 +23,7 @@ export const useGoogleAuth = ({ setFeedback }: UseGoogleAuthProps) => {
                 persistSession(
                     {
                         id: result.data.id,
-                        email: result.data.email,
+                        email: result.data.email ?? "",
                         role: result.data.role,
                         fullName: result.data.fullName,
                         avatar: result.data.avatar,
@@ -37,22 +37,22 @@ export const useGoogleAuth = ({ setFeedback }: UseGoogleAuthProps) => {
                 );
                 setFeedback({
                     type: "success",
-                    message: "Đăng nhập Google thành công!",
+                    message: "Google login successful!",
                 });
                 setTimeout(() => {
-                    navigate("/powergym/home");
+                    navigate("/home");
                 }, 1000);
             } else {
                 setFeedback({
                     type: "error",
-                    message: result.message || "Đăng nhập Google thất bại",
+                    message: result.message || "Google login failed",
                 });
             }
         } catch (error) {
             console.error("Google login error:", error);
             setFeedback({
                 type: "error",
-                message: "Đăng nhập Google thất bại, vui lòng thử lại",
+                message: "Google login failed, please try again",
             });
         }
     };
@@ -97,7 +97,7 @@ export const useGoogleAuth = ({ setFeedback }: UseGoogleAuthProps) => {
         if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
             setFeedback({
                 type: "error",
-                message: "Google login chưa được cấu hình. Vui lòng liên hệ quản trị viên.",
+                message: "Google login not configured. Please contact administrator.",
             });
             return;
         }
@@ -105,7 +105,7 @@ export const useGoogleAuth = ({ setFeedback }: UseGoogleAuthProps) => {
         if (!window.google?.accounts?.id) {
             setFeedback({
                 type: "error",
-                message: "Google SDK chưa được tải. Vui lòng refresh trang.",
+                message: "Google SDK not loaded. Please refresh the page.",
             });
             return;
         }
@@ -139,7 +139,7 @@ export const useGoogleAuth = ({ setFeedback }: UseGoogleAuthProps) => {
             console.error("Google login error:", error);
             setFeedback({
                 type: "error",
-                message: "Không thể mở Google login. Vui lòng thử lại.",
+                message: "Cannot open Google login. Please try again.",
             });
         }
     };

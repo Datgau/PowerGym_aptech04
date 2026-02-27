@@ -54,7 +54,7 @@ const Login = () => {
       });
 
       if (!response.success || !response.data) {
-        throw new Error(response.message || "Đăng nhập thất bại");
+        throw new Error(response.message || "Login failed");
       }
 
       const userData: AuthUser = {
@@ -74,7 +74,7 @@ const Login = () => {
 
       setFeedback({
         type: "success",
-        message: response.message || "Đăng nhập thành công!",
+        message: response.message || "Login successful!",
       });
 
       // Redirect based on user role after short delay
@@ -99,9 +99,9 @@ const Login = () => {
           <AuthTabs activeTab="login" />
 
           <div>
-            <h2 className={styles.authCardTitle}>Chào mừng trở lại</h2>
+            <h2 className={styles.authCardTitle}>Welcome Back</h2>
             <p className={styles.authCardSubtitle}>
-              Tiếp tục trò chuyện với cộng đồng yêu thích của bạn.
+              Continue chatting with your favorite community.
             </p>
           </div>
 
@@ -128,9 +128,9 @@ const Login = () => {
             </Alert>
           </Snackbar>
           <p className={styles.authFooter}>
-            Chưa có tài khoản?{" "}
+            Don't have an account?{" "}
             <Link className={styles.link} to="/register">
-              Tạo ngay - miễn phí!
+              Create now - it's free!
             </Link>
           </p>
         </section>

@@ -16,7 +16,7 @@ export const adminMockData = {
   members: [
     {
       id: '1',
-      name: 'Nguyễn Văn An',
+      name: 'John Anderson',
       email: 'an.nguyen@email.com',
       phone: '0901234567',
       membershipType: 'Premium',
@@ -29,7 +29,7 @@ export const adminMockData = {
     },
     {
       id: '2',
-      name: 'Trần Thị Bình',
+      name: 'Sarah Thompson',
       email: 'binh.tran@email.com',
       phone: '0912345678',
       membershipType: 'Basic',
@@ -42,7 +42,7 @@ export const adminMockData = {
     },
     {
       id: '3',
-      name: 'Lê Minh Cường',
+      name: 'Michael Strong',
       email: 'cuong.le@email.com',
       phone: '0923456789',
       membershipType: 'VIP',
@@ -59,11 +59,11 @@ export const adminMockData = {
   trainers: [
     {
       id: '1',
-      name: 'Phạm Văn Đức',
+      name: 'David Parker',
       email: 'duc.pham@powergym.com',
       phone: '0934567890',
       specialization: 'Bodybuilding',
-      experience: '5 năm',
+      experience: '5 years',
       rating: 4.8,
       clients: 25,
       status: 'active',
@@ -73,11 +73,11 @@ export const adminMockData = {
     },
     {
       id: '2',
-      name: 'Nguyễn Thị Hoa',
+      name: 'Emma Flores',
       email: 'hoa.nguyen@powergym.com',
       phone: '0945678901',
       specialization: 'Yoga & Pilates',
-      experience: '3 năm',
+      experience: '3 years',
       rating: 4.9,
       clients: 30,
       status: 'active',
@@ -91,7 +91,7 @@ export const adminMockData = {
   equipment: [
     {
       id: '1',
-      name: 'Máy chạy bộ Technogym',
+      name: 'Technogym Treadmill',
       category: 'Cardio',
       brand: 'Technogym',
       model: 'Run Now',
@@ -100,11 +100,11 @@ export const adminMockData = {
       status: 'active',
       maintenanceDate: '2024-01-15',
       cost: 85000000,
-      location: 'Khu vực Cardio A'
+      location: 'Cardio Area A'
     },
     {
       id: '2',
-      name: 'Ghế tập ngực',
+      name: 'Chest Press Bench',
       category: 'Strength',
       brand: 'Life Fitness',
       model: 'Signature Series',
@@ -113,7 +113,7 @@ export const adminMockData = {
       status: 'maintenance',
       maintenanceDate: '2024-02-01',
       cost: 45000000,
-      location: 'Khu vực tạ A'
+      location: 'Weight Area A'
     }
   ],
 
@@ -126,7 +126,7 @@ export const adminMockData = {
       price: 500000,
       duration: 60,
       maxParticipants: 1,
-      description: 'Huấn luyện cá nhân 1-1 với PT chuyên nghiệp',
+      description: '1-on-1 personal training with professional PT',
       isActive: true,
       bookings: 45,
       revenue: 22500000
@@ -138,7 +138,7 @@ export const adminMockData = {
       price: 150000,
       duration: 45,
       maxParticipants: 20,
-      description: 'Lớp tập thể dục nhóm với nhiều bài tập đa dạng',
+      description: 'Group fitness class with diverse exercises',
       isActive: true,
       bookings: 120,
       revenue: 18000000
@@ -152,7 +152,7 @@ export const adminMockData = {
       name: 'Basic',
       price: 800000,
       duration: 30,
-      features: ['Sử dụng thiết bị cơ bản', 'Tủ khóa', 'Wifi miễn phí'],
+      features: ['Basic equipment access', 'Locker', 'Free Wifi'],
       isActive: true,
       subscribers: 450,
       revenue: 360000000
@@ -162,7 +162,7 @@ export const adminMockData = {
       name: 'Premium',
       price: 1500000,
       duration: 30,
-      features: ['Tất cả thiết bị', 'Group classes', 'Sauna', 'Massage'],
+      features: ['All equipment', 'Group classes', 'Sauna', 'Massage'],
       isActive: true,
       subscribers: 320,
       revenue: 480000000
@@ -172,7 +172,7 @@ export const adminMockData = {
       name: 'VIP',
       price: 2500000,
       duration: 30,
-      features: ['Tất cả dịch vụ', 'Personal trainer', 'Dinh dưỡng tư vấn', 'Spa'],
+      features: ['All services', 'Personal trainer', 'Nutrition consulting', 'Spa'],
       isActive: true,
       subscribers: 180,
       revenue: 450000000
@@ -182,20 +182,20 @@ export const adminMockData = {
   // Financial Data
   financial: {
     monthlyRevenue: [
-      { month: 'T1', revenue: 220000000, expenses: 150000000 },
-      { month: 'T2', revenue: 245000000, expenses: 160000000 },
-      { month: 'T3', revenue: 280000000, expenses: 170000000 },
-      { month: 'T4', revenue: 310000000, expenses: 180000000 },
-      { month: 'T5', revenue: 295000000, expenses: 175000000 },
-      { month: 'T6', revenue: 320000000, expenses: 185000000 }
+      { month: 'Jan', revenue: 220000000, expenses: 150000000 },
+      { month: 'Feb', revenue: 245000000, expenses: 160000000 },
+      { month: 'Mar', revenue: 280000000, expenses: 170000000 },
+      { month: 'Apr', revenue: 310000000, expenses: 180000000 },
+      { month: 'May', revenue: 295000000, expenses: 175000000 },
+      { month: 'Jun', revenue: 320000000, expenses: 185000000 }
     ],
     expenses: [
-      { category: 'Lương nhân viên', amount: 120000000, percentage: 35 },
-      { category: 'Tiền thuê mặt bằng', amount: 80000000, percentage: 23 },
-      { category: 'Điện nước', amount: 45000000, percentage: 13 },
-      { category: 'Bảo trì thiết bị', amount: 35000000, percentage: 10 },
+      { category: 'Staff Salaries', amount: 120000000, percentage: 35 },
+      { category: 'Rent', amount: 80000000, percentage: 23 },
+      { category: 'Utilities', amount: 45000000, percentage: 13 },
+      { category: 'Equipment Maintenance', amount: 35000000, percentage: 10 },
       { category: 'Marketing', amount: 25000000, percentage: 7 },
-      { category: 'Khác', amount: 40000000, percentage: 12 }
+      { category: 'Other', amount: 40000000, percentage: 12 }
     ]
   },
 
@@ -203,9 +203,9 @@ export const adminMockData = {
   bookings: [
     {
       id: '1',
-      memberName: 'Nguyễn Văn An',
+      memberName: 'John Anderson',
       serviceName: 'Personal Training',
-      trainerName: 'Phạm Văn Đức',
+      trainerName: 'David Parker',
       date: '2024-02-05',
       time: '09:00',
       status: 'confirmed',
@@ -213,9 +213,9 @@ export const adminMockData = {
     },
     {
       id: '2',
-      memberName: 'Trần Thị Bình',
+      memberName: 'Sarah Thompson',
       serviceName: 'Group Fitness',
-      trainerName: 'Nguyễn Thị Hoa',
+      trainerName: 'Emma Flores',
       date: '2024-02-05',
       time: '18:00',
       status: 'pending',
@@ -226,12 +226,12 @@ export const adminMockData = {
   // Reports Data
   reports: {
     membershipGrowth: [
-      { month: 'T1', newMembers: 65, canceledMembers: 12 },
-      { month: 'T2', newMembers: 78, canceledMembers: 15 },
-      { month: 'T3', newMembers: 92, canceledMembers: 8 },
-      { month: 'T4', newMembers: 87, canceledMembers: 18 },
-      { month: 'T5', newMembers: 95, canceledMembers: 10 },
-      { month: 'T6', newMembers: 103, canceledMembers: 14 }
+      { month: 'Jan', newMembers: 65, canceledMembers: 12 },
+      { month: 'Feb', newMembers: 78, canceledMembers: 15 },
+      { month: 'Mar', newMembers: 92, canceledMembers: 8 },
+      { month: 'Apr', newMembers: 87, canceledMembers: 18 },
+      { month: 'May', newMembers: 95, canceledMembers: 10 },
+      { month: 'Jun', newMembers: 103, canceledMembers: 14 }
     ],
     popularServices: [
       { name: 'Personal Training', bookings: 245, revenue: 122500000 },
@@ -245,7 +245,7 @@ export const adminMockData = {
   settings: {
     gymInfo: {
       name: 'PowerGym',
-      address: '123 Đường ABC, Quận 1, TP.HCM',
+      address: '123 ABC Street, District 1, HCMC',
       phone: '028-1234-5678',
       email: 'info@powergym.com',
       website: 'www.powergym.com',

@@ -35,19 +35,19 @@ const RegistrationForm: React.FC = () => {
 
     const validateForm = (): boolean => {
         if (!formData.phone.trim()) {
-            setMessage({ type: 'error', text: 'Vui lòng nhập số điện thoại' });
+            setMessage({ type: 'error', text: 'Please enter phone number' });
             return false;
         }
         if (!formData.email.trim()) {
-            setMessage({ type: 'error', text: 'Vui lòng nhập email' });
+            setMessage({ type: 'error', text: 'Please enter email' });
             return false;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            setMessage({ type: 'error', text: 'Email không hợp lệ' });
+            setMessage({ type: 'error', text: 'Invalid email' });
             return false;
         }
         if (!/^[0-9]{10,11}$/.test(formData.phone.replace(/\s/g, ''))) {
-            setMessage({ type: 'error', text: 'Số điện thoại không hợp lệ' });
+            setMessage({ type: 'error', text: 'Invalid phone number' });
             return false;
         }
         return true;
@@ -66,7 +66,7 @@ const RegistrationForm: React.FC = () => {
             
             setMessage({ 
                 type: 'success', 
-                text: 'Đăng ký thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.' 
+                text: 'Registration successful! We will contact you soon.' 
             });
             
             // Reset form
@@ -74,7 +74,7 @@ const RegistrationForm: React.FC = () => {
         } catch (error) {
             setMessage({ 
                 type: 'error', 
-                text: 'Có lỗi xảy ra. Vui lòng thử lại sau.' 
+                text: 'An error occurred. Please try again later.' 
             });
         } finally {
             setLoading(false);
@@ -92,7 +92,7 @@ const RegistrationForm: React.FC = () => {
                     textTransform: 'uppercase'
                 }}
             >
-                Đăng ký nhận thông tin
+                Subscribe for Updates
             </Typography>
 
             <Typography 
@@ -103,13 +103,13 @@ const RegistrationForm: React.FC = () => {
                     lineHeight: 1.5
                 }}
             >
-                Để lại thông tin để nhận tư vấn miễn phí và các ưu đãi đặc biệt từ PowerGym
+                Leave your information to receive free consultation and special offers from PowerGym
             </Typography>
 
             <Box component="form" onSubmit={handleSubmit}>
                 <TextField
                     fullWidth
-                    label="Số điện thoại"
+                    label="Phone Number"
                     variant="outlined"
                     value={formData.phone}
                     onChange={handleInputChange('phone')}
@@ -197,7 +197,7 @@ const RegistrationForm: React.FC = () => {
                         }
                     }}
                 >
-                    {loading ? 'Đang gửi...' : 'Đăng ký ngay'}
+                    {loading ? 'Sending...' : 'Register Now'}
                 </Button>
             </Box>
         </Box>

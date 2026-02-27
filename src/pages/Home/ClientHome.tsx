@@ -21,15 +21,8 @@ import '../../utils/testApiCall';
 const ClientHome: React.FC = () => {
   const navigate = useNavigate();
   const { packages, registerPackage, loading: membershipLoading  } = useMembership();
-  const { services, loading: servicesLoading, error: servicesError } = useGymServices();
-  const { storiesData } = useGymStory();
-
-  // Debug logging
-  React.useEffect(() => {
-    console.log('ClientHome - Services loading:', servicesLoading);
-    console.log('ClientHome - Services error:', servicesError);
-    console.log('ClientHome - Services data:', services);
-  }, [services, servicesLoading, servicesError]);
+  const { services,  } = useGymServices();
+  const { storiesData, refetchStories } = useGymStory();
 
 
   // Event Handlers
@@ -58,14 +51,14 @@ const ClientHome: React.FC = () => {
       const success = await registerPackage(packageId, 'CARD');
 
       if (success) {
-        alert('Đăng ký gói thành công!');
+        alert('Package registration successful!');
         navigate('/powergym/membership');
       } else {
-        alert('Đăng ký gói thất bại. Vui lòng thử lại.');
+        alert('Package registration failed. Please try again.');
       }
     } catch (error) {
       console.error('Package registration error:', error);
-      alert('Có lỗi xảy ra khi đăng ký gói.');
+      alert('An error occurred while registering the package.');
     }
   };
 
@@ -74,7 +67,7 @@ const ClientHome: React.FC = () => {
   const availablePackages = packages.length > 0 ? packages.map(pkg => ({
     id: pkg.id,
     name: pkg.name,
-    duration: `${pkg.duration} ngày`,
+    duration: `${pkg.duration} days`,
     price: `${pkg.price.toLocaleString('vi-VN')}đ`,
     originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
     features: pkg.features,
@@ -85,6 +78,8 @@ const ClientHome: React.FC = () => {
 
   return (
     <div className={`${globalStyles.container} ${globalStyles.fullWidth}`}>
+      {/* Debug Auth Info - Remove after fixing */}
+
       <HeroBanner
         promotion={bannerPromotionData}
         onRegisterClick={handleRegisterClick}
@@ -99,6 +94,7 @@ const ClientHome: React.FC = () => {
       <StoriesSection
         stories={storiesData}
         onStoryClick={handleStoryClick}
+        onStoriesUpdate={refetchStories}
       />
 
       {/* BMI Section */}

@@ -25,7 +25,7 @@ const VerifyOtp = () => {
         if (!email) {
             setFeedback({
                 type: "error",
-                message: "Không tìm thấy email liên kết với tài khoản này.",
+                message: "Email not found for this account.",
             });
             setSubmitting(false);
             return;
@@ -34,11 +34,11 @@ const VerifyOtp = () => {
             const response = await AuthService.verifyOtp({ email, otp });
 
             if (!response.success) {
-                throw new Error(response.message || "Xác thực OTP thất bại");
+                throw new Error(response.message || "OTP verification failed");
             }
             setFeedback({
                 type: "success",
-                message: response.message || "Xác thực thành công!",
+                message: response.message || "Verification successful!",
             });
             setTimeout(() => {
                 navigate("/login");
@@ -47,7 +47,7 @@ const VerifyOtp = () => {
             const message =
                 error instanceof Error
                     ? error.message
-                    : "Xác thực OTP thất bại, vui lòng thử lại.";
+                    : "OTP verification failed, please try again.";
             setFeedback({
                 type: "error",
                 message,
@@ -61,17 +61,17 @@ const VerifyOtp = () => {
         <main className="auth-page">
             <section className="auth-panel auth-panel--accent">
                 <span className="auth-logo">HeartBeat</span>
-                <h1>Xác thực tài khoản</h1>
+                <h1>Verify Account</h1>
                 <p>
-                    Vui lòng nhập mã OTP được gửi đến email <strong>{email}</strong> để hoàn tất đăng ký.
+                    Please enter the OTP code sent to <strong>{email}</strong> to complete registration.
                 </p>
             </section>
 
             <section className="auth-panel auth-panel--card">
                 <div>
-                    <h2 className="auth-card-title">Xác thực OTP</h2>
+                    <h2 className="auth-card-title">Verify OTP</h2>
                     <p className="auth-card-subtitle">
-                        Nhập mã OTP để kích hoạt tài khoản của bạn.
+                        Enter the OTP code to activate your account.
                     </p>
                 </div>
 
@@ -83,25 +83,25 @@ const VerifyOtp = () => {
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="otp">Mã OTP</label>
+                        <label htmlFor="otp">OTP Code</label>
                         <input
                             id="otp"
                             className="form-input"
                             type="text"
-                            placeholder="Nhập 6 chữ số"
+                            placeholder="Enter 6 digits"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             required
                         />
                     </div>
                     <button className="auth-submit" type="submit" disabled={submitting}>
-                        {submitting ? "Đang xác thực..." : "Xác thực OTP"}
+                        {submitting ? "Verifying..." : "Verify OTP"}
                     </button>
                 </form>
                 <p className="auth-footer">
-                    Chưa nhận được OTP?{" "}
+                    Didn't receive OTP?{" "}
                     <a className="link" href="#">
-                        Gửi lại
+                        Resend
                     </a>
                 </p>
             </section>

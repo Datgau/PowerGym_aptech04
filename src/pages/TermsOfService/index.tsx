@@ -1,70 +1,70 @@
 export default function TermsOfService() {
   return (
     <div style={{ maxWidth: "800px", margin: "40px auto", padding: "20px" }}>
-      <h1>Điều Khoản Dịch Vụ – HeartBeat</h1>
-      <p>Cập nhật lần cuối: {new Date().toLocaleDateString()}</p>
+      <h1>Terms of Service – HeartBeat</h1>
+      <p>Last updated: {new Date().toLocaleDateString()}</p>
 
       <p>
-        Khi sử dụng HeartBeat, bạn đồng ý với các điều khoản sau. Vui lòng đọc kỹ trước
-        khi tiếp tục sử dụng dịch vụ.
+        By using HeartBeat, you agree to the following terms. Please read carefully
+        before continuing to use the service.
       </p>
 
-      <h2>1. Chấp nhận điều khoản</h2>
+      <h2>1. Acceptance of terms</h2>
       <p>
-        Bằng việc đăng ký hoặc truy cập HeartBeat, bạn đồng ý tuân thủ toàn bộ điều khoản
-        này. Nếu không đồng ý, vui lòng ngừng sử dụng dịch vụ.
+        By registering or accessing HeartBeat, you agree to comply with all these terms.
+        If you do not agree, please stop using the service.
       </p>
 
-      <h2>2. Tài khoản người dùng</h2>
+      <h2>2. User accounts</h2>
       <ul>
-        <li>Bạn có trách nhiệm bảo mật tài khoản và mật khẩu</li>
-        <li>Không được giả mạo hoặc tạo tài khoản ảo để lừa đảo</li>
-        <li>Không sử dụng HeartBeat vào mục đích vi phạm pháp luật</li>
+        <li>You are responsible for securing your account and password</li>
+        <li>Do not impersonate or create fake accounts for fraud</li>
+        <li>Do not use HeartBeat for illegal purposes</li>
       </ul>
 
-      <h2>3. Nội dung người dùng</h2>
-      <p>Bạn chịu trách nhiệm về nội dung mình đăng tải, bao gồm:</p>
+      <h2>3. User content</h2>
+      <p>You are responsible for the content you post, including:</p>
       <ul>
-        <li>Hình ảnh, video, bài viết</li>
-        <li>Bình luận và tương tác</li>
+        <li>Images, videos, posts</li>
+        <li>Comments and interactions</li>
       </ul>
-      <p>Không được đăng nội dung chứa:</p>
+      <p>Do not post content containing:</p>
       <ul>
-        <li>Bạo lực, khiêu dâm, kích động thù địch</li>
-        <li>Thông tin sai lệch gây ảnh hưởng cộng đồng</li>
-        <li>Nội dung vi phạm bản quyền</li>
+        <li>Violence, pornography, hate speech</li>
+        <li>Misinformation affecting the community</li>
+        <li>Copyright violations</li>
       </ul>
 
-      <h2>4. Dịch vụ có thể thay đổi</h2>
+      <h2>4. Service may change</h2>
       <p>
-        Chúng tôi có quyền cập nhật, thay đổi hoặc tạm ngừng dịch vụ mà không cần
-        thông báo trước, nhằm đảm bảo hệ thống được vận hành tốt nhất.
+        We reserve the right to update, change, or suspend the service without
+        prior notice to ensure the system operates optimally.
       </p>
 
-      <h2>5. Quy định OAuth (Google, Facebook)</h2>
+      <h2>5. OAuth regulations (Google, Facebook)</h2>
       <p>
-        Khi đăng nhập bằng Google hoặc Facebook, bạn đồng ý rằng HeartBeat có thể
-        truy cập dữ liệu cơ bản như: email, tên hiển thị, ảnh đại diện, theo chính
-        sách của từng nhà cung cấp.
+        When logging in with Google or Facebook, you agree that HeartBeat may
+        access basic data such as: email, display name, profile picture, according to
+        each provider's policy.
       </p>
 
-      <h2>6. Xóa tài khoản và dữ liệu</h2>
+      <h2>6. Account and data deletion</h2>
       <p>
-        Bạn có quyền yêu cầu xóa tài khoản và dữ liệu cá nhân bất kỳ lúc nào.
-        Vui lòng xem{" "}
+        You have the right to request account and personal data deletion at any time.
+        Please see{" "}
         <a href="/data-deletion" style={{ color: "#4285F4", textDecoration: "underline" }}>
-          Hướng dẫn xóa dữ liệu người dùng
+          User Data Deletion Guide
         </a>{" "}
-        để biết chi tiết.
+        for details.
       </p>
 
-      <h2>7. Liên hệ</h2>
+      <h2>7. Contact</h2>
       <p>
-        Mọi thắc mắc vui lòng liên hệ:  
+        For any questions, please contact:  
         <strong> HeartBeat.support@example.com</strong>
       </p>
 
-      <p>Cảm ơn bạn đã sử dụng HearBeat.</p>
+      <p>Thank you for using HeartBeat.</p>
     </div>
   );
 }

@@ -43,30 +43,30 @@ const BMICalculator: React.FC = () => {
     if (bmi < 18.5) {
       return {
         bmi,
-        category: 'Thiếu cân',
+        category: 'Underweight',
         color: '#2196F3',
-        advice: 'Bạn nên tăng cân bằng cách ăn uống đầy đủ dinh dưỡng và tập luyện phù hợp.'
+        advice: 'You should gain weight by eating nutritious food and exercising appropriately.'
       };
     } else if (bmi >= 18.5 && bmi < 25) {
       return {
         bmi,
-        category: 'Bình thường',
+        category: 'Normal',
         color: '#4CAF50',
-        advice: 'Chúc mừng! Cân nặng của bạn đang ở mức lý tưởng. Hãy duy trì lối sống lành mạnh.'
+        advice: 'Congratulations! Your weight is at an ideal level. Maintain a healthy lifestyle.'
       };
     } else if (bmi >= 25 && bmi < 30) {
       return {
         bmi,
-        category: 'Thừa cân',
+        category: 'Overweight',
         color: '#FF9800',
-        advice: 'Bạn nên giảm cân bằng cách tập luyện thường xuyên và điều chỉnh chế độ ăn uống.'
+        advice: 'You should lose weight by exercising regularly and adjusting your diet.'
       };
     } else {
       return {
         bmi,
-        category: 'Béo phì',
+        category: 'Obese',
         color: '#F44336',
-        advice: 'Bạn nên tham khảo ý kiến bác sĩ và có kế hoạch giảm cân nghiêm túc.'
+        advice: 'You should consult a doctor and have a serious weight loss plan.'
       };
     }
   };
@@ -103,7 +103,7 @@ const BMICalculator: React.FC = () => {
               mb: 1
             }}
           >
-            TÍNH CHỈ SỐ BMI
+            CALCULATE BMI INDEX
           </Typography>
           <Typography
             variant="body1"
@@ -112,16 +112,16 @@ const BMICalculator: React.FC = () => {
               fontSize: { xs: '0.9rem', md: '1rem' }
             }}
           >
-            Kiểm tra chỉ số khối cơ thể của bạn
+            Check your body mass index
           </Typography>
         </Box>
 
         {/* Input Fields */}
           <Box sx={{ mb: 3 }}>
-              {/* Tuổi */}
+              {/* Age */}
               <TextField
                   fullWidth
-                  label="Tuổi"
+                  label="Age"
                   type="number"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
@@ -132,16 +132,16 @@ const BMICalculator: React.FC = () => {
                           </InputAdornment>
                       )
                   }}
-                  placeholder="Nhập tuổi"
+                  placeholder="Enter age"
                   sx={{ mb: 2 }}
               />
 
-              {/* Giới tính */}
+              {/* Gender */}
               <FormControl fullWidth>
-                  <InputLabel>Giới tính</InputLabel>
+                  <InputLabel>Gender</InputLabel>
                   <Select
                       value={gender}
-                      label="Giới tính"
+                      label="Gender"
                       onChange={(e) => setGender(e.target.value as 'male' | 'female')}
                       startAdornment={
                           <InputAdornment position="start">
@@ -149,8 +149,8 @@ const BMICalculator: React.FC = () => {
                           </InputAdornment>
                       }
                   >
-                      <MenuItem value="male">Nam</MenuItem>
-                      <MenuItem value="female">Nữ</MenuItem>
+                      <MenuItem value="male">Male</MenuItem>
+                      <MenuItem value="female">Female</MenuItem>
                   </Select>
               </FormControl>
           </Box>
@@ -158,7 +158,7 @@ const BMICalculator: React.FC = () => {
           <Box sx={{  flex: 1 }}>
           <TextField
             fullWidth
-            label="Chiều cao"
+            label="Height"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             type="number"
@@ -171,12 +171,12 @@ const BMICalculator: React.FC = () => {
               endAdornment: <InputAdornment position="end">cm</InputAdornment>,
             }}
             sx={{ mb: 2 }}
-            placeholder="Nhập chiều cao (cm)"
+            placeholder="Enter height (cm)"
           />
 
           <TextField
             fullWidth
-            label="Cân nặng"
+            label="Weight"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             type="number"
@@ -188,7 +188,7 @@ const BMICalculator: React.FC = () => {
               ),
               endAdornment: <InputAdornment position="end">kg</InputAdornment>,
             }}
-            placeholder="Nhập cân nặng (kg)"
+            placeholder="Enter weight (kg)"
           />
         </Box>
 
@@ -205,7 +205,7 @@ const BMICalculator: React.FC = () => {
               fontWeight: 600
             }}
           >
-            Tính BMI
+            Calculate BMI
           </Button>
           <Button
             variant="outlined"
@@ -216,7 +216,7 @@ const BMICalculator: React.FC = () => {
               fontSize: { xs: '0.9rem', md: '1rem' }
             }}
           >
-            Làm mới
+            Reset
           </Button>
         </Box>
 

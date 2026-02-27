@@ -15,28 +15,28 @@ import { Assessment, Circle } from '@mui/icons-material';
 const BMIChart: React.FC = () => {
   const bmiCategories = [
     {
-      range: 'Dưới 18.5',
-      category: 'Thiếu cân',
+      range: 'Below 18.5',
+      category: 'Underweight',
       color: '#2196F3',
-      description: 'Cần tăng cân để đạt mức lý tưởng'
+      description: 'Need to gain weight to reach ideal level'
     },
     {
       range: '18.5 - 24.9',
-      category: 'Bình thường',
+      category: 'Normal',
       color: '#4CAF50',
-      description: 'Cân nặng lý tưởng, duy trì hiện tại'
+      description: 'Ideal weight, maintain current status'
     },
     {
       range: '25.0 - 29.9',
-      category: 'Thừa cân',
+      category: 'Overweight',
       color: '#FF9800',
-      description: 'Nên giảm cân để tránh rủi ro sức khỏe'
+      description: 'Should lose weight to avoid health risks'
     },
     {
-      range: '30.0 trở lên',
-      category: 'Béo phì',
+      range: '30.0 and above',
+      category: 'Obese',
       color: '#F44336',
-      description: 'Cần giảm cân nghiêm túc, tham khảo bác sĩ'
+      description: 'Need serious weight loss, consult a doctor'
     }
   ];
 
@@ -64,7 +64,7 @@ const BMIChart: React.FC = () => {
               mb: 1
             }}
           >
-            BẢNG CHỈ SỐ BMI
+            BMI INDEX TABLE
           </Typography>
           <Typography
             variant="body1"
@@ -73,7 +73,7 @@ const BMIChart: React.FC = () => {
               fontSize: { xs: '0.9rem', md: '1rem' }
             }}
           >
-            Phân loại theo tiêu chuẩn WHO
+            Classification according to WHO standards
           </Typography>
         </Box>
 

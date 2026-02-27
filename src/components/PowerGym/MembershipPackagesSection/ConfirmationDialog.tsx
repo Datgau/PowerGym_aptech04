@@ -35,7 +35,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          Xác nhận đăng ký gói
+          Confirm Package Registration
           <Button onClick={onClose} size="small">
             <Close />
           </Button>
@@ -65,7 +65,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               )}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Bạn có chắc chắn muốn đăng ký gói này không?
+              Are you sure you want to register for this package?
             </Typography>
           </Box>
         )}
@@ -73,14 +73,14 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       
       <DialogActions>
         <Button onClick={onClose} color="inherit">
-          Hủy
+          Cancel
         </Button>
         <Button
           onClick={onConfirm}
           variant="contained"
           disabled={processing}
         >
-          {processing ? 'Đang xử lý...' : 'Xác nhận đăng ký'}
+          {processing ? 'Processing...' : 'Confirm Registration'}
         </Button>
       </DialogActions>
     </Dialog>

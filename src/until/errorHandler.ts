@@ -5,9 +5,9 @@ import type { ApiResponse } from "../@type/apiResponse";
 export function getApiErrorMessage(error: unknown): string {
     if (error instanceof AxiosError) {
         const data = error.response?.data as ApiResponse<any> | undefined;
-        return data?.message || "Có lỗi xảy ra";
+        return data?.message || "An error occurred";
     }
-    return "Lỗi không xác định";
+    return "Unknown error";
 }
 
 

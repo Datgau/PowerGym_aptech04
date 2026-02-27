@@ -68,7 +68,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ promotion, onRegisterClick }) =
                   marginBottom: 4,
                 }}
               >
-                Đam mê và rực cháy
+                Passion and Fire
               </Box>
             </Typography>
 
@@ -156,7 +156,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ promotion, onRegisterClick }) =
             >
               {promotion.validUntil && (
                   <Chip
-                      label={`Có hiệu lực đến ${new Date(promotion.validUntil).toLocaleDateString('vi-VN')}`}
+                      label={`Valid until ${new Date(promotion.validUntil).toLocaleDateString('en-US')}`}
                       color="warning"
                       className={styles.validityChip}
                   />
@@ -176,7 +176,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ promotion, onRegisterClick }) =
             </Box>
           </Box>
 
-          {/* Image - Ẩn trên mobile như CityGym */}
+          {/* Image - Hidden on mobile like CityGym */}
           {!isMobile && (
             <Box
               className={styles.bannerImage}

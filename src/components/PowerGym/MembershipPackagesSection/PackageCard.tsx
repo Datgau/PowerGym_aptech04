@@ -63,7 +63,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
       {/* Popular Badge */}
       {pkg.isPopular && (
         <Chip
-          label="PHỔ BIẾN NHẤT"
+          label="MOST POPULAR"
           icon={<Star />}
           sx={{
             position: 'absolute',
@@ -84,7 +84,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
       {/* Discount Badge */}
       {pkg.discount && (
         <Chip
-          label={`TIẾT KIỆM ${pkg.discount}%`}
+          label={`SAVE ${pkg.discount}%`}
           icon={<LocalOffer />}
           sx={{
             position: 'absolute',
@@ -251,7 +251,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
             }
           }}
         >
-          {processing ? 'ĐANG XỬ LÝ...' : 'CHỌN GÓI'}
+          {processing ? 'PROCESSING...' : 'SELECT PACKAGE'}
         </Button>
       </CardActions>
     </Card>

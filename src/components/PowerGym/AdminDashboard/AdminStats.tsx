@@ -18,7 +18,7 @@ interface AdminStatsProps {
 const AdminStats: React.FC<AdminStatsProps> = ({ stats }) => {
   return (
     <div className={styles.statsContainer}>
-      <h3 className={styles.title}>Thống kê tổng quan</h3>
+      <h3 className={styles.title}>Overview Statistics</h3>
       
       <div className={styles.statsGrid}>
         {stats.map((stat) => (

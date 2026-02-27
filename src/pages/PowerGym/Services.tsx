@@ -10,7 +10,7 @@ const Services: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
   const categories = [
-    { value: 'ALL', label: 'Tất cả' },
+    { value: 'ALL', label: 'All' },
     { value: 'PERSONAL_TRAINER', label: 'Personal Trainer' },
     { value: 'GROUP_CLASS', label: 'Group Classes' },
     { value: 'YOGA', label: 'Yoga' },
@@ -57,7 +57,7 @@ const Services: React.FC = () => {
         <div className={styles.pageContainer}>
           <div className={styles.loadingContainer}>
             <CircularProgress />
-            <p>Đang tải dịch vụ...</p>
+            <p>Loading services...</p>
           </div>
         </div>
       </PowerGymLayout>
@@ -69,7 +69,7 @@ const Services: React.FC = () => {
       <PowerGymLayout>
         <div className={styles.pageContainer}>
           <div className={styles.errorContainer}>
-            <p>Có lỗi xảy ra: {error}</p>
+            <p>An error occurred: {error}</p>
           </div>
         </div>
       </PowerGymLayout>
@@ -80,8 +80,8 @@ const Services: React.FC = () => {
     <PowerGymLayout>
       <div className={styles.pageContainer}>
         <div className={styles.pageHeader}>
-          <h1>Dịch vụ PowerGym</h1>
-          <p>Các dịch vụ tập luyện chuyên nghiệp</p>
+          <h1>PowerGym Services</h1>
+          <p>Professional training services</p>
         </div>
         
         {/* Category Filter */}
@@ -103,7 +103,7 @@ const Services: React.FC = () => {
         <div className={styles.content}>
           {filteredServices.length === 0 ? (
             <div className={styles.emptyState}>
-              <p>Không có dịch vụ nào trong danh mục này.</p>
+              <p>No services available in this category.</p>
             </div>
           ) : (
             <div className={styles.serviceGrid}>
@@ -127,7 +127,7 @@ const Services: React.FC = () => {
                         <div className={styles.priceInfo}>
                           <span className={styles.price}>{formatPrice(service.price)}</span>
                           {service.duration && (
-                            <span className={styles.duration}>/ {service.duration} phút</span>
+                            <span className={styles.duration}>/ {service.duration} minutes</span>
                           )}
                         </div>
                       )}
@@ -135,7 +135,7 @@ const Services: React.FC = () => {
                       {service.maxParticipants && (
                         <div className={styles.participantInfo}>
                           <Group fontSize="small" />
-                          <span>Tối đa {service.maxParticipants} người</span>
+                          <span>Max {service.maxParticipants} people</span>
                         </div>
                       )}
                     </div>

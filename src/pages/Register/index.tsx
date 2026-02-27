@@ -37,7 +37,7 @@ const Register = () => {
     if (formData.password !== formData.confirmPassword) {
       setFeedback({
         type: "error",
-        message: "Mật khẩu xác nhận không khớp!",
+        message: "Passwords do not match!",
       });
       setSubmitting(false);
       return;
@@ -49,14 +49,14 @@ const Register = () => {
       if (response.success) {
         setFeedback({
           type: "success",
-          message: response.message || "Đăng ký thành công! Vui lòng kiểm tra email để xác thực.",
+          message: response.message || "Registration successful! Please check your email to verify.",
         });
         setRegisteredEmail(formData.email);
         setShowOTP(true);
       } else {
         setFeedback({
           type: "error",
-          message: response.message || "Đăng ký thất bại!",
+          message: response.message || "Registration failed!",
         });
       }
     } catch (error) {
@@ -83,7 +83,7 @@ const Register = () => {
       if (response.success) {
         setFeedback({
           type: "success",
-          message: "Xác thực thành công! Đang chuyển đến trang đăng nhập...",
+          message: "Verification successful! Redirecting to login...",
         });
         setTimeout(() => {
           navigate("/login");
@@ -91,7 +91,7 @@ const Register = () => {
       } else {
         setFeedback({
           type: "error",
-          message: response.message || "Mã OTP không đúng!",
+          message: response.message || "Invalid OTP code!",
         });
       }
     } catch (error) {
@@ -115,9 +115,9 @@ const Register = () => {
         {!showOTP ? (
           <>
             <div>
-              <h2 className={styles.authCardTitle}>Tạo tài khoản mới</h2>
+              <h2 className={styles.authCardTitle}>Create New Account</h2>
               <p className={styles.authCardSubtitle}>
-                Tham gia cộng đồng PowerGym ngay hôm nay
+                Join the PowerGym community today
               </p>
             </div>
 
@@ -129,9 +129,9 @@ const Register = () => {
             />
 
             <p className={styles.authFooter}>
-              Đã có tài khoản?{" "}
+              Already have an account?{" "}
               <Link className={styles.link} to="/login">
-                Đăng nhập ngay
+                Login now
               </Link>
             </p>
           </>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, IconButton, Typography } from '@mui/material';
-import { 
-    Facebook, 
-    Instagram, 
-    YouTube, 
+import {
+    Facebook,
+    Instagram,
+    YouTube,
     Twitter,
     LinkedIn
 } from '@mui/icons-material';
@@ -43,22 +43,22 @@ const socialLinks = [
 
 const SocialLinks: React.FC = () => {
     return (
-        <Box 
-            sx={{ 
+        <Box
+            sx={{
                 textAlign: 'center',
                 borderTop: '1px solid #333',
                 pt: 3
             }}
         >
-            <Typography 
-                variant="h6" 
-                sx={{ 
+            <Typography
+                variant="h6"
+                sx={{
                     mb: 2,
                     color: '#00a1e4',
                     fontWeight: 'bold'
                 }}
             >
-                Kết nối với chúng tôi
+                Connect With Us
             </Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
@@ -89,15 +89,15 @@ const SocialLinks: React.FC = () => {
                 })}
             </Box>
 
-            <Typography 
-                variant="body2" 
-                sx={{ 
-                    mt: 2, 
+            <Typography
+                variant="body2"
+                sx={{
+                    mt: 2,
                     color: '#888',
                     fontSize: '0.85rem'
                 }}
             >
-                Theo dõi chúng tôi để cập nhật những thông tin mới nhất
+                Follow us to stay updated with the latest news and updates
             </Typography>
         </Box>
     );

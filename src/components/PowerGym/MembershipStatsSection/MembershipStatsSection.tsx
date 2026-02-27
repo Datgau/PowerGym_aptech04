@@ -73,19 +73,19 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ membership }) => {
         return {
           color: 'success' as const,
           icon: CheckCircle,
-          text: 'ĐÃ KÍCH HOẠT'
+          text: 'ACTIVATED'
         };
       case 'EXPIRED':
         return {
           color: 'error' as const,
           icon: Error,
-          text: 'HẾT HẠN'
+          text: 'EXPIRED'
         };
       case 'SUSPENDED':
         return {
           color: 'warning' as const,
           icon: Warning,
-          text: 'TẠM DỪNG'
+          text: 'SUSPENDED'
         };
       default:
         return {
@@ -113,10 +113,10 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ membership }) => {
       <CardContent className={styles.cardContent}>
         <Box className={styles.cardHeader}>
           <Typography variant="h5" component="h2" className={styles.cardTitle}>
-            Hợp đồng thành viên
+            Membership Contract
           </Typography>
           
-          <Tooltip title={`Trạng thái: ${statusConfig.text}`} arrow>
+          <Tooltip title={`Status: ${statusConfig.text}`} arrow>
             <Chip
               icon={<statusConfig.icon />}
               label={statusConfig.text}
@@ -138,16 +138,16 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ membership }) => {
 
         {isExpiringSoon && (
           <Alert severity="warning" className={styles.expiryAlert}>
-            <AlertTitle>Sắp hết hạn</AlertTitle>
-            Gói tập của bạn sẽ hết hạn trong {membership.daysLeft} ngày. 
-            Hãy gia hạn để tiếp tục sử dụng dịch vụ.
+            <AlertTitle>Expiring Soon</AlertTitle>
+            Your membership will expire in {membership.daysLeft} days. 
+            Please renew to continue using the service.
           </Alert>
         )}
 
         <Box className={styles.progressSection}>
           <Box className={styles.progressHeader}>
-            <Typography variant="body2" color="text.secondary">
-              Tiến độ sử dụng gói
+          <Typography variant="body2" color="text.secondary">
+              Usage Progress
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {Math.round(progressPercentage)}%
@@ -175,25 +175,25 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ membership }) => {
         >
           <StatItem
             icon={FitnessCenter}
-            label="Đã tập"
+            label="Trained"
             value={membership.totalDays - membership.daysLeft}
-            unit="ngày"
+            unit="days"
             color="primary"
           />
           
           <StatItem
             icon={Schedule}
-            label="Còn lại"
+            label="Remaining"
             value={membership.daysLeft}
-            unit="ngày"
+            unit="days"
             color={isExpiringSoon ? 'warning' : 'success'}
             highlight={isExpiringSoon}
           />
           
           <StatItem
             icon={CalendarToday}
-            label="Hết hạn"
-            value={new Date(membership.expiryDate).toLocaleDateString('vi-VN')}
+            label="Expires"
+            value={new Date(membership.expiryDate).toLocaleDateString('en-US')}
             color="info"
           />
         </Box>
@@ -252,11 +252,11 @@ const NoMembershipCard: React.FC = () => {
         <FitnessCenter className={styles.noMembershipIcon} />
         
         <Typography variant="h5" component="h3" gutterBottom>
-          Chưa có gói tập
+          No Membership Package
         </Typography>
         
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          Đăng ký gói tập để bắt đầu hành trình tập luyện tại PowerGym
+          Register for a membership package to start your training journey at PowerGym
         </Typography>
         
         <Button
@@ -265,7 +265,7 @@ const NoMembershipCard: React.FC = () => {
           size="large"
           startIcon={<FitnessCenter />}
         >
-          Xem gói tập
+          View Packages
         </Button>
       </CardContent>
     </Card>

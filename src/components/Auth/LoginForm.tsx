@@ -32,7 +32,7 @@ const LoginForm = ({ onSubmit, submitting }: LoginFormProps) => {
             </div>
 
             <div className={styles.formGroup}>
-                <label htmlFor="login-password">Mật khẩu</label>
+                <label htmlFor="login-password">Password</label>
                 <input
                     id="login-password"
                     className={`${styles.formInput} ${styles.formInputPassword}`}
@@ -51,15 +51,15 @@ const LoginForm = ({ onSubmit, submitting }: LoginFormProps) => {
                         checked={remember}
                         onChange={(event) => setRemember(event.target.checked)}
                     />
-                    Ghi nhớ tài khoản
+                    Remember me
                 </label>
                 <a className={styles.link} href="#">
-                    Quên mật khẩu?
+                    Forgot password?
                 </a>
             </div>
 
             <button className={styles.authSubmit} type="submit" disabled={submitting}>
-                {submitting ? "Đang đăng nhập..." : "Đăng nhập vào PowerGym"}
+                {submitting ? "Logging in..." : "Login to PowerGym"}
             </button>
         </form>
     );

@@ -90,8 +90,8 @@
 //           </Typography>
 //           <Typography variant="caption" color="text.secondary">
 //             {conversation.isGroup
-//               ? `${conversation.memberIds.length} thành viên`
-//               : conversation.members?.find(m => m.id !== currentUserId)?.username || 'Người dùng'
+//               ? `${conversation.memberIds.length} members`
+//               : conversation.members?.find(m => m.id !== currentUserId)?.username || 'User'
 //             }
 //           </Typography>
 //         </Box>
@@ -117,7 +117,7 @@
 //         ) : messages.length === 0 ? (
 //           <Box sx={{ textAlign: "center", p: 3 }}>
 //             <Typography color="text.secondary">
-//               Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!
+//               No messages yet. Start the conversation!
 //             </Typography>
 //           </Box>
 //         ) : (

@@ -21,7 +21,7 @@ const Copyright: React.FC = () => {
                     mb: 1
                 }}
             >
-                © {currentYear} PowerGym. Tất cả quyền được bảo lưu.
+                © {currentYear} PowerGym. All rights reserved.
             </Typography>
 
             <Box 
@@ -44,7 +44,7 @@ const Copyright: React.FC = () => {
                         }
                     }}
                 >
-                    Chính sách bảo mật
+                    Privacy Policy
                 </Link>
 
                 <Link 
@@ -59,7 +59,7 @@ const Copyright: React.FC = () => {
                         }
                     }}
                 >
-                    Điều khoản dịch vụ
+                    Terms of Service
                 </Link>
 
                 <Link 
@@ -74,7 +74,7 @@ const Copyright: React.FC = () => {
                         }
                     }}
                 >
-                    Liên hệ
+                    Contact
                 </Link>
 
                 <Link 
@@ -89,7 +89,7 @@ const Copyright: React.FC = () => {
                         }
                     }}
                 >
-                    Tuyển dụng
+                    Careers
                 </Link>
             </Box>
         </Box>

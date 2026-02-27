@@ -32,7 +32,7 @@
 // }: ChatListProps) => {
 //   const getConversationName = (conversation: Conversation) => {
 //     if (conversation.isGroup) {
-//       return conversation.roomName || "Nhóm";
+//       return conversation.roomName || "Group";
 //     }
 //     // For 1-1 chat, show other user's name
 //     const otherUser = conversation.members?.find(m => m.id !== currentUserId);
@@ -59,7 +59,7 @@
 //     return (
 //       <Box sx={{ p: 3, textAlign: "center" }}>
 //         <Typography color="text.secondary">
-//           Chưa có cuộc trò chuyện nào
+//           No conversations yet
 //         </Typography>
 //       </Box>
 //     );
@@ -125,7 +125,7 @@
 //                   </Typography>
 //                 ) : (
 //                   <Typography variant="body2" color="text.secondary">
-//                     Chưa có tin nhắn
+//                     No messages yet
 //                   </Typography>
 //                 )
 //               }

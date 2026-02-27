@@ -45,7 +45,7 @@ const News: React.FC = () => {
                 backgroundClip: 'text',
               }}
             >
-              Tin tức Gym & Fitness Quốc tế
+              News Gym & Fitness of the world
             </Typography>
             <Typography
               variant="h6"
@@ -58,8 +58,7 @@ const News: React.FC = () => {
                 mb: 4,
               }}
             >
-              Cập nhật những tin tức mới nhất về gym, fitness và sức khỏe từ các nguồn quốc tế uy tín
-            </Typography>
+                Get the latest gym, fitness, and health news from trusted international sources.            </Typography>
           </Box>
 
           {/* Main News Section */}
@@ -68,7 +67,7 @@ const News: React.FC = () => {
             loading={loading}
             error={error}
             onRefresh={refresh}
-            title="Tin tức Gym & Fitness"
+            title="News Gym & Fitness"
           />
         </Container>
       </Box>

@@ -1,59 +1,59 @@
 export default function PrivacyPolicy() {
   return (
     <div style={{ maxWidth: "800px", margin: "40px auto", padding: "20px" }}>
-      <h1>Chính Sách Quyền Riêng Tư – HeartBeat</h1>
-      <p>Cập nhật lần cuối: {new Date().toLocaleDateString()}</p>
+      <h1>Privacy Policy – HeartBeat</h1>
+      <p>Last updated: {new Date().toLocaleDateString()}</p>
 
       <p>
-        Chúng tôi tôn trọng quyền riêng tư của bạn và cam kết bảo vệ dữ liệu cá nhân
-        khi bạn sử dụng HeartBeat. Chính sách này mô tả cách chúng tôi thu thập, sử dụng
-        và bảo vệ thông tin của bạn.
+        We respect your privacy and are committed to protecting your personal data
+        when you use HeartBeat. This policy describes how we collect, use,
+        and protect your information.
       </p>
 
-      <h2>1. Thông tin chúng tôi thu thập</h2>
+      <h2>1. Information we collect</h2>
       <ul>
-        <li>Thông tin tài khoản (email, tên, username)</li>
-        <li>Ảnh đại diện và nội dung bạn đăng tải</li>
-        <li>Dữ liệu thiết bị và cookies</li>
-        <li>Thông tin từ Google hoặc Facebook khi bạn đăng nhập bằng OAuth</li>
+        <li>Account information (email, name, username)</li>
+        <li>Profile picture and content you post</li>
+        <li>Device data and cookies</li>
+        <li>Information from Google or Facebook when you log in via OAuth</li>
       </ul>
 
-      <h2>2. Cách chúng tôi sử dụng thông tin</h2>
-      <p>Chúng tôi sử dụng thông tin để:</p>
+      <h2>2. How we use your information</h2>
+      <p>We use information to:</p>
       <ul>
-        <li>Vận hành nền tảng HeartBeat</li>
-        <li>Cung cấp tính năng cá nhân hóa</li>
-        <li>Ngăn chặn hành vi gian lận và bảo mật hệ thống</li>
-        <li>Hỗ trợ khách hàng khi cần thiết</li>
+        <li>Operate the HeartBeat platform</li>
+        <li>Provide personalized features</li>
+        <li>Prevent fraud and secure the system</li>
+        <li>Provide customer support when needed</li>
       </ul>
 
-      <h2>3. Chia sẻ thông tin</h2>
-      <p>Chúng tôi KHÔNG bán dữ liệu người dùng. Tuy nhiên, chúng tôi có thể chia sẻ với:</p>
+      <h2>3. Information sharing</h2>
+      <p>We DO NOT sell user data. However, we may share with:</p>
       <ul>
-        <li>Nhà cung cấp dịch vụ (ví dụ: lưu trữ, phân tích)</li>
-        <li>Cơ quan pháp lý khi được yêu cầu bởi luật pháp</li>
+        <li>Service providers (e.g., storage, analytics)</li>
+        <li>Legal authorities when required by law</li>
       </ul>
 
-      <h2>4. Quyền của bạn</h2>
+      <h2>4. Your rights</h2>
       <ul>
-        <li>Yêu cầu truy cập hoặc xoá tài khoản</li>
-        <li>Tải xuống dữ liệu cá nhân</li>
-        <li>Thu hồi quyền truy cập OAuth</li>
+        <li>Request access or delete your account</li>
+        <li>Download your personal data</li>
+        <li>Revoke OAuth access</li>
       </ul>
       <p>
-        Để xóa dữ liệu của bạn, vui lòng xem{" "}
+        To delete your data, please see{" "}
         <a href="/data-deletion" style={{ color: "#4285F4", textDecoration: "underline" }}>
-          Hướng dẫn xóa dữ liệu người dùng
+          User Data Deletion Guide
         </a>.
       </p>
 
-      <h2>5. Liên hệ</h2>
+      <h2>5. Contact</h2>
       <p>
-        Nếu bạn có câu hỏi, vui lòng liên hệ:  
+        If you have any questions, please contact:  
         <strong> HeartBeat.support@example.com</strong>
       </p>
 
-      <p>Cảm ơn bạn đã tin tưởng sử dụng HeartBeat.</p>
+      <p>Thank you for trusting HeartBeat.</p>
     </div>
   );
 }

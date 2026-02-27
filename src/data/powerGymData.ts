@@ -25,34 +25,34 @@ import SportsGymnasticsIcon from '@mui/icons-material/SportsGymnastics';
 export const bannerPromotionData: BannerPromotion = {
   id: 'citi-royal-x-promo',
   title: 'POWER-GYM',
-  subtitle: 'CHỈ 299.000đ/THÁNG',
-  price: '299.000đ',
-  originalPrice: '400.000 Đ',
+  subtitle: 'ONLY 299,000đ/MONTH',
+  price: '299,000đ',
+  originalPrice: '400,000đ',
   features: [
     {
       id: 'feature-1',
-      title: 'Ưu đãi nhóm',
-      description: 'Miễn phí 1 tháng cho các thành viên khi đăng kí theo nhóm từ 5 người trở lên.',
+      title: 'Group Discount',
+      description: 'Free 1 month for members when registering in groups of 5 or more.',
       highlight: true,
       icon: Groups
     },
     {
       id: 'feature-2',
-      title: 'Miễn phí sử dụng',
-      description: '02 khăn/ngày, nước lọc miễn phí, găng tay, khóa tủ đồ, tắm giặt',
+      title: 'Free Usage',
+      description: '02 towels/day, free filtered water, gloves, locker, shower & laundry',
       highlight: true,
       icon: DryCleaningIcon,
     },
     {
       id: 'feature-3',
-      title: 'Club ',
-      description: 'Câu lạc bộ thể hình hiện đại bậc nhất với trang thiết bị tiên tiến. Đi kèm với các bộ môn khác như Yoga, Zumba, Aerobic, Boxing...',
+      title: 'Club',
+      description: 'The most modern fitness club with advanced equipment. Includes other disciplines such as Yoga, Zumba, Aerobic, Boxing...',
       highlight: true,
       icon: SportsGymnasticsIcon,
 
     }
   ] as const,
-  ctaText: 'ĐĂNG KÝ NGAY',
+  ctaText: 'REGISTER NOW',
   backgroundImage: '/images/banner_background',
   isActive: true,
   validUntil: '2024-12-31'
@@ -110,55 +110,55 @@ export const bannerPromotionData: BannerPromotion = {
 export const membershipPackagesData: readonly PackageOption[] = [
   {
     id: 'monthly',
-    name: 'Gói 1 tháng',
-    duration: '30 ngày',
-    price: '299.000đ',
+    name: '1 Month Package',
+    duration: '30 days',
+    price: '299,000đ',
     features: [
-      'Tập luyện không giới hạn',
-      'Sử dụng tất cả thiết bị',
-      'Tham gia lớp nhóm cơ bản',
-      'Hỗ trợ kỹ thuật cơ bản'
+      'Unlimited training',
+      'Use all equipment',
+      'Join basic group classes',
+      'Basic technical support'
     ] as const,
     color: '#2196F3',
-    description: 'Phù hợp cho người mới bắt đầu',
+    description: 'Suitable for beginners',
     icon: Star
   },
   {
     id: 'quarterly',
-    name: 'Gói 3 + 1 tháng',
-    duration: '120 ngày',
-    price: '897.000đ',
-    originalPrice: '1.196.000đ',
+    name: '3 + 1 Month Package',
+    duration: '120 days',
+    price: '897,000đ',
+    originalPrice: '1,196,000đ',
     features: [
-      'Tập luyện không giới hạn',
-      'Sử dụng tất cả thiết bị',
-      'Tham gia tất cả lớp nhóm',
-      'Tư vấn PT miễn phí 2 buổi',
-      'Đánh giá thể trạng định kỳ',
-      'Chế độ dinh dưỡng cá nhân hóa'
+      'Unlimited training',
+      'Use all equipment',
+      'Join all group classes',
+      'Free PT consultation 2 sessions',
+      'Periodic fitness assessment',
+      'Personalized nutrition plan'
     ] as const,
     isPopular: true,
     color: '#FF4444',
-    description: 'Gói phổ biến nhất - Tiết kiệm 25%',
+    description: 'Most popular package - Save 25%',
     icon: LocalOffer,
     discount: 25
   },
   {
     id: 'yearly',
-    name: 'Gói 12 tháng',
-    duration: '365 ngày',
-    price: '2.990.000đ',
-    originalPrice: '3.588.000đ',
+    name: '12 Month Package',
+    duration: '365 days',
+    price: '2,990,000đ',
+    originalPrice: '3,588,000đ',
     features: [
-      'Tất cả quyền lợi gói 3+1 tháng',
-      'PT cá nhân 8 buổi/tháng',
-      'Massage thư giãn 2 lần/tháng',
-      'Ưu tiên đặt lịch tập',
-      'Tham gia sự kiện VIP',
-      'Quà tặng thành viên cao cấp'
+      'All benefits of 3+1 month package',
+      'Personal PT 8 sessions/month',
+      'Relaxing massage 2 times/month',
+      'Priority booking',
+      'Join VIP events',
+      'Premium member gifts'
     ] as const,
     color: '#9C27B0',
-    description: 'Gói VIP - Tiết kiệm tối đa',
+    description: 'VIP Package - Maximum savings',
     icon: Diamond,
     discount: 17
   }

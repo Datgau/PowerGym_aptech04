@@ -43,7 +43,7 @@ export const useFacebookAuth = ({ setFeedback }: UseFacebookAuthProps) => {
         if (!import.meta.env.VITE_FACEBOOK_APP_ID) {
             setFeedback({
                 type: "error",
-                message: "Facebook login chưa được cấu hình. Vui lòng liên hệ quản trị viên.",
+                message: "Facebook login not configured. Please contact administrator.",
             });
             return;
         }
@@ -51,7 +51,7 @@ export const useFacebookAuth = ({ setFeedback }: UseFacebookAuthProps) => {
         if (!window.FB) {
             setFeedback({
                 type: "error",
-                message: "Facebook SDK chưa được tải. Vui lòng refresh trang.",
+                message: "Facebook SDK not loaded. Please refresh the page.",
             });
             return;
         }
@@ -71,7 +71,7 @@ export const useFacebookAuth = ({ setFeedback }: UseFacebookAuthProps) => {
                             persistSession(
                                 {
                                     id: result.data.id,
-                                    email: result.data.email,
+                                    email: result.data.email || "",
                                     role: result.data.role,
                                     fullName: result.data.fullName,
                                     avatar: result.data.avatar,
@@ -85,28 +85,28 @@ export const useFacebookAuth = ({ setFeedback }: UseFacebookAuthProps) => {
                             );
                             setFeedback({
                                 type: "success",
-                                message: "Đăng nhập Facebook thành công!",
+                                message: "Facebook login successful!",
                             });
                             setTimeout(() => {
-                                navigate("/powergym/home");
+                                navigate("/home");
                             }, 1000);
                         } else {
                             setFeedback({
                                 type: "error",
-                                message: result.message || "Đăng nhập Facebook thất bại",
+                                message: result.message || "Facebook login failed",
                             });
                         }
                     }).catch((error) => {
                         console.error("Facebook login error:", error);
                         setFeedback({
                             type: "error",
-                            message: "Đăng nhập Facebook thất bại, vui lòng thử lại",
+                            message: "Facebook login failed, please try again",
                         });
                     });
                 } else {
                     setFeedback({
                         type: "error",
-                        message: "Đăng nhập Facebook bị hủy",
+                        message: "Facebook login cancelled",
                     });
                 }
             },

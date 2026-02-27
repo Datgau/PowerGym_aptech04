@@ -30,9 +30,9 @@ const MembersList: React.FC<MembersListProps> = ({ members, onMemberClick, onSta
 
   const getStatusText = (status: Member['status']) => {
     switch (status) {
-      case 'active': return 'Hoạt động';
-      case 'expired': return 'Hết hạn';
-      case 'pending': return 'Chờ duyệt';
+      case 'active': return 'Active';
+      case 'expired': return 'Expired';
+      case 'pending': return 'Pending';
       default: return status;
     }
   };
@@ -40,8 +40,8 @@ const MembersList: React.FC<MembersListProps> = ({ members, onMemberClick, onSta
   return (
     <div className={styles.membersContainer}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Danh sách thành viên</h3>
-        <span className={styles.count}>{members.length} thành viên</span>
+        <h3 className={styles.title}>Members List</h3>
+        <span className={styles.count}>{members.length} members</span>
       </div>
       
       <div className={styles.membersList}>
@@ -74,7 +74,7 @@ const MembersList: React.FC<MembersListProps> = ({ members, onMemberClick, onSta
               >
                 {getStatusText(member.status)}
               </span>
-              <p className={styles.expiryDate}>Hết hạn: {member.expiryDate}</p>
+              <p className={styles.expiryDate}>Expires: {member.expiryDate}</p>
             </div>
             
             <div className={styles.memberActions}>
@@ -84,9 +84,9 @@ const MembersList: React.FC<MembersListProps> = ({ members, onMemberClick, onSta
                 onChange={(e) => onStatusChange(member.id, e.target.value as Member['status'])}
                 onClick={(e) => e.stopPropagation()}
               >
-                <option value="active">Hoạt động</option>
-                <option value="expired">Hết hạn</option>
-                <option value="pending">Chờ duyệt</option>
+                <option value="active">Active</option>
+                <option value="expired">Expired</option>
+                <option value="pending">Pending</option>
               </select>
             </div>
           </div>

@@ -12,13 +12,13 @@ const AuthTabs = ({ activeTab }: AuthTabsProps) => {
         className={`${styles.authTab} ${activeTab === "login" ? styles.authTabActive : ""}`} 
         to="/login"
       >
-        Đăng nhập
+        Login
       </Link>
       <Link 
         className={`${styles.authTab} ${activeTab === "register" ? styles.authTabActive : ""}`} 
         to="/register"
       >
-        Đăng ký
+        Register
       </Link>
     </div>
   );

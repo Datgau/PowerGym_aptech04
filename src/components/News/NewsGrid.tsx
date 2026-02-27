@@ -24,7 +24,7 @@ const NewsGrid: React.FC<NewsGridProps> = ({
   loading,
   error,
   onRefresh,
-  title = 'Tin tức Gym & Fitness Quốc tế',
+  title = 'News Gym & Fitness of the world',
 }) => {
   const renderSkeleton = () => (
     <Grid container spacing={3}>
@@ -88,7 +88,7 @@ const NewsGrid: React.FC<NewsGridProps> = ({
             },
           }}
         >
-          Làm mới
+          Refresh
         </Button>
       </Box>
 
@@ -99,7 +99,7 @@ const NewsGrid: React.FC<NewsGridProps> = ({
           sx={{ mb: 3 }}
           action={
             <Button color="inherit" size="small" onClick={onRefresh}>
-              Thử lại
+              Try Again
             </Button>
           }
         >
@@ -133,10 +133,10 @@ const NewsGrid: React.FC<NewsGridProps> = ({
               }}
             >
               <Typography variant="h6" color="text.secondary" gutterBottom>
-                Chưa có tin tức nào
+                No News Yet
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Hiện tại chưa có tin tức về gym. Vui lòng thử lại sau.
+                Currently no gym news available. Please try again later.
               </Typography>
               <Button
                 variant="contained"
@@ -145,7 +145,7 @@ const NewsGrid: React.FC<NewsGridProps> = ({
                   background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
                 }}
               >
-                Tải lại
+                Reload
               </Button>
             </Box>
           )}

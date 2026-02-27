@@ -31,7 +31,7 @@
 //       <TextField
 //         fullWidth
 //         size="small"
-//         placeholder="Nhập tin nhắn..."
+//         placeholder="Type a message..."
 //         value={message}
 //         onChange={(e) => setMessage(e.target.value)}
 //         onKeyPress={handleKeyPress}

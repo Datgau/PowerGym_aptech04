@@ -82,7 +82,7 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
             textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
           }}
         >
-          Xem thêm
+          View More
         </Typography>
         
         <Typography
@@ -96,7 +96,7 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
             px: 1
           }}
         >
-          Khám phá thêm {totalStories - 10} câu chuyện khác từ cộng đồng PowerGym
+          Discover {totalStories - 10} more stories from the PowerGym community
         </Typography>
 
         <Button
@@ -112,7 +112,7 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
             }
           }}
         >
-          Xem tất cả
+          View All
         </Button>
       </CardActionArea>
     </Card>

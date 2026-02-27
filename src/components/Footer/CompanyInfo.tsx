@@ -33,8 +33,8 @@ const CompanyInfo: React.FC = () => {
                     color: '#ccc'
                 }}
             >
-                Trung tâm thể dục thể thao hàng đầu với trang thiết bị hiện đại 
-                và đội ngũ huấn luyện viên chuyên nghiệp.
+                Leading fitness center with modern equipment 
+                and professional coaching staff.
             </Typography>
 
             <List sx={{ p: 0 }}>
@@ -43,7 +43,7 @@ const CompanyInfo: React.FC = () => {
                         <LocationOn sx={{ color: '#00a1e4' }} />
                     </ListItemIcon>
                     <ListItemText 
-                        primary="37 Nguyễn Văn Bá, Thủ Đức, Thành Phố Hồ Chí Minh"
+                        primary="37 Nguyen Van Ba, Thu Duc, Ho Chi Minh City"
                         sx={{ 
                             '& .MuiListItemText-primary': { 
                                 color: '#ccc',
@@ -88,7 +88,7 @@ const CompanyInfo: React.FC = () => {
                         <AccessTime sx={{ color: '#00a1e4' }} />
                     </ListItemIcon>
                     <ListItemText 
-                        primary="Thứ 2 - CN: 5:00 - 23:00"
+                        primary="Mon - Sun: 5:00 AM - 11:00 PM"
                         sx={{ 
                             '& .MuiListItemText-primary': { 
                                 color: '#ccc',

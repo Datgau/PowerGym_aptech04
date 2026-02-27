@@ -17,7 +17,7 @@ const Home: React.FC = () => {
         height: '100vh',
         fontSize: '18px'
       }}>
-        Đang tải...
+        Loading...
       </div>
     );
   }

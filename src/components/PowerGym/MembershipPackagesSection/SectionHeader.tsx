@@ -16,7 +16,7 @@ const SectionHeader: React.FC = () => {
           textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
         }}
       >
-        GÓI THÀNH VIÊN
+        MEMBERSHIP PACKAGES
       </Typography>
       <Typography
         variant="h6"
@@ -30,7 +30,7 @@ const SectionHeader: React.FC = () => {
           fontWeight: 400
         }}
       >
-        Chọn gói tập phù hợp với nhu cầu và mục tiêu của bạn
+        Choose a package that suits your needs and goals
       </Typography>
     </Box>
   );

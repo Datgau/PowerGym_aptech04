@@ -12,13 +12,13 @@ const Pricing: React.FC = () => {
     try {
       const success = await registerPackage(packageId, 'CARD');
       if (success) {
-        alert('Đăng ký gói thành công!');
+        alert('Package registration successful!');
       } else {
-        alert('Đăng ký gói thất bại. Vui lòng thử lại.');
+        alert('Package registration failed. Please try again.');
       }
     } catch (error) {
       console.error('Package registration error:', error);
-      alert('Có lỗi xảy ra khi đăng ký gói.');
+      alert('An error occurred while registering the package.');
     }
   };
 
@@ -26,7 +26,7 @@ const Pricing: React.FC = () => {
   const transformedPackages = packages.map(pkg => ({
     id: pkg.id,
     name: pkg.name,
-    duration: `${pkg.duration} ngày`,
+    duration: `${pkg.duration} days`,
     price: `${pkg.price.toLocaleString('vi-VN')}đ`,
     originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
     features: pkg.features,
@@ -41,7 +41,7 @@ const Pricing: React.FC = () => {
         <div className={styles.pageContainer}>
           <div className={styles.loadingContainer}>
             <CircularProgress />
-            <p>Đang tải gói membership...</p>
+            <p>Loading membership packages...</p>
           </div>
         </div>
       </PowerGymLayout>
@@ -53,7 +53,7 @@ const Pricing: React.FC = () => {
       <PowerGymLayout>
         <div className={styles.pageContainer}>
           <div className={styles.errorContainer}>
-            <p>Có lỗi xảy ra: {error}</p>
+            <p>An error occurred: {error}</p>
           </div>
         </div>
       </PowerGymLayout>
@@ -64,8 +64,8 @@ const Pricing: React.FC = () => {
     <PowerGymLayout>
       <div className={styles.pageContainer}>
         <div className={styles.pageHeader}>
-          <h1>Chính sách giá</h1>
-          <p>Chọn gói tập phù hợp với nhu cầu của bạn</p>
+          <h1>Pricing Policy</h1>
+          <p>Choose a package that suits your needs</p>
         </div>
         
         <div className={styles.content}>
@@ -76,32 +76,32 @@ const Pricing: React.FC = () => {
           />
           
           <div className={styles.section}>
-            <h2>Ưu đãi đặc biệt</h2>
+            <h2>Special Offers</h2>
             <ul>
-              <li>Giảm 20% cho học sinh, sinh viên (có thẻ)</li>
-              <li>Giảm 15% khi đăng ký nhóm từ 3 người trở lên</li>
-              <li>Tặng 1 tháng khi gia hạn gói 1 năm</li>
-              <li>Miễn phí tư vấn PT cho thành viên mới</li>
+              <li>20% discount for students (with valid ID)</li>
+              <li>15% discount for group registration of 3 or more people</li>
+              <li>Get 1 free month when renewing 1-year package</li>
+              <li>Free PT consultation for new members</li>
             </ul>
           </div>
 
           <div className={styles.section}>
-            <h2>Chính sách thanh toán</h2>
+            <h2>Payment Policy</h2>
             <ul>
-              <li>Thanh toán tiền mặt tại quầy</li>
-              <li>Chuyển khoản ngân hàng</li>
-              <li>Thanh toán qua thẻ tín dụng/ghi nợ</li>
-              <li>Ví điện tử: MoMo, ZaloPay, VNPay</li>
+              <li>Cash payment at counter</li>
+              <li>Bank transfer</li>
+              <li>Credit/debit card payment</li>
+              <li>E-wallets: MoMo, ZaloPay, VNPay</li>
             </ul>
           </div>
 
           <div className={styles.section}>
-            <h2>Điều khoản sử dụng</h2>
+            <h2>Terms of Use</h2>
             <ul>
-              <li>Gói membership có hiệu lực từ ngày đăng ký</li>
-              <li>Không hoàn tiền sau khi đã kích hoạt</li>
-              <li>Có thể tạm dừng gói tối đa 30 ngày (phí 50.000đ)</li>
-              <li>Chuyển nhượng gói cho người khác (phí 100.000đ)</li>
+              <li>Membership package is valid from registration date</li>
+              <li>No refund after activation</li>
+              <li>Can pause package for maximum 30 days (50,000 VND fee)</li>
+              <li>Transfer package to others (100,000 VND fee)</li>
             </ul>
           </div>
         </div>

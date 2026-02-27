@@ -27,7 +27,7 @@ export const useNews = (): UseNewsReturn => {
         throw new Error('Failed to fetch news');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Không thể tải tin tức';
+      const errorMessage = err instanceof Error ? err.message : 'Unable to load news';
       setError(errorMessage);
       console.error('Error fetching news:', err);
       

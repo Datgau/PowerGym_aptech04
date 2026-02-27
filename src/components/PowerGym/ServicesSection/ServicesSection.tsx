@@ -100,7 +100,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                     fontSize: '0.875rem'
                                 }}
                             >
-                                DỊCH VỤ CỦA CHÚNG TÔI
+                                OUR SERVICES
                             </Typography>
                         </Box>
 
@@ -121,7 +121,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                 backgroundClip: 'text',
                             }}
                         >
-                            Trải nghiệm tuyệt vời
+                            Amazing Experience
                         </Typography>
                         <Typography
                             variant="h6"
@@ -134,7 +134,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                 fontWeight: 400,
                             }}
                         >
-                            Luyện tập tại POWERGYM để cùng hưởng thụ được mọi tiện ích tốt và tối ưu nhất
+                            Train at POWERGYM to enjoy the best and most optimal facilities
                         </Typography>
                     </Box>
                 </Fade>
@@ -143,7 +143,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                 {!servicesData || servicesData.length === 0 ? (
                     <Box textAlign="center" py={4}>
                         <Typography variant="h4" color="error">
-                            Không có dịch vụ nào để hiển thị
+                            No services to display
                         </Typography>
                     </Box>
                 ) : (
@@ -450,7 +450,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             letterSpacing: '0.5px',
                                         }}
                                     >
-                                        Xem Thêm
+                                        View More
                                     </Typography>
 
                                     {/* Subtitle */}
@@ -467,7 +467,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                                         }}
                                     >
-                                        Khám phá các dịch vụ tuyệt vời khác
+                                        Discover other amazing services
                                     </Typography>
 
                                     {/* CTA Button */}
@@ -493,7 +493,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                                 fontSize: '1.15rem',
                                             }}
                                         >
-                                            Khám Phá Ngay
+                                            Explore Now
                                         </Typography>
                                         <ArrowForwardIcon sx={{
                                             color: '#ff5228',
@@ -523,7 +523,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                                 fontSize: '0.95rem',
                                             }}
                                         >
-                                            +{servicesData.length - 3} dịch vụ khác
+                                            +{servicesData.length - 3} other services
                                         </Typography>
                                     </Box>
                                 </Box>

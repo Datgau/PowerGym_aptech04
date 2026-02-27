@@ -6,30 +6,30 @@ const News: React.FC = () => {
   const newsItems = [
     {
       id: 1,
-      title: 'PowerGym khai trương chi nhánh mới tại Quận 7',
+      title: 'PowerGym Opens New Branch in District 7',
       date: '15/01/2024',
-      excerpt: 'Với diện tích 1000m2 và trang thiết bị hiện đại nhất, chi nhánh mới hứa hẹn mang đến trải nghiệm tập luyện tuyệt vời.',
+      excerpt: 'With an area of 1000m2 and the most modern equipment, the new branch promises to bring a great training experience.',
       image: '🏢'
     },
     {
       id: 2,
-      title: 'Chương trình giảm cân hiệu quả trong 30 ngày',
+      title: 'Effective Weight Loss Program in 30 Days',
       date: '12/01/2024',
-      excerpt: 'Tham gia chương trình giảm cân khoa học với sự hướng dẫn của đội ngũ PT chuyên nghiệp.',
+      excerpt: 'Join a scientific weight loss program with guidance from a team of professional PTs.',
       image: '💪'
     },
     {
       id: 3,
-      title: 'Workshop Yoga miễn phí cuối tuần',
+      title: 'Free Yoga Workshop on Weekends',
       date: '10/01/2024',
-      excerpt: 'Tham gia workshop Yoga miễn phí mỗi cuối tuần để thư giãn và tăng cường sức khỏe tinh thần.',
+      excerpt: 'Join free Yoga workshops every weekend to relax and improve mental health.',
       image: '🧘'
     },
     {
       id: 4,
-      title: 'Giải đấu Powerlifting PowerGym Championship 2024',
+      title: 'PowerGym Championship 2024 Powerlifting Competition',
       date: '08/01/2024',
-      excerpt: 'Đăng ký tham gia giải đấu Powerlifting lớn nhất năm với tổng giải thưởng lên đến 100 triệu đồng.',
+      excerpt: 'Register for the biggest Powerlifting competition of the year with total prizes up to 100 million VND.',
       image: '🏆'
     }
   ];
@@ -40,8 +40,8 @@ const News: React.FC = () => {
     <PowerGymLayout>
       <div className={styles.pageContainer}>
         <div className={styles.pageHeader}>
-          <h1>Tin tức PowerGym</h1>
-          <p>Cập nhật những thông tin mới nhất từ PowerGym</p>
+          <h1>PowerGym News</h1>
+          <p>Latest updates from PowerGym</p>
         </div>
         
         <div className={styles.content}>

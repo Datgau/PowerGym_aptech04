@@ -8,7 +8,7 @@ interface SocialLoginProps {
 const SocialLogin = ({ onGoogleLogin, onFacebookLogin }: SocialLoginProps) => {
     return (
         <>
-            <div className={styles.authDivider}>Hoặc tiếp tục với</div>
+            <div className={styles.authDivider}>Or continue with</div>
 
             <div className={styles.authSocial}>
                 <button className={styles.socialBtn} onClick={onGoogleLogin} type="button">

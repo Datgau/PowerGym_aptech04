@@ -4,16 +4,16 @@ const AuthPanel = () => {
     return (
         <section className={styles.authPanelAccent}>
             <span className={styles.authLogo}>PowerGym</span>
-            <h1>Sức mạnh bắt đầu từ đây</h1>
+            <h1>Power Starts Here</h1>
             <p>
-                PowerGym - nơi bạn khám phá tiềm năng vô hạn của bản thân. Với trang thiết bị hiện đại,
-                huấn luyện viên chuyên nghiệp và cộng đồng năng động, chúng tôi đồng hành cùng bạn
-                trên hành trình chinh phục mọi mục tiêu thể chất.
+                PowerGym - where you discover your unlimited potential. With modern equipment,
+                professional trainers and a dynamic community, we accompany you
+                on your journey to conquer all fitness goals.
             </p>
             <ul className={styles.authHighlights}>
-                <li>Trang thiết bị gym hiện đại nhất Việt Nam</li>
-                <li>Huấn luyện viên cá nhân chuyên nghiệp 24/7</li>
-                <li>Lớp học nhóm đa dạng với âm nhạc sôi động</li>
+                <li>Most modern gym equipment in Vietnam</li>
+                <li>Professional personal trainers 24/7</li>
+                <li>Diverse group classes with energetic music</li>
             </ul>
             <div className={styles.authCommunity}>
                 <div className={styles.avatarStack} aria-hidden="true">
@@ -25,8 +25,8 @@ const AuthPanel = () => {
                 <div>
 
 
-                    <strong>50.000+</strong>
-                    <span> thành viên đang tập luyện mỗi ngày</span>
+                    <strong>50,000+</strong>
+                    <span> members training every day</span>
                 </div>
             </div>
         </section>

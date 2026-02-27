@@ -58,7 +58,7 @@
 //       setUsers(prev => pageNum === 0 ? filteredResults : [...prev, ...filteredResults]);
 //     } catch (err) {
 //       console.error("Failed to load users:", err);
-//       setError("Không thể tải danh sách người dùng");
+//       setError("Unable to load user list");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -68,7 +68,7 @@
 //   useEffect(() => {
 //     if (open && users.length === 0 && !loading) {
 //       if (!currentUserId) {
-//         setError('Không thể xác định người dùng hiện tại');
+//         setError('Unable to identify current user');
 //         return;
 //       }
 //
@@ -119,7 +119,7 @@
 //       onChatCreated(roomId, targetUser);
 //     } catch (err: any) {
 //       console.error('Failed to create chat:', err?.response?.data || err.message);
-//       const errorMsg = err?.response?.data?.message || "Không thể tạo cuộc trò chuyện";
+//       const errorMsg = err?.response?.data?.message || "Unable to create conversation";
 //       setError(errorMsg);
 //       setCreating(false);
 //     }
@@ -135,7 +135,7 @@
 //
 //   return (
 //     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-//       <DialogTitle>Chọn người để nhắn tin</DialogTitle>
+//       <DialogTitle>Select person to message</DialogTitle>
 //       <DialogContent>
 //         <Box sx={{ pt: 2, position: "relative" }}>
 //           {error && (
@@ -146,7 +146,7 @@
 //
 //           {users.length === 0 && !loading && (
 //             <Typography color="text.secondary" sx={{ textAlign: "center", py: 3 }}>
-//               Không có người dùng nào
+//               No users available
 //             </Typography>
 //           )}
 //
@@ -194,7 +194,7 @@
 //                 color="text.secondary"
 //                 sx={{ display: "block", textAlign: "center", py: 2 }}
 //               >
-//                 Đã hiển thị tất cả người dùng
+//                 All users displayed
 //               </Typography>
 //             )}
 //           </List>
@@ -221,7 +221,7 @@
 //       </DialogContent>
 //       <DialogActions>
 //         <Button onClick={handleClose} disabled={creating}>
-//           Đóng
+//           Close
 //         </Button>
 //       </DialogActions>
 //     </Dialog>

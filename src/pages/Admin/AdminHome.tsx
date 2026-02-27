@@ -20,7 +20,7 @@ const AdminHome: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([
     {
       id: '1',
-      name: 'Nguyễn Văn A',
+      name: 'Nguyễn Văn An',
       email: 'member1@powergym.com',
       membershipType: 'Gói 1 tháng',
       status: 'active' as const,
@@ -30,7 +30,7 @@ const AdminHome: React.FC = () => {
     },
     {
       id: '2',
-      name: 'Trần Thị B',
+      name: 'Trần Thị Bình',
       email: 'member2@powergym.com',
       membershipType: 'Gói 3 tháng',
       status: 'expired' as const,
@@ -40,7 +40,7 @@ const AdminHome: React.FC = () => {
     },
     {
       id: '3',
-      name: 'Lê Văn C',
+      name: 'Lê Văn Cường',
       email: 'member3@powergym.com',
       membershipType: 'Gói 6 tháng',
       status: 'pending' as const,
@@ -52,36 +52,36 @@ const AdminHome: React.FC = () => {
   const adminStats = [
     {
       id: 'total-members',
-      title: 'Tổng thành viên',
+      title: 'Total Members',
       value: '1,234',
-      change: '+12% so với tháng trước',
+      change: '+12% from last month',
       changeType: 'increase' as const,
       icon: '👥',
       color: '#2196F3'
     },
     {
       id: 'active-members',
-      title: 'Thành viên hoạt động',
+      title: 'Active Members',
       value: '987',
-      change: '+8% so với tháng trước',
+      change: '+8% from last month',
       changeType: 'increase' as const,
       icon: '✅',
       color: '#4CAF50'
     },
     {
       id: 'revenue',
-      title: 'Doanh thu tháng',
+      title: 'Monthly Revenue',
       value: '125M',
-      change: '+15% so với tháng trước',
+      change: '+15% from last month',
       changeType: 'increase' as const,
       icon: '💰',
       color: '#FF9800'
     },
     {
       id: 'expired-soon',
-      title: 'Sắp hết hạn',
+      title: 'Expiring Soon',
       value: '45',
-      change: 'Trong 7 ngày tới',
+      change: 'In the next 7 days',
       changeType: 'neutral' as const,
       icon: '⚠️',
       color: '#FF4444'
@@ -91,35 +91,35 @@ const AdminHome: React.FC = () => {
   const adminActions = [
     {
       id: 'dashboard',
-      title: 'Dashboard Tổng quan',
+      title: 'Dashboard Overview',
       icon: '📊',
       onClick: () => navigate('/admin/dashboard'),
       color: '#00b4ff'
     },
     {
       id: 'add-member',
-      title: 'Thêm thành viên',
+      title: 'Add Member',
       icon: '➕',
       onClick: () => console.log('Add member clicked'),
       color: '#4CAF50'
     },
     {
       id: 'manage-packages',
-      title: 'Quản lý gói',
+      title: 'Manage Packages',
       icon: '📦',
       onClick: () => console.log('Manage packages clicked'),
       color: '#2196F3'
     },
     {
       id: 'reports',
-      title: 'Báo cáo',
+      title: 'Reports',
       icon: '📊',
       onClick: () => console.log('Reports clicked'),
       color: '#FF9800'
     },
     {
       id: 'settings',
-      title: 'Cài đặt',
+      title: 'Settings',
       icon: '⚙️',
       onClick: () => console.log('Settings clicked'),
       color: '#9C27B0'
@@ -144,14 +144,14 @@ const AdminHome: React.FC = () => {
   return (
     <div className={styles.adminHome}>
       <div className={styles.header}>
-        <h1>Bảng điều khiển Admin</h1>
-        <p>Quản lý PowerGym</p>
+        <h1>Admin Dashboard</h1>
+        <p>PowerGym Management</p>
       </div>
 
       <AdminStats stats={adminStats} />
       
       <div className={styles.quickActions}>
-        <h2>Thao tác nhanh</h2>
+        <h2>Quick Actions</h2>
         <div className={styles.actionsGrid}>
           {adminActions.map((action) => (
             <button

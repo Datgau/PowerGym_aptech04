@@ -6,20 +6,20 @@ const Promotions: React.FC = () => {
   const promotions = [
     {
       id: 1,
-      title: 'KHUYẾN MÃI TẾT 2024',
-      description: 'Giảm 50% gói tập 6 tháng + Tặng 1 tháng miễn phí',
+      title: 'TET 2024 PROMOTION',
+      description: '50% off 6-month package + 1 free month',
       validUntil: '29/02/2024'
     },
     {
       id: 2,
-      title: 'ƯU ĐÃI SINH VIÊN',
-      description: 'Giảm 30% tất cả gói tập cho sinh viên có thẻ',
+      title: 'STUDENT DISCOUNT',
+      description: '30% off all packages for students with valid ID',
       validUntil: '31/12/2024'
     },
     {
       id: 3,
-      title: 'ĐĂNG KÝ NHÓM',
-      description: 'Giảm 20% khi đăng ký nhóm từ 3 người trở lên',
+      title: 'GROUP REGISTRATION',
+      description: '20% off for group registration of 3 or more people',
       validUntil: '31/03/2024'
     }
   ];
@@ -28,8 +28,8 @@ const Promotions: React.FC = () => {
     <PowerGymLayout>
       <div className={styles.pageContainer}>
         <div className={styles.pageHeader}>
-          <h1>Khuyến mãi</h1>
-          <p>Những ưu đãi hấp dẫn dành cho bạn</p>
+          <h1>Promotions</h1>
+          <p>Attractive offers for you</p>
         </div>
         
         <div className={styles.content}>
@@ -37,20 +37,20 @@ const Promotions: React.FC = () => {
             <div key={promotion.id} className={styles.promotionCard}>
               <h3>{promotion.title}</h3>
               <p>{promotion.description}</p>
-              <p>Có hiệu lực đến: {promotion.validUntil}</p>
+              <p>Valid until: {promotion.validUntil}</p>
               <button className={styles.promotionButton}>
-                Đăng ký ngay
+                Register Now
               </button>
             </div>
           ))}
           
           <div className={styles.section}>
-            <h2>Điều kiện áp dụng</h2>
+            <h2>Terms and Conditions</h2>
             <ul>
-              <li>Khuyến mãi không áp dụng đồng thời với các chương trình khác</li>
-              <li>Ưu đãi sinh viên cần xuất trình thẻ sinh viên còn hiệu lực</li>
-              <li>Đăng ký nhóm cần thanh toán cùng lúc</li>
-              <li>PowerGym có quyền thay đổi điều kiện mà không cần báo trước</li>
+              <li>Promotions cannot be combined with other programs</li>
+              <li>Student discount requires valid student ID</li>
+              <li>Group registration requires simultaneous payment</li>
+              <li>PowerGym reserves the right to change terms without prior notice</li>
             </ul>
           </div>
         </div>

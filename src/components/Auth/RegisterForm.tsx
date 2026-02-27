@@ -26,12 +26,12 @@ const RegisterForm = ({ onSubmit, submitting }: RegisterFormProps) => {
   return (
     <form className={styles.authForm} onSubmit={handleSubmit}>
       <div className={styles.formGroup}>
-        <label htmlFor="register-fullname">Họ và tên</label>
+        <label htmlFor="register-fullname">Full Name</label>
         <input
           id="register-fullname"
           className={styles.formInput}
           value={fullName}
-          placeholder="vd: Nguyễn Văn A"
+          placeholder="e.g: John Doe"
           onChange={(e) => setFullName(e.target.value)}
           required
         />
@@ -44,14 +44,14 @@ const RegisterForm = ({ onSubmit, submitting }: RegisterFormProps) => {
           className={styles.formInput}
           type="email"
           value={email}
-          placeholder="vd: member@powergym.com"
+          placeholder="e.g: member@powergym.com"
           onChange={(e) => setEmail(e.target.value)}
           required
         />
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="register-password">Mật khẩu</label>
+        <label htmlFor="register-password">Password</label>
         <input
           id="register-password"
           className={`${styles.formInput} ${styles.formInputPassword}`}
@@ -64,7 +64,7 @@ const RegisterForm = ({ onSubmit, submitting }: RegisterFormProps) => {
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="register-confirm-password">Xác nhận mật khẩu</label>
+        <label htmlFor="register-confirm-password">Confirm Password</label>
         <input
           id="register-confirm-password"
           className={`${styles.formInput} ${styles.formInputPassword}`}
@@ -84,15 +84,15 @@ const RegisterForm = ({ onSubmit, submitting }: RegisterFormProps) => {
             onChange={(e) => setAgree(e.target.checked)}
             required
           />
-          Tôi đồng ý với{" "}
+          I agree to the{" "}
           <a className={styles.link} href="#">
-            Điều khoản dịch vụ
+            Terms of Service
           </a>
         </label>
       </div>
 
       <button className={styles.authSubmit} type="submit" disabled={submitting}>
-        {submitting ? "Đang đăng ký..." : "Tạo tài khoản PowerGym"}
+        {submitting ? "Registering..." : "Create PowerGym Account"}
       </button>
     </form>
   );

@@ -101,7 +101,7 @@
 //         {/* Header */}
 //         <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}>
 //           <Typography variant="h6" fontWeight={600}>
-//             Thông báo
+//             Notifications
 //           </Typography>
 //         </Box>
 //
@@ -109,7 +109,7 @@
 //         {notifications.length === 0 ? (
 //           <Box sx={{ py: 4, textAlign: "center" }}>
 //             <Typography variant="body2" color="text.secondary">
-//               Chưa có thông báo nào
+//               No notifications yet
 //             </Typography>
 //           </Box>
 //         ) : [
@@ -183,7 +183,7 @@
 //             <Divider key="divider" />,
 //             <Box key="view-all" sx={{ p: 1 }}>
 //               <Button fullWidth onClick={handleViewAll}>
-//                 Xem tất cả thông báo
+//                 View all notifications
 //               </Button>
 //             </Box>
 //           ]
