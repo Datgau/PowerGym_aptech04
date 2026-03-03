@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { CircularProgress, Box, Typography } from "@mui/material";
-import { useAuth } from "../../routes/AuthContext";
+import {useAuth} from "../../services/useAuth.ts";
 
 // Component to redirect based on auth state and user role
 const AuthRedirect = () => {
@@ -25,7 +25,6 @@ const AuthRedirect = () => {
   }
 
   if (isLoggedIn && user) {
-    // Redirect based on user role
     const role = user.role.toUpperCase();
     
     if (role === 'ADMIN' || role === 'EMPLOYEE') {
@@ -35,7 +34,6 @@ const AuthRedirect = () => {
     }
   }
 
-  // Not logged in, redirect to login
   return <Navigate to="/login" replace />;
 };
 

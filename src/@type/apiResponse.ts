@@ -10,3 +10,12 @@ export function unwrapApiResponse<T>(res: ApiResponse<T>): T {
     }
     return res.data as T;
 }
+
+export interface PageResponse<T> {
+    content: T[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+}

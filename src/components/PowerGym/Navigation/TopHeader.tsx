@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../../routes/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './TopHeader.module.css';
+import {useAuth} from "../../../services/useAuth.ts";
 
 const TopHeader: React.FC = () => {
   const { user, logout } = useAuth();
@@ -44,8 +44,8 @@ const TopHeader: React.FC = () => {
     { label: 'REPORTS', path: '/admin/reports' },
     { label: 'SETTINGS', path: '/admin/settings' }
   ] : [
-    { label: 'CLUB', path: '/club' },
-    { label: 'SERVICES', path: '/services' },
+    { label: 'SERVICES', path: '/service' },
+    { label: 'EQUIPMENTS', path: '/equipment ' },
     { label: 'PRICING', path: '/pricing' },
     { label: 'NEWS', path: '/news' },
     { label: 'PROMOTIONS', path: '/promotions' },

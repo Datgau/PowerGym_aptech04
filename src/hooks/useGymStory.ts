@@ -17,7 +17,7 @@ export const useGymStory = (): UseGymStoryReturn => {
         setLoading(true);
         setError(null);
         try {
-            const response = await storyService.fetchStories();
+            const response = await storyService.fetchStoriesLegacy();
             if (response.success && response.data) {
                 setStories(response.data);
             } else {

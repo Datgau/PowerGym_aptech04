@@ -11,12 +11,11 @@ import {
 } from '../../data/powerGymData';
 import globalStyles from '../../styles/PowerGym/PowerGym.module.css';
 import HeroBanner from "../../components/PowerGym/HeroBanner/HeroBanner.tsx";
-import ServicesSection from "../../components/PowerGym/ServicesSection/ServicesSection.tsx";
-import StoriesSection from "../../components/PowerGym/StoriesSection/StoriesSection.tsx";
+import ServicesSection from "./ServicesSection/ServicesSection.tsx";
+import StoriesSection from "./StoriesSection/StoriesSection.tsx";
 import {useGymServices} from "../../hooks/useGymServices.ts";
 import {useGymStory} from "../../hooks/useGymStory.ts";
 // Import test for debugging
-import '../../utils/testApiCall';
 
 const ClientHome: React.FC = () => {
   const navigate = useNavigate();
@@ -84,7 +83,7 @@ const ClientHome: React.FC = () => {
         promotion={bannerPromotionData}
         onRegisterClick={handleRegisterClick}
       />
-      {/* Services Section */}
+      {/* Equipments Section */}
       <ServicesSection
         servicesData={services}
         onServiceClick={handleServiceClick}

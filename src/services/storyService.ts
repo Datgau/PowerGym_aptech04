@@ -1,5 +1,5 @@
 // câu chuyện hội viên
-import type {ApiResponse} from "../@type/apiResponse.ts";
+import type {ApiResponse, PageResponse} from "../@type/apiResponse.ts";
 import {publicClient} from "./api.ts";
 import privateClient from "./api.ts";
 
@@ -28,9 +28,22 @@ export interface CreateStoryRequest {
 
 export const storyService = {
     /**
-     * Fetch approved stories from the API (public)
+     * Fetch approved stories from the API (public) with pagination
      */
-    fetchStories: async (): Promise<ApiResponse<StoryItem[]>> => {
+    fetchStories: async (
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryItem>>> => {
+        const response = await publicClient.get<ApiResponse<PageResponse<StoryItem>>>('/stories/paginated', {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Fetch approved stories from the API (public) - without pagination (legacy)
+     */
+    fetchStoriesLegacy: async (): Promise<ApiResponse<StoryItem[]>> => {
         const response = await publicClient.get<ApiResponse<StoryItem[]>>('/stories');
         return response.data;
     },
@@ -54,9 +67,22 @@ export const storyService = {
     },
 
     /**
-     * Get my stories (requires authentication)
+     * Get my stories (requires authentication) with pagination
      */
-    getMyStories: async (): Promise<ApiResponse<StoryItem[]>> => {
+    getMyStories: async (
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryItem>>> => {
+        const response = await privateClient.get<ApiResponse<PageResponse<StoryItem>>>('/stories/my-stories/paginated', {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get my stories (requires authentication) - without pagination (legacy)
+     */
+    getMyStoriesLegacy: async (): Promise<ApiResponse<StoryItem[]>> => {
         const response = await privateClient.get<ApiResponse<StoryItem[]>>('/stories/my-stories');
         return response.data;
     },
@@ -72,9 +98,22 @@ export const storyService = {
     // ==================== ADMIN METHODS ====================
 
     /**
-     * Get pending stories (admin only)
+     * Get pending stories (admin only) with pagination
      */
-    getPendingStories: async (): Promise<ApiResponse<StoryItem[]>> => {
+    getPendingStories: async (
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryItem>>> => {
+        const response = await privateClient.get<ApiResponse<PageResponse<StoryItem>>>('/stories/admin/pending/paginated', {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get pending stories (admin only) - without pagination (legacy)
+     */
+    getPendingStoriesLegacy: async (): Promise<ApiResponse<StoryItem[]>> => {
         const response = await privateClient.get<ApiResponse<StoryItem[]>>('/stories/admin/pending');
         return response.data;
     },

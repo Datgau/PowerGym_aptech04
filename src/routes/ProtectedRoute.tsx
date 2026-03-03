@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Button, CircularProgress, Dialog, DialogActions, DialogTitle} from "@mui/material";
-import { useAuth } from "./AuthContext";
 import {useEffect, useState} from "react";
+import {useAuth} from "../services/useAuth.ts";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];

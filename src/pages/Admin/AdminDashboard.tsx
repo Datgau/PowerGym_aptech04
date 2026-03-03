@@ -1,10 +1,54 @@
 import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import AdminLayout from '../../components/PowerGym/Layout/AdminLayout';
-import DashboardOverview from '../../components/PowerGym/AdminDashboard/DashboardOverview';
-import MembersTable from '../../components/PowerGym/AdminDashboard/MembersTable';
-import TrainersGrid from '../../components/PowerGym/AdminDashboard/TrainersGrid';
-import PendingStories from '../../components/PowerGym/AdminDashboard/PendingStories';
+import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
+import MembersTable from './Tabs/Members/MembersTable.tsx';
+import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
+import PendingStories from './Tabs/Stories/PendingStories.tsx';
+import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
+
+// Format currency helper
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount);
+};
+
+// Tab Components - Defined outside to avoid re-creation on each render
+const DashboardTab: React.FC = () => <DashboardOverview formatCurrency={formatCurrency} />;
+const MembersTab: React.FC = () => <MembersTable />;
+const TrainersTab: React.FC = () => <TrainersGrid />;
+const StoriesTab: React.FC = () => <PendingStories />;
+const ServicesTab: React.FC = () => <ServicesManagement />;
+
+const EquipmentTab: React.FC = () => (
+  <Box>
+    <Typography variant="h5" fontWeight={600} mb={2}>Equipment Management</Typography>
+    <Typography color="text.secondary">Coming Soon</Typography>
+  </Box>
+);
+
+const MembershipTab: React.FC = () => (
+  <Box>
+    <Typography variant="h5" fontWeight={600} mb={2}>Membership Packages</Typography>
+    <Typography color="text.secondary">Coming Soon</Typography>
+  </Box>
+);
+
+const FinancialTab: React.FC = () => (
+  <Box>
+    <Typography variant="h5" fontWeight={600} mb={2}>Financial Reports</Typography>
+    <Typography color="text.secondary">Coming Soon</Typography>
+  </Box>
+);
+
+const SettingsTab: React.FC = () => (
+  <Box>
+    <Typography variant="h5" fontWeight={600} mb={2}>System Settings</Typography>
+    <Typography color="text.secondary">Coming Soon</Typography>
+  </Box>
+);
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -13,65 +57,16 @@ const AdminDashboard: React.FC = () => {
     setActiveTab(newValue);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  // Tab Components
-  const DashboardTab = () => <DashboardOverview formatCurrency={formatCurrency} />;
-  const MembersTab = () => <MembersTable />;
-  const TrainersTab = () => <TrainersGrid />;
-  const StoriesTab = () => <PendingStories />;
-
-  // Placeholder tabs
-  const EquipmentTab = () => (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={2}>Equipment Management</Typography>
-      <Typography color="text.secondary">Coming Soon</Typography>
-    </Box>
-  );
-  
-  const ServicesTab = () => (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={2}>Services Management</Typography>
-      <Typography color="text.secondary">Coming Soon</Typography>
-    </Box>
-  );
-  
-  const MembershipTab = () => (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={2}>Membership Packages</Typography>
-      <Typography color="text.secondary">Coming Soon</Typography>
-    </Box>
-  );
-  
-  const FinancialTab = () => (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={2}>Financial Reports</Typography>
-      <Typography color="text.secondary">Coming Soon</Typography>
-    </Box>
-  );
-  
-  const SettingsTab = () => (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={2}>System Settings</Typography>
-      <Typography color="text.secondary">Coming Soon</Typography>
-    </Box>
-  );
-
   const tabComponents = [
-    <DashboardTab />,
-    <MembersTab />,
-    <TrainersTab />,
-    <StoriesTab />,
-    <EquipmentTab />,
-    <ServicesTab />,
-    <MembershipTab />,
-    <FinancialTab />,
-    <SettingsTab />
+    <DashboardTab key="dashboard" />,
+    <MembersTab key="members" />,
+    <TrainersTab key="trainers" />,
+    <StoriesTab key="stories" />,
+    <ServicesTab key="services" />,
+    <EquipmentTab key="equipment" />,
+    <MembershipTab key="membership" />,
+    <FinancialTab key="financial" />,
+    <SettingsTab key="settings" />
   ];
 
   return (

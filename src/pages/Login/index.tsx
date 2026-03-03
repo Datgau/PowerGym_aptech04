@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, Snackbar } from "@mui/material";
 import { AuthService } from "../../services/authService";
-import { useAuth } from "../../routes/AuthContext";
 import type { AuthUser } from "../../@type/login";
 
 import styles from "../../styles/Auth/Login.module.css";
@@ -14,6 +13,7 @@ import LoginForm from "../../components/Auth/LoginForm";
 import SocialLogin from "../../components/Auth/SocialLogin";
 import AuthTabs from "../../components/Auth/AuthTabs";
 import {getApiErrorMessage} from "../../until/errorHandler.ts";
+import {useAuth} from "../../services/useAuth.ts";
 
 const Login = () => {
   const navigate = useNavigate();

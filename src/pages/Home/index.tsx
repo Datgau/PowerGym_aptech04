@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../../routes/AuthContext';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
 import ClientHome from './ClientHome';
-import AdminHome from '../Admin/AdminHome.tsx';
+import AdminDashboard from "../Admin/AdminDashboard.tsx";
+import {useAuth} from "../../services/useAuth.ts";
 
 const Home: React.FC = () => {
   const { user, loading } = useAuth();
@@ -28,7 +28,7 @@ const Home: React.FC = () => {
   return (
     <PowerGymLayout>
       <div>
-        {user && isAdmin ? <AdminHome /> : <ClientHome />}
+        {user && isAdmin ? <AdminDashboard /> : <ClientHome />}
       </div>
     </PowerGymLayout>
   );

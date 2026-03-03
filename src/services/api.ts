@@ -22,14 +22,20 @@ export const privateClient = createClient();
 
 privateClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
-
+    
     if (token) {
         if (!config.headers) {
             config.headers = new AxiosHeaders();
         }
         config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+        console.error('❌ No token found! User needs to login.');
     }
-    if (!config.headers.has("Content-Type") && !(config.data instanceof FormData)) {
+    
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    if (config.data instanceof FormData) {
+        config.headers.delete("Content-Type");
+    } else if (!config.headers.has("Content-Type")) {
         config.headers.set("Content-Type", "application/json");
     }
 
@@ -64,6 +70,13 @@ privateClient.interceptors.response.use(
             | undefined;
 
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+            // Check if this is a FormData request
+            if (originalRequest.data instanceof FormData) {
+                clearAuthSession();
+                triggerLoginModal();
+                return Promise.reject(new Error('Session expired. Please login and try again.'));
+            }
+            
             originalRequest._retry = true;
 
             try {

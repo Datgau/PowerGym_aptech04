@@ -1,5 +1,5 @@
 import privateClient from './api';
-import type { ApiResponse } from '../@type/apiResponse';
+import type {ApiResponse, PageResponse} from '../@type/apiResponse';
 
 export interface Role {
   id: number;
@@ -29,7 +29,21 @@ export interface UserResponse {
 }
 
 // Role APIs
-export const getAllRoles = async (): Promise<ApiResponse<Role[]>> => {
+export const getAllRoles = async (
+    page: number = 0,
+    size: number = 5
+): Promise<ApiResponse<PageResponse<Role>>> => {
+
+  const response = await privateClient.get('/admin/roles/paginated', {
+    params: {
+      page,
+      size
+    }
+  });
+  return response.data;
+};
+
+export const getAllRolesLegacy = async (): Promise<ApiResponse<Role[]>> => {
   const response = await privateClient.get('/admin/roles');
   return response.data;
 };
@@ -50,10 +64,17 @@ export const deleteRole = async (id: number): Promise<ApiResponse<void>> => {
 };
 
 // User APIs
-export const getAllUsers = async (): Promise<ApiResponse<UserResponse[]>> => {
-  const response = await privateClient.get('/admin/users');
+export const getAllUsers = async (
+    page: number = 0,
+    size: number = 10
+): Promise<ApiResponse<PageResponse<UserResponse>>> => {
+  const response = await privateClient.get('/admin/users', {
+    params: { page, size }
+  });
+
   return response.data;
 };
+
 
 export const createUser = async (data: UserRequest): Promise<ApiResponse<UserResponse>> => {
   const response = await privateClient.post('/admin/user', data);

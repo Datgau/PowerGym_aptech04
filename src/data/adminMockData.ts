@@ -117,7 +117,7 @@ export const adminMockData = {
     }
   ],
 
-  // Services Data
+  // Equipments Data
   services: [
     {
       id: '1',

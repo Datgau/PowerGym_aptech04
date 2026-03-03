@@ -30,6 +30,8 @@ import {
   AccountCircle,
   Article
 } from '@mui/icons-material';
+import GlobalNotification from "../../Notification/GlobalNotification.tsx";
+import { useTokenRefresh } from "../../../hooks/useTokenRefresh.ts";
 
 const drawerWidth = 260;
 
@@ -44,14 +46,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Automatically refresh token before expiration
+  useTokenRefresh();
 
   const menuItems = [
     { text: 'Overview', icon: <Dashboard /> },
     { text: 'Members', icon: <People /> },
     { text: 'Trainers', icon: <FitnessCenter /> },
     { text: 'Stories', icon: <Article /> },
-    { text: 'Equipment', icon: <Build /> },
     { text: 'Services', icon: <Assignment /> },
+    { text: 'Equipment', icon: <Build /> },
     { text: 'Membership', icon: <CardMembership /> },
     { text: 'Financial', icon: <AttachMoney /> },
     { text: 'Settings', icon: <Settings /> }
@@ -236,19 +241,36 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: 2
           }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" fontWeight={600}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" fontWeight={600}>
               Admin Dashboard
             </Typography>
+            </Box>
+            <GlobalNotification />
+          </Box>
+        )}
+        
+        {/* Desktop Notification */}
+        {!isMobile && (
+          <Box sx={{ 
+            p: 2, 
+            backgroundColor: 'white',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+            display: 'flex',
+            justifyContent: 'flex-end'
+          }}>
+            <GlobalNotification />
           </Box>
         )}
         

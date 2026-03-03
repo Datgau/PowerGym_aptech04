@@ -1,7 +1,9 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { AuthUser } from "../@type/login";
 import { loadAuthSession, persistAuthSession, clearAuthSession } from "../services/authStorage";
+import {useNavigate} from "react-router-dom";
+import LoginRequiredModal from "../components/Auth/LoginRequiredModal.tsx";
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -11,35 +13,27 @@ interface AuthContextType {
     logout: () => Promise<void>;
     loading: boolean;
     checkAuthStatus: () => Promise<void>;
+    requireAuth: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export { AuthContext };
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth must be used within AuthProvider");
-    return context;
-};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState<AuthUser | null>(null);
     const [loading, setLoading] = useState(true);
-
-    // Check authentication status from localStorage/sessionStorage
+    const [loginModalOpen, setLoginModalOpen] = useState(false);
+    const navigate = useNavigate();
     const checkAuthStatus = async () => {
         try {
             setLoading(true);
-            
-            // Check local storage for existing session
             const storedSession = loadAuthSession();
-            
             if (storedSession?.user) {
-                // Restore user from storage
                 setUser(storedSession.user);
                 setIsLoggedIn(true);
             } else {
-                // No stored session
                 setUser(null);
                 setIsLoggedIn(false);
             }
@@ -75,6 +69,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const requireAuth = () => {
+        if (!isLoggedIn) {
+            setLoginModalOpen(true);
+            return false;
+        }
+        return true;
+    };
+    const handleConfirmLogin = () => {
+        setLoginModalOpen(false);
+        navigate("/login");
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -85,9 +91,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 logout,
                 loading,
                 checkAuthStatus,
+                requireAuth
             }}
         >
             {children}
+            <LoginRequiredModal
+                open={loginModalOpen}
+                onClose={() => setLoginModalOpen(false)}
+                onConfirm={handleConfirmLogin}
+            />
+
         </AuthContext.Provider>
     );
 };

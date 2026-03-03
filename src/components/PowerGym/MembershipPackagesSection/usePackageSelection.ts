@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { PackageOption, NotificationMessage } from '../../../@type/powergym';
+import {useAuth} from "../../../services/useAuth.ts";
 
 interface UsePackageSelectionProps {
   onSelectPackage: (packageId: string) => Promise<void>;
@@ -23,8 +24,10 @@ export const usePackageSelection = ({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false);
   const [processingPackage, setProcessingPackage] = useState<string | null>(null);
   const [notification, setNotification] = useState<NotificationMessage | null>(null);
+  const { requireAuth } = useAuth();
 
   const handlePackageSelect = useCallback((pkg: PackageOption): void => {
+    if (!requireAuth()) return;
     setSelectedPackage(pkg);
     setConfirmDialogOpen(true);
   }, []);

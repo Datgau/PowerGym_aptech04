@@ -1,5 +1,6 @@
 import api from "./api";
 import type { Post } from "../@type/post";
+import type { ApiResponse, PageResponse } from "../@type/apiResponse";
 
 export interface CreatePostData {
   content: string;
@@ -26,6 +27,12 @@ export interface PostsResponse {
   data?: Post[];
 }
 
+export interface PostsPageResponse {
+  success: boolean;
+  message?: string;
+  data?: PageResponse<Post>;
+}
+
 export const PostService = {
   /**
    * Upload ảnh lên server
@@ -50,11 +57,27 @@ export const PostService = {
   },
 
   /**
-   * Lấy feed posts
+   * Lấy feed posts with pagination
    */
-  async getFeed(page: number = 0, size: number = 20): Promise<PostsResponse> {
+  async getFeed(page: number = 0, size: number = 20): Promise<PostsPageResponse> {
     try {
       const response = await api.get(`/posts/feed?page=${page}&size=${size}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Get feed error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to load feed",
+      };
+    }
+  },
+
+  /**
+   * Lấy feed posts - legacy without pagination
+   */
+  async getFeedLegacy(): Promise<PostsResponse> {
+    try {
+      const response = await api.get(`/posts/feed/all`);
       return response.data;
     } catch (error: any) {
       console.error("Get feed error:", error);
@@ -178,11 +201,33 @@ export const PostService = {
   },
 
   /**
-   * Lấy posts của user
+   * Lấy posts của user with pagination
    */
-  async getUserPosts(userId: string): Promise<PostsResponse> {
+  async getUserPosts(
+    userId: string,
+    page: number = 0,
+    size: number = 10
+  ): Promise<PostsPageResponse> {
     try {
-      const response = await api.get(`/posts/user/${userId}`);
+      const response = await api.get(`/posts/user/${userId}`, {
+        params: { page, size }
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Get user posts error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to load user posts",
+      };
+    }
+  },
+
+  /**
+   * Lấy posts của user - legacy without pagination
+   */
+  async getUserPostsLegacy(userId: string): Promise<PostsResponse> {
+    try {
+      const response = await api.get(`/posts/user/${userId}/all`);
       return response.data;
     } catch (error: any) {
       console.error("Get user posts error:", error);

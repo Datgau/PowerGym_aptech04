@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import {AuthProvider} from "./routes/AuthContext.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
@@ -21,10 +22,12 @@ const theme = createTheme({
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
+        <AuthProvider>
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <App />
         </ThemeProvider>
+        </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );

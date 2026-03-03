@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/authService.ts";
-import { useAuth } from "../routes/AuthContext.tsx";
+import {useAuth} from "../services/useAuth.ts";
 
 interface UseGoogleAuthProps {
     setFeedback: (feedback: { type: "success" | "error"; message: string } | null) => void;

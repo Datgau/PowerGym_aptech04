@@ -1,5 +1,5 @@
-import { publicClient} from './api';
-import type { ApiResponse } from '../@type/apiResponse';
+import { publicClient, privateClient} from './api';
+import type { ApiResponse, PageResponse } from '../@type/apiResponse';
 
 export interface GymServiceDto {
   id: string;
@@ -11,6 +11,18 @@ export interface GymServiceDto {
   duration?: number;
   maxParticipants?: number;
   isActive: boolean;
+  registrationCount?: number; // Số lượng người đăng ký
+}
+
+export interface GymServiceCreateRequest {
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  duration?: number;
+  maxParticipants?: number;
+  isActive?: boolean;
+  images?: File[];
 }
 
 // Keep this for future use if needed
@@ -56,66 +68,82 @@ export const gymServiceApi = {
     return response.data;
   },
 
-  // /**
-  //  * Get service by category
-  //  */
-  // getServicesByCategory: async (category: string): Promise<ApiResponse<GymService[]>> => {
-  //   const response = await publicClient.get<ApiResponse<GymService[]>>(`/gym/services/category/${category}`);
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Get class schedules
-  //  */
-  // getSchedules: async (date?: string): Promise<ApiResponse<ClassSchedule[]>> => {
-  //   const params = date ? { date } : {};
-  //   const response = await privateClient.get<ApiResponse<ClassSchedule[]>>('/gym/schedules', { params });
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Book a class
-  //  */
-  // bookClass: async (booking: BookingRequest): Promise<ApiResponse<{ bookingId: string }>> => {
-  //   const response = await privateClient.post<ApiResponse<{ bookingId: string }>>(
-  //     '/gym/book-class',
-  //     booking
-  //   );
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Cancel a booking
-  //  */
-  // cancelBooking: async (bookingId: string): Promise<ApiResponse<void>> => {
-  //   const response = await privateClient.delete<ApiResponse<void>>(`/gym/bookings/${bookingId}`);
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Get user's bookings
-  //  */
-  // getMyBookings: async (): Promise<ApiResponse<ClassSchedule[]>> => {
-  //   const response = await privateClient.get<ApiResponse<ClassSchedule[]>>('/gym/my-bookings');
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Check in to gym using QR code
-  //  */
-  // checkIn: async (checkInData: CheckInRequest): Promise<ApiResponse<{ checkInTime: string }>> => {
-  //   const response = await privateClient.post<ApiResponse<{ checkInTime: string }>>(
-  //     '/gym/check-in',
-  //     checkInData
-  //   );
-  //   return response.data;
-  // },
-  //
-  // /**
-  //  * Get check-in history
-  //  */
-  // getCheckInHistory: async (): Promise<ApiResponse<Array<{ date: string; checkInTime: string; checkOutTime?: string }>>> => {
-  //   const response = await privateClient.get<ApiResponse<Array<{ date: string; checkInTime: string; checkOutTime?: string }>>>('/gym/check-in-history');
-  //   return response.data;
-  // }
+  /**
+   * Get all services (Admin) with pagination
+   */
+  getAllServices: async (
+    page: number = 0,
+    size: number = 10
+  ): Promise<ApiResponse<PageResponse<GymServiceDto>>> => {
+    const response = await privateClient.get<ApiResponse<PageResponse<GymServiceDto>>>('/gym/services/paginated', {
+      params: { page, size }
+    });
+    return response.data;
+  },
+
+  /**
+   * Get all services (Admin) - without pagination (legacy)
+   */
+  getAllServicesLegacy: async (): Promise<ApiResponse<GymServiceDto[]>> => {
+    const response = await privateClient.get<ApiResponse<GymServiceDto[]>>('/gym/services');
+    return response.data;
+  },
+
+  /**
+   * Get service by ID
+   */
+  getServiceById: async (id: number): Promise<ApiResponse<GymServiceDto>> => {
+    const response = await privateClient.get<ApiResponse<GymServiceDto>>(`/gym/services/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Create service (Admin)
+   */
+  createService: async (data: GymServiceCreateRequest): Promise<ApiResponse<GymServiceDto>> => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    formData.append('category', data.category);
+    formData.append('price', data.price.toString());
+    
+    if (data.duration) formData.append('duration', data.duration.toString());
+    if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
+    if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+    
+    if (data.images && data.images.length > 0) {
+      data.images.forEach(image => {
+        formData.append('images', image);
+      });
+    }
+
+    const response = await privateClient.post<ApiResponse<GymServiceDto>>('/gym/services', formData);
+    return response.data;
+  },
+
+  /**
+   * Update service (Admin)
+   */
+  updateService: async (id: number, data: Partial<GymServiceCreateRequest>): Promise<ApiResponse<GymServiceDto>> => {
+    const formData = new FormData();
+    
+    if (data.name) formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    if (data.category) formData.append('category', data.category);
+    if (data.price) formData.append('price', data.price.toString());
+    if (data.duration) formData.append('duration', data.duration.toString());
+    if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
+    if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+
+    const response = await privateClient.put<ApiResponse<GymServiceDto>>(`/gym/services/${id}`, formData);
+    return response.data;
+  },
+
+  /**
+   * Delete service (Admin)
+   */
+  deleteService: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await privateClient.delete<ApiResponse<void>>(`/gym/services/${id}`);
+    return response.data;
+  },
 };

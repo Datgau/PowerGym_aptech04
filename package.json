@@ -16,7 +16,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.5",
-    "@stomp/stompjs": "^7.2.1",
+    "@stomp/stompjs": "^7.3.0",
     "antd": "^5.29.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
