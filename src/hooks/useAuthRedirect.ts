@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {useAuth} from "../services/useAuth.ts";
+import {useAuth} from "./useAuth.ts";
 
 interface UseAuthRedirectReturn {
   isLoading: boolean;

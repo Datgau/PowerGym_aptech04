@@ -15,32 +15,38 @@ const createClient = (): AxiosInstance =>
     axios.create({
         baseURL: API_BASE_URL,
         withCredentials: true,
+        timeout: 30000, // 30 seconds timeout
     });
 
 export const publicClient = createClient();
 export const privateClient = createClient();
 
-privateClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const token = getAccessToken();
-    
-    if (token) {
-        if (!config.headers) {
-            config.headers = new AxiosHeaders();
+// Request interceptor for private client
+privateClient.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        const token = getAccessToken();
+        
+        if (token) {
+            if (!config.headers) {
+                config.headers = new AxiosHeaders();
+            }
+            config.headers.set("Authorization", `Bearer ${token}`);
+        } else {
+            console.warn('No access token found for authenticated request');
         }
-        config.headers.set("Authorization", `Bearer ${token}`);
-    } else {
-        console.error('❌ No token found! User needs to login.');
-    }
-    
-    // Don't set Content-Type for FormData - browser will set it with boundary
-    if (config.data instanceof FormData) {
-        config.headers.delete("Content-Type");
-    } else if (!config.headers.has("Content-Type")) {
-        config.headers.set("Content-Type", "application/json");
-    }
+        
+        if (config.data instanceof FormData) {
+            config.headers.delete("Content-Type");
+        } else if (!config.headers.has("Content-Type")) {
+            config.headers.set("Content-Type", "application/json");
+        }
 
-    return config;
-});
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 interface RefreshTokenResponse {
     success: boolean;
@@ -49,39 +55,70 @@ interface RefreshTokenResponse {
     status: number;
 }
 
-const refreshAccessToken = async (): Promise<string> => {
-    const response: AxiosResponse<RefreshTokenResponse> = await publicClient.post("/auth/refresh-token");
+let isRefreshing = false;
+let failedQueue: Array<{
+    resolve: (value: string) => void;
+    reject: (error: any) => void;
+}> = [];
 
-    const newAccessToken = response.data?.data?.accessToken;
-
-    if (!newAccessToken) {
-        throw new Error("Refresh token response invalid");
-    }
-
-    updateStoredTokens({ accessToken: newAccessToken });
-    return newAccessToken;
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(({ resolve, reject }) => {
+        if (error) {
+            reject(error);
+        } else {
+            resolve(token!);
+        }
+    });
+    
+    failedQueue = [];
 };
 
+const refreshAccessToken = async (): Promise<string> => {
+    try {
+        const response: AxiosResponse<RefreshTokenResponse> = await publicClient.post("/auth/refresh-token");
+
+        if (!response.data?.success || !response.data?.data?.accessToken) {
+            throw new Error("Invalid refresh token response format");
+        }
+
+        const newAccessToken = response.data.data.accessToken;
+        updateStoredTokens({ accessToken: newAccessToken });
+        
+        return newAccessToken;
+    } catch (error) {
+        console.error('Refresh token failed:', error);
+        throw error;
+    }
+};
+
+// Response interceptor for private client
 privateClient.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError) => {
         const originalRequest = error.config as
             | (InternalAxiosRequestConfig & { _retry?: boolean })
             | undefined;
-
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-            // Check if this is a FormData request
-            if (originalRequest.data instanceof FormData) {
-                clearAuthSession();
-                triggerLoginModal();
-                return Promise.reject(new Error('Session expired. Please login and try again.'));
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    if (!originalRequest.headers) {
+                        originalRequest.headers = new AxiosHeaders();
+                    }
+                    originalRequest.headers.set("Authorization", `Bearer ${token}`);
+                    return privateClient(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
             }
-            
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
             try {
                 const newAccessToken = await refreshAccessToken();
-
+                processQueue(null, newAccessToken);
                 if (!originalRequest.headers) {
                     originalRequest.headers = new AxiosHeaders();
                 }
@@ -89,10 +126,24 @@ privateClient.interceptors.response.use(
 
                 return privateClient(originalRequest);
             } catch (refreshError) {
+                processQueue(refreshError, null);
                 clearAuthSession();
                 triggerLoginModal();
+                
                 return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
+        }
+
+        if (error.response?.status === 403) {
+            console.warn('Access forbidden - insufficient permissions');
+        } else if (error.response && error.response.status >= 500) {
+            console.error('Server error:', error.response.status, error.response.statusText);
+        } else if (error.code === 'ECONNABORTED') {
+            console.error('Request timeout');
+        } else if (!error.response) {
+            console.error('Network error - no response received');
         }
 
         return Promise.reject(error);

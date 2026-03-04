@@ -20,11 +20,15 @@ import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import RichTextDisplay from '../../../../components/Common/RichTextDisplay';
+import AdminServiceDetailModal from './AdminServiceDetailModal';
 
 const ServicesTable: React.FC = () => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   
   const {
     paginationState,
@@ -74,8 +78,8 @@ const ServicesTable: React.FC = () => {
   };
 
   const handleView = (service: GymServiceDto) => {
-    // TODO: Implement view service details
-    console.log('View service:', service);
+    setSelectedService(service);
+    setDetailModalOpen(true);
   };
 
   const getCategoryColor = (category: string) => {
@@ -154,12 +158,13 @@ const ServicesTable: React.FC = () => {
                       <Typography fontWeight={600}>
                         {service.name}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {service.description.length > 50 
-                          ? service.description.slice(0, 50) + '...'
-                          : service.description
-                        }
-                      </Typography>
+                      <Box sx={{ maxWidth: 300 }}>
+                        <RichTextDisplay 
+                          content={service.description}
+                          maxLines={2}
+                          variant="body2"
+                        />
+                      </Box>
                     </Box>
                   </Box>
                 </TableCell>
@@ -215,9 +220,23 @@ const ServicesTable: React.FC = () => {
 
       {services.length === 0 && (
         <Box textAlign="center" py={4}>
-          <Typography color="text.secondary">Không có service nào</Typography>
+          <Typography color="text.secondary">No services available</Typography>
         </Box>
       )}
+
+      <AdminServiceDetailModal
+        open={detailModalOpen}
+        service={selectedService}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setSelectedService(null);
+        }}
+        onEdit={(service) => {
+          setDetailModalOpen(false);
+          // TODO: Implement edit functionality
+          console.log('Edit service:', service);
+        }}
+      />
     </Box>
   );
 };

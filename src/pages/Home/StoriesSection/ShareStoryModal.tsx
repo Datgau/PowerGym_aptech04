@@ -23,7 +23,8 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { storyService, type CreateStoryRequest } from '../../../services/storyService.ts';
-import { useAuth } from '../../../services/useAuth.ts';
+import { useAuth } from '../../../hooks/useAuth.ts';
+import RichTextEditor from '../../../components/Common/RichTextEditor';
 
 interface ShareStoryModalProps {
   open: boolean;
@@ -104,8 +105,8 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
       return;
     }
 
-    if (content.length > 500) {
-      setError('Content must be less than 500 characters');
+    if (content.length > 1000) {
+      setError('Content must be less than 1000 characters');
       return;
     }
 
@@ -294,18 +295,20 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
         </FormControl>
 
         {/* Content */}
-        <TextField
-          label="Content (Optional)"
-          fullWidth
-          multiline
-          rows={4}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          disabled={loading}
-          placeholder="Share your experience..."
-          helperText={`${content.length}/500 characters`}
-          inputProps={{ maxLength: 500 }}
-        />
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Content (Optional)
+          </Typography>
+          <RichTextEditor
+            value={content}
+            onChange={setContent}
+            placeholder="Share your experience, tips, or motivation..."
+            disabled={loading}
+            maxLength={1000}
+            minHeight={120}
+            helperText="Use rich formatting to make your story more engaging"
+          />
+        </Box>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2 }}>

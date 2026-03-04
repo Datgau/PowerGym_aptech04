@@ -9,10 +9,6 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Avatar,
   Stack
 } from '@mui/material';
@@ -24,6 +20,8 @@ import {
 import { storyService, type StoryItem } from '../../../../services/storyService.ts';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import RichTextDisplay from '../../../../components/Common/RichTextDisplay';
+import AdminStoryDetailModal from './AdminStoryDetailModal';
 
 const PendingStories: React.FC = () => {
   const [stories, setStories] = useState<StoryItem[]>([]);
@@ -214,9 +212,7 @@ const PendingStories: React.FC = () => {
                 )}
 
                 {story.content && (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
+                  <Box
                     sx={{
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -225,8 +221,12 @@ const PendingStories: React.FC = () => {
                       WebkitBoxOrient: 'vertical'
                     }}
                   >
-                    {story.content}
-                  </Typography>
+                    <RichTextDisplay 
+                      content={story.content}
+                      maxLines={2}
+                      variant="body2"
+                    />
+                  </Box>
                 )}
 
                 <Stack direction="row" spacing={1} mt={2}>
@@ -277,84 +277,18 @@ const PendingStories: React.FC = () => {
         rowsPerPageOptions={[6, 12, 24, 48]}
       />
 
-      {/* View Story Dialog */}
-      <Dialog
+      {/* Enhanced Story Detail Modal */}
+      <AdminStoryDetailModal
         open={viewDialogOpen}
-        onClose={() => setViewDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        {selectedStory && (
-          <>
-            <DialogTitle>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={selectedStory.userAvatar}
-                  alt={selectedStory.userName}
-                />
-                <Box>
-                  <Typography variant="h6">{selectedStory.title}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    by {selectedStory.userName} • {selectedStory.timeAgo || 'Just now'}
-                  </Typography>
-                </Box>
-              </Stack>
-            </DialogTitle>
-            <DialogContent dividers>
-              <Box
-                component="img"
-                src={selectedStory.imageUrl}
-                alt={selectedStory.title}
-                sx={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: 500,
-                  objectFit: 'contain',
-                  mb: 2,
-                  borderRadius: 1
-                }}
-              />
-
-              {selectedStory.tag && (
-                <Chip
-                  label={selectedStory.tag}
-                  color="primary"
-                  sx={{ mb: 2 }}
-                />
-              )}
-
-              {selectedStory.content && (
-                <Typography variant="body1" paragraph>
-                  {selectedStory.content}
-                </Typography>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setViewDialogOpen(false)}>
-                Close
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<RejectIcon />}
-                onClick={() => handleReject(selectedStory.id)}
-                disabled={actionLoading === selectedStory.id}
-              >
-                Reject
-              </Button>
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<ApproveIcon />}
-                onClick={() => handleApprove(selectedStory.id)}
-                disabled={actionLoading === selectedStory.id}
-              >
-                Approve
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        story={selectedStory}
+        onClose={() => {
+          setViewDialogOpen(false);
+          setSelectedStory(null);
+        }}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        actionLoading={actionLoading}
+      />
     </Box>
   );
 };

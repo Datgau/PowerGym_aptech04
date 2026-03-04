@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import {useAuth} from "../../services/useAuth.ts";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 const AuthRedirectHandler: React.FC = () => {
   const { user, loading } = useAuth();

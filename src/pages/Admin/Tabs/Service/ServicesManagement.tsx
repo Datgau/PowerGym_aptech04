@@ -16,15 +16,17 @@ import {
   Chip,
   Avatar
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, Info } from '@mui/icons-material';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService.ts';
 import ServiceFormModal from './ServiceFormModal.tsx';
 import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
 import ServiceRegistrationsModal from './ServiceRegistrationsModal.tsx';
+import AdminServiceDetailModal from '../Services/AdminServiceDetailModal.tsx';
 import { useWebSocket } from '../../../../hooks/useWebSocket';
 import { getAccessToken } from '../../../../services/authStorage';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import RichTextDisplay from '../../../../components/Common/RichTextDisplay';
 
 const ServicesManagement: React.FC = () => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
@@ -33,6 +35,7 @@ const ServicesManagement: React.FC = () => {
   const [openForm, setOpenForm] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openRegistrations, setOpenRegistrations] = useState(false);
+  const [openDetail, setOpenDetail] = useState(false);
   const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
 
@@ -97,6 +100,11 @@ const ServicesManagement: React.FC = () => {
   const handleOpenRegistrations = (service: GymServiceDto) => {
     setSelectedService(service);
     setOpenRegistrations(true);
+  };
+
+  const handleOpenDetail = (service: GymServiceDto) => {
+    setSelectedService(service);
+    setOpenDetail(true);
   };
 
   const handleSubmit = async (data: any) => {
@@ -227,9 +235,13 @@ const ServicesManagement: React.FC = () => {
                       <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                         {service.name}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                        {service.description?.substring(0, 50)}...
-                      </Typography>
+                      <Box sx={{ maxWidth: 300 }}>
+                        <RichTextDisplay 
+                          content={service.description || ''}
+                          maxLines={2}
+                          variant="body2"
+                        />
+                      </Box>
                     </Box>
                   </Box>
                 </TableCell>
@@ -270,7 +282,10 @@ const ServicesManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={0.5}>
-                    <IconButton size="small" onClick={() => handleOpenRegistrations(service)} title="Xem người đăng ký">
+                    <IconButton size="small" onClick={() => handleOpenDetail(service)} title="View Service Details">
+                      <Info fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleOpenRegistrations(service)} title="View Registrations">
                       <Visibility fontSize="small" />
                     </IconButton>
                     <IconButton size="small" onClick={() => handleOpenEdit(service)}>
@@ -321,6 +336,19 @@ const ServicesManagement: React.FC = () => {
         open={openRegistrations}
         onClose={() => setOpenRegistrations(false)}
         service={selectedService}
+      />
+
+      <AdminServiceDetailModal
+        open={openDetail}
+        service={selectedService}
+        onClose={() => {
+          setOpenDetail(false);
+          setSelectedService(null);
+        }}
+        onEdit={(service) => {
+          setOpenDetail(false);
+          handleOpenEdit(service);
+        }}
       />
     </Box>
   );

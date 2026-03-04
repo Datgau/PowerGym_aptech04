@@ -11,7 +11,9 @@ export interface GymServiceDto {
   duration?: number;
   maxParticipants?: number;
   isActive: boolean;
-  registrationCount?: number; // Số lượng người đăng ký
+  registrationCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GymServiceCreateRequest {

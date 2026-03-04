@@ -13,7 +13,7 @@ import LoginForm from "../../components/Auth/LoginForm";
 import SocialLogin from "../../components/Auth/SocialLogin";
 import AuthTabs from "../../components/Auth/AuthTabs";
 import {getApiErrorMessage} from "../../until/errorHandler.ts";
-import {useAuth} from "../../services/useAuth.ts";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 const Login = () => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { PackageOption, NotificationMessage } from '../../../@type/powergym';
-import {useAuth} from "../../../services/useAuth.ts";
+import {useAuth} from "../../../hooks/useAuth.ts";
 
 interface UsePackageSelectionProps {
   onSelectPackage: (packageId: string) => Promise<void>;

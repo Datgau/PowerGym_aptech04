@@ -11,6 +11,9 @@ import {
     useTheme,
     useMediaQuery,
     Divider,
+    Grid,
+    Card,
+    CardContent,
 } from '@mui/material';
 import {
     ChevronLeft,
@@ -20,17 +23,23 @@ import {
     Group,
     Schedule,
     AttachMoney,
+    Edit,
+    Visibility,
+    CalendarToday,
+    CheckCircle,
+    Cancel,
 } from '@mui/icons-material';
-import RichTextDisplay from '../../components/Common/RichTextDisplay';
-import type {ServiceItem} from "../../@type/powergym.ts";
+import type { GymServiceDto } from '../../../../services/gymService';
+import RichTextDisplay from "../../../../components/Common/RichTextDisplay.tsx";
 
 interface Props {
     open: boolean;
-    service: ServiceItem;
+    service: GymServiceDto | null;
     onClose: () => void;
+    onEdit?: (service: GymServiceDto) => void;
 }
 
-const ServiceDetailModal = ({ open, service, onClose }: Props) => {
+const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -54,13 +63,40 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
         setCurrentImageIndex(index);
     }, []);
 
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const getCategoryColor = (category: string) => {
+        switch (category) {
+            case 'PERSONAL_TRAINER':
+                return 'primary';
+            case 'BOXING':
+                return 'error';
+            case 'YOGA':
+                return 'success';
+            case 'CARDIO':
+                return 'warning';
+            case 'GYM':
+                return 'info';
+            default:
+                return 'default';
+        }
+    };
+
     if (!service) return null;
 
     return (
         <Dialog 
             open={open} 
             onClose={onClose} 
-            maxWidth="md" 
+            maxWidth="lg" 
             fullWidth
             fullScreen={isMobile}
             PaperProps={{
@@ -87,16 +123,29 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <FitnessCenter />
                     <Typography variant="h6" fontWeight={700}>
-                        {service.name}
+                        Service Details - {service.name}
                     </Typography>
                 </Box>
-                <IconButton 
-                    onClick={onClose} 
-                    sx={{ color: 'white' }}
-                    size="small"
-                >
-                    <Close />
-                </IconButton>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    {onEdit && (
+                        <IconButton 
+                            onClick={() => onEdit(service)} 
+                            sx={{ color: 'white' }}
+                            size="small"
+                            title="Edit Service"
+                        >
+                            <Edit />
+                        </IconButton>
+                    )}
+                    <IconButton 
+                        onClick={onClose} 
+                        sx={{ color: 'white' }}
+                        size="small"
+                        title="Close"
+                    >
+                        <Close />
+                    </IconButton>
+                </Box>
             </DialogTitle>
 
             <DialogContent 
@@ -126,7 +175,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                     <Box
                         sx={{
                             position: 'relative',
-                            height: { xs: 250, sm: 350 },
+                            height: { xs: 250, sm: 300 },
                             overflow: 'hidden',
                             background: '#f5f5f5',
                         }}
@@ -139,12 +188,6 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                                 height: '100%',
                                 objectFit: 'cover',
                                 transition: 'transform 0.3s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
                             }}
                         />
 
@@ -162,9 +205,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                                         color: 'white',
                                         '&:hover': {
                                             background: 'rgba(0, 0, 0, 0.8)',
-                                            transform: 'translateY(-50%) scale(1.1)',
                                         },
-                                        transition: 'all 0.3s ease',
                                     }}
                                 >
                                     <ChevronLeft />
@@ -180,9 +221,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                                         color: 'white',
                                         '&:hover': {
                                             background: 'rgba(0, 0, 0, 0.8)',
-                                            transform: 'translateY(-50%) scale(1.1)',
                                         },
-                                        transition: 'all 0.3s ease',
                                     }}
                                 >
                                     <ChevronRight />
@@ -209,6 +248,30 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                                 {currentImageIndex + 1} / {images.length}
                             </Box>
                         )}
+
+                        {/* Status Badge */}
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 16,
+                                left: 16,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                background: service.isActive 
+                                    ? 'rgba(76, 175, 80, 0.9)' 
+                                    : 'rgba(244, 67, 54, 0.9)',
+                                color: 'white',
+                                px: 2,
+                                py: 0.5,
+                                borderRadius: 2,
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                            }}
+                        >
+                            {service.isActive ? <CheckCircle fontSize="small" /> : <Cancel fontSize="small" />}
+                            {service.isActive ? 'Active' : 'Inactive'}
+                        </Box>
                     </Box>
 
                     {/* Thumbnail Navigation */}
@@ -269,16 +332,19 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
 
                 {/* Content */}
                 <Box sx={{ p: 3 }}>
-                    {/* Category Chip */}
-                    <Chip 
-                        label={service.category} 
-                        color="primary" 
-                        sx={{ 
-                            mb: 2,
-                            fontWeight: 600,
-                            background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-                        }} 
-                    />
+                    {/* Basic Info */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                        <Chip 
+                            label={service.category} 
+                            color={getCategoryColor(service.category)}
+                            sx={{ 
+                                fontWeight: 600,
+                            }} 
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                            ID: {service.id}
+                        </Typography>
+                    </Box>
 
                     {/* Description */}
                     <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
@@ -290,117 +356,129 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
 
                     <Divider sx={{ my: 3 }} />
 
-                    {/* Service Details */}
+                    {/* Service Details Grid */}
                     <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
-                        Service Details
+                        Service Information
                     </Typography>
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                            gap: 2,
-                            mb: 3,
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                p: 2,
-                                background: 'linear-gradient(135deg, #f8f9ff, #e3f2fd)',
-                                borderRadius: 2,
-                                border: '1px solid #e3f2fd',
-                            }}
-                        >
-                            <AttachMoney sx={{ color: '#00b4ff', fontSize: 24 }} />
-                            <Box>
-                                <Typography variant="caption" color="info">
-                                    Service Price
-                                </Typography>
-                                <Typography variant="h6" fontWeight={700} color="#00b4ff">
-                                    ${service.price?.toLocaleString()}
-                                </Typography>
-                            </Box>
-                        </Box>
+                    <Grid container spacing={2} sx={{ mb: 3 }}  >
+                        <Grid  x={12} sm={6} md={3}  component="div">
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent sx={{ textAlign: 'center' }}>
+                                    <AttachMoney sx={{ color: '#00b4ff', fontSize: 32, mb: 1 }} />
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                        Price
+                                    </Typography>
+                                    <Typography variant="h6" fontWeight={700} color="#00b4ff">
+                                        ${service.price?.toLocaleString()}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                p: 2,
-                                background: 'linear-gradient(135deg, #fff8e1, #ffecb3)',
-                                borderRadius: 2,
-                                border: '1px solid #ffecb3',
-                            }}
-                        >
-                            <Schedule sx={{ color: '#FF5A5A', fontSize: 24 }} />
-                            <Box>
-                                <Typography variant="caption" color="error">
-                                    Duration
-                                </Typography>
-                                <Typography variant="h6" fontWeight={700} color="#FF5A5A">
-                                    {service.duration} Days
-                                </Typography>
-                            </Box>
-                        </Box>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent sx={{ textAlign: 'center' }}>
+                                    <Schedule sx={{ color: '#ff9800', fontSize: 32, mb: 1 }} />
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                        Duration
+                                    </Typography>
+                                    <Typography variant="h6" fontWeight={700} color="#ff9800">
+                                        {service.duration} min
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1.5,
-                                p: 2,
-                                background: 'linear-gradient(135deg, #f8f9ff, #e3f2fd)',
-                                borderRadius: 2,
-                                border: '1px solid #e1bee7',
-                                gridColumn: { xs: '1', sm: 'span 2' },
-                            }}
-                        >
-                            <Group sx={{ color: '#00b4ff', fontSize: 24 }} />
-                            <Box>
-                                <Typography variant="caption" color="info">
-                                    Max Participants
-                                </Typography>
-                                <Typography variant="h6" fontWeight={700} color="#00b4ff">
-                                    {service.maxParticipants} people
-                                </Typography>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent sx={{ textAlign: 'center' }}>
+                                    <Group sx={{ color: '#9c27b0', fontSize: 32, mb: 1 }} />
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                        Max Participants
+                                    </Typography>
+                                    <Typography variant="h6" fontWeight={700} color="#9c27b0">
+                                        {service.maxParticipants}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent sx={{ textAlign: 'center' }}>
+                                    <Visibility sx={{ color: '#4caf50', fontSize: 32, mb: 1 }} />
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                        Status
+                                    </Typography>
+                                    <Typography 
+                                        variant="h6" 
+                                        fontWeight={700} 
+                                        color={service.isActive ? '#4caf50' : '#f44336'}
+                                    >
+                                        {service.isActive ? 'Active' : 'Inactive'}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+
+                    {/* Timestamps */}
+                    <Divider sx={{ my: 3 }} />
+                    <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
+                        Timestamps
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mb: 3 }}>
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+                                <CalendarToday sx={{ color: '#6c757d' }} />
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                        Created At
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight={600}>
+                                        {formatDate(service.createdAt)}
+                                    </Typography>
+                                </Box>
                             </Box>
-                        </Box>
-                    </Box>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+                                <CalendarToday sx={{ color: '#6c757d' }} />
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                        Updated At
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight={600}>
+                                        {formatDate(service.updatedAt)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Grid>
+                    </Grid>
 
                     {/* Action Buttons */}
                     <Box sx={{ display: 'flex', gap: 2, mt: 4, mb: 2 }}>
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            disabled={!service.isActive}
-                            onClick={() => alert('Navigate to registration')}
-                            sx={{
-                                py: 1.5,
-                                background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-                                '&:hover': {
-                                    background: 'linear-gradient(135deg, #0099e6, #0052cc)',
-                                    transform: 'translateY(-2px)',
-                                },
-                                '&:disabled': {
-                                    background: '#ccc',
-                                    color: '#666',
-                                },
-                                transition: 'all 0.3s ease',
-                                fontWeight: 600,
-                            }}
-                        >
-                            {service.isActive ? 'Register Now' : 'Service Unavailable'}
-                        </Button>
+                        {onEdit && (
+                            <Button
+                                variant="contained"
+                                startIcon={<Edit />}
+                                onClick={() => onEdit(service)}
+                                sx={{
+                                    background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #0099e6, #0052cc)',
+                                    },
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Edit Service
+                            </Button>
+                        )}
 
                         <Button 
-                            fullWidth 
                             variant="outlined" 
                             onClick={onClose}
                             sx={{
-                                py: 1.5,
                                 borderColor: '#00b4ff',
                                 color: '#00b4ff',
                                 '&:hover': {
@@ -419,4 +497,4 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     );
 };
 
-export default ServiceDetailModal;
+export default AdminServiceDetailModal;

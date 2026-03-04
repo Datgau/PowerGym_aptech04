@@ -20,7 +20,7 @@ import {
   Avatar
 } from '@mui/material';
 import { Email, Phone, CalendarToday } from '@mui/icons-material';
-import { getServiceRegistrations, type ServiceRegistrationResponse } from '../../../../services/serviceRegistrationService.ts';
+import { getServiceRegistrationsLegacy, type ServiceRegistrationResponse } from '../../../../services/serviceRegistrationService.ts';
 import type { GymServiceDto } from '../../../../services/gymService.ts';
 
 interface ServiceRegistrationsModalProps {
@@ -53,7 +53,7 @@ const ServiceRegistrationsModal: React.FC<ServiceRegistrationsModalProps> = ({
     try {
       setLoading(true);
       setError('');
-      const response = await getServiceRegistrations(parseInt(service.id));
+      const response = await getServiceRegistrationsLegacy(parseInt(service.id));
       
       console.log('Registrations response:', response);
       

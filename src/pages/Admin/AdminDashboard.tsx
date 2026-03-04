@@ -4,7 +4,7 @@ import AdminLayout from '../../components/PowerGym/Layout/AdminLayout';
 import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
-import PendingStories from './Tabs/Stories/PendingStories.tsx';
+import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
 
 // Format currency helper
@@ -19,7 +19,7 @@ const formatCurrency = (amount: number) => {
 const DashboardTab: React.FC = () => <DashboardOverview formatCurrency={formatCurrency} />;
 const MembersTab: React.FC = () => <MembersTable />;
 const TrainersTab: React.FC = () => <TrainersGrid />;
-const StoriesTab: React.FC = () => <PendingStories />;
+const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const ServicesTab: React.FC = () => <ServicesManagement />;
 
 const EquipmentTab: React.FC = () => (

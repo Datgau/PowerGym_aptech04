@@ -5,10 +5,19 @@ import {
   Typography,
   Box,
   Chip,
-  Avatar
+  Avatar,
+  Divider
 } from '@mui/material';
-import { Person } from '@mui/icons-material';
+import { 
+  Person, 
+  Favorite, 
+  Comment, 
+  Share, 
+  Schedule,
+  FavoriteBorder 
+} from '@mui/icons-material';
 import type {StoryItem} from "../../../services/storyService.ts";
+import RichTextDisplay from '../../../components/Common/RichTextDisplay';
 
 interface StoryCardProps {
   readonly story: StoryItem;
@@ -16,14 +25,34 @@ interface StoryCardProps {
 }
 
 const StoryCard: React.FC<StoryCardProps> = ({ story, onClick }) => {
-  const truncatedDescription = story.content.length > 250
-    ? `${story.content.substring(0, 250)}...`
-    : story.content;
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Vừa xong';
+    if (diffInHours < 24) return `${diffInHours}h trước`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} ngày trước`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks} tuần trước`;
+    
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return `${diffInMonths} tháng trước`;
+  };
+
+  const handleInteractionClick = (e: React.MouseEvent, action: string) => {
+    e.stopPropagation(); // Prevent card click
+    // Handle like/comment/share actions here
+    console.log(`${action} clicked for story ${story.id}`);
+  };
 
   return (
     <Card
       sx={{
-        height: { xs: 380, sm: 420, md: 450 },
+        height: { xs: 420, sm: 460, md: 490 },
         display: 'flex',
         flexDirection: 'column',
         background: 'rgba(255, 255, 255, 0.95)',
@@ -47,11 +76,69 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, onClick }) => {
       }}
     >
       <CardActionArea onClick={onClick} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Full Card Image */}
+        {/* Author Info Header */}
+        <Box sx={{ 
+          p: { xs: 1.5, sm: 2 }, 
+          pb: { xs: 1, sm: 1.5 },
+          background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Avatar
+              src={story.userAvatar}
+              alt={story.userName}
+              sx={{
+                width: { xs: 32, sm: 36 },
+                height: { xs: 32, sm: 36 },
+                bgcolor: '#00b4ff',
+              }}
+              slotProps={{
+                img: {
+                  referrerPolicy: 'no-referrer',
+                  crossOrigin: 'anonymous',
+                }
+              }}
+            >
+              <Person sx={{ fontSize: { xs: 16, sm: 18 } }} />
+            </Avatar>
+            
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: '#2c3e50',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {story.userName}
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                <Schedule sx={{ fontSize: { xs: 12, sm: 14 }, color: '#6c757d' }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#6c757d',
+                    fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                    lineHeight: 1
+                  }}
+                >
+                  {story.timeAgo || formatTimeAgo(story.createdAt)}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Story Image */}
         <Box 
           sx={{ 
             position: 'relative', 
-            height: { xs: 180, sm: 200, md: 220 }, // Responsive height
+            height: { xs: 160, sm: 180, md: 200 },
             overflow: 'hidden',
             width: '100%'
           }}
@@ -89,7 +176,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, onClick }) => {
           flex: 1, 
           display: 'flex', 
           flexDirection: 'column',
-          p: { xs: 2, sm: 2.5 },
+          p: { xs: 1.5, sm: 2 },
           background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)'
         }}>
           <Typography
@@ -99,8 +186,8 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, onClick }) => {
             sx={{
               color: '#2c3e50',
               fontWeight: 700,
-              fontSize: { xs: '1rem', sm: '1.1rem' },
-              mb: 1.5,
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              mb: 1,
               lineHeight: 1.3,
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -111,79 +198,152 @@ const StoryCard: React.FC<StoryCardProps> = ({ story, onClick }) => {
             {story.title}
           </Typography>
 
-          <Typography
-            variant="body2"
+          <Box
             sx={{
               color: '#5a6c7d',
-              lineHeight: 1.5,
-              mb: 2,
+              lineHeight: 1.4,
+              mb: 1.5,
               flexGrow: 1,
-              fontSize: { xs: '0.8rem', sm: '0.9rem' }
+              fontSize: { xs: '0.75rem', sm: '0.8rem' }
             }}
           >
-            {truncatedDescription}
-          </Typography>
+            <RichTextDisplay 
+              content={story.content} 
+              maxLines={2}
+              variant="body2"
+            />
+          </Box>
 
           {/* Tags */}
-            {story.tag && story.tag.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                    <Chip
-                        label={story.tag}
-                        size="small"
-                        sx={{
-                            backgroundColor: '#00b4ff',
-                            color: '#ffffff',
-                            fontSize: { xs: '0.6rem', sm: '0.7rem' },
-                            fontWeight: 500,
-                            height: { xs: 18, sm: 20 }
-                        }}
-                    />
-                </Box>
-            )}
-            {/* Meta Info */}
+          {story.tag && story.tag.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
+              <Chip
+                label={story.tag}
+                size="small"
+                sx={{
+                  backgroundColor: '#00b4ff',
+                  color: '#ffffff',
+                  fontSize: { xs: '0.6rem', sm: '0.65rem' },
+                  fontWeight: 500,
+                  height: { xs: 18, sm: 20 }
+                }}
+              />
+            </Box>
+          )}
+
+          <Divider sx={{ mb: 1.5 }} />
+
+          {/* Interaction Stats */}
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              pt: 1.5,
-              borderTop: '1px solid #e9ecef',
-              mt: 'auto',
-              flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              gap: { xs: 1, sm: 0 } // Gap on mobile
+              mt: 'auto'
             }}
           >
-              {story.userName && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar
-                          src={story.userAvatar}
-                          alt={story.userName}
-                          sx={{
-                              width: { xs: 20, sm: 24 },
-                              height: { xs: 20, sm: 24 },
-                              bgcolor: '#00b4ff',
-                              fontSize: '0.75rem'
-                          }}
-                          imgProps={{
-                              referrerPolicy: 'no-referrer',
-                              crossOrigin: 'anonymous',
-                          }}
-                      >
-                          <Person sx={{ fontSize: { xs: 12, sm: 14 } }} />
-                      </Avatar>
-
-                      <Typography
-                          variant="caption"
-                          sx={{
-                              color: '#6c757d',
-                              fontWeight: 600,
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                          }}
-                      >
-                          {story.userName}
-                      </Typography>
-                  </Box>
+            {/* Like Count */}
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: 1,
+                transition: 'background-color 0.2s',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 71, 87, 0.1)'
+                }
+              }}
+              onClick={(e) => handleInteractionClick(e, 'like')}
+            >
+              {story.isLikedByCurrentUser ? (
+                <Favorite sx={{ 
+                  fontSize: { xs: 16, sm: 18 }, 
+                  color: '#ff4757' 
+                }} />
+              ) : (
+                <FavoriteBorder sx={{ 
+                  fontSize: { xs: 16, sm: 18 }, 
+                  color: '#6c757d' 
+                }} />
               )}
+              <Typography
+                variant="caption"
+                sx={{
+                  color: story.isLikedByCurrentUser ? '#ff4757' : '#6c757d',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                }}
+              >
+                {story.likeCount || 0}
+              </Typography>
+            </Box>
+
+            {/* Comment Count */}
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: 1,
+                transition: 'background-color 0.2s',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 180, 255, 0.1)'
+                }
+              }}
+              onClick={(e) => handleInteractionClick(e, 'comment')}
+            >
+              <Comment sx={{ 
+                fontSize: { xs: 16, sm: 18 }, 
+                color: '#6c757d' 
+              }} />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: '#6c757d',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                }}
+              >
+                {story.commentCount || 0}
+              </Typography>
+            </Box>
+
+            {/* Share Count */}
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 0.5,
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: 1,
+                transition: 'background-color 0.2s',
+                '&:hover': {
+                  backgroundColor: 'rgba(76, 175, 80, 0.1)'
+                }
+              }}
+              onClick={(e) => handleInteractionClick(e, 'share')}
+            >
+              <Share sx={{ 
+                fontSize: { xs: 16, sm: 18 }, 
+                color: '#6c757d' 
+              }} />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: '#6c757d',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                }}
+              >
+                {story.shareCount || 0}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </CardActionArea>

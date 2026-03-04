@@ -2,7 +2,7 @@ import React from 'react';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
 import ClientHome from './ClientHome';
 import AdminDashboard from "../Admin/AdminDashboard.tsx";
-import {useAuth} from "../../services/useAuth.ts";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 const Home: React.FC = () => {
   const { user, loading } = useAuth();

@@ -22,6 +22,7 @@ import { Visibility, Check, Close, Delete } from '@mui/icons-material';
 import { storyService, type StoryItem } from '../../../../services/storyService';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import RichTextDisplay from '../../../../components/Common/RichTextDisplay';
 
 const StoriesTable: React.FC = () => {
   const [stories, setStories] = useState<StoryItem[]>([]);
@@ -184,10 +185,15 @@ const StoriesTable: React.FC = () => {
                         {story.title || 'Untitled Story'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {story.content && story.content.length > 50 
-                          ? story.content.slice(0, 50) + '...'
-                          : story.content || 'No content'
-                        }
+                        {story.content ? (
+                          <RichTextDisplay 
+                            content={story.content}
+                            maxLines={1}
+                            variant="body2"
+                          />
+                        ) : (
+                          'No content'
+                        )}
                       </Typography>
                     </Box>
                   </Box>

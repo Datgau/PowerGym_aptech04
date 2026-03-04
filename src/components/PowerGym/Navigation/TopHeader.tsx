@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './TopHeader.module.css';
-import {useAuth} from "../../../services/useAuth.ts";
+import {useAuth} from "../../../hooks/useAuth.ts";
 
 const TopHeader: React.FC = () => {
   const { user, logout } = useAuth();

@@ -9,7 +9,7 @@ import SectionHeader from './SectionHeader.tsx';
 import ShareStoryModal from './ShareStoryModal.tsx';
 import { useCarousel } from '../../../hooks/useCarousel.ts';
 import type {StoryItem} from "../../../services/storyService.ts";
-import {useAuth} from "../../../services/useAuth.ts";
+import {useAuth} from "../../../hooks/useAuth.ts";
 
 interface StoriesSectionProps {
   readonly stories: readonly StoryItem[];
@@ -42,10 +42,15 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
     window.location.href = '/stories';
   };
 
-    const handleShareClick = () => {
-        if (!requireAuth()) return;
-        setShareModalOpen(true);
-    };
+  const handleStoryClick = (storyId: string) => {
+    // Navigate to story detail page
+    window.location.href = `/stories/${storyId}`;
+  };
+
+  const handleShareClick = () => {
+    if (!requireAuth()) return;
+    setShareModalOpen(true);
+  };
 
   const handleShareSuccess = () => {
     setSnackbarMessage('Story submitted successfully! It will appear after admin approval.');
@@ -193,7 +198,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
                 >
                   <StoryCard
                     story={story}
-                    onClick={() => onStoryClick(story.id)}
+                    onClick={() => handleStoryClick(story.id)}
                   />
                 </Box>
               ))}

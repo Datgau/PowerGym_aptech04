@@ -14,7 +14,7 @@ import {
 import {useGymServices} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
 import { registerService } from '../../services/serviceRegistrationService';
-import {useAuth} from "../../services/useAuth.ts";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 const Service: React.FC = () => {
   const { services } = useGymServices();
@@ -128,7 +128,7 @@ const Service: React.FC = () => {
                         </Typography>
 
                         <Typography fontWeight={700} sx={{ mt: 1 }}>
-                          {service.price.toLocaleString()} VNĐ / {service.duration}
+                          {service.price.toLocaleString()} USD / {service.duration} days
                         </Typography>
 
                         <Box display="flex" gap={1} mt={2}>

@@ -18,6 +18,7 @@ import AuthRedirect from "../components/Auth/AuthRedirect";
 
 // PowerGym Pages
 import Service from "../pages/Services/Service.tsx";
+import StoryDetailPage from "../pages/Stories/StoryDetailPage.tsx";
 import Equipments from "../pages/PowerGym/Equipments.tsx";
 import Pricing from "../pages/PowerGym/Pricing";
 import News from "../pages/News/News.tsx";
@@ -38,6 +39,7 @@ export const AppRouter = () => (
             <Route path="/data-deletion" element={<DataDeletion />} />
             <Route path="/home" element={<Home />} />
             <Route path="/service" element={<Service />} />
+            <Route path="/stories/:storyId" element={<StoryDetailPage />} />
             <Route path="/equipment" element={<Equipments />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/news" element={<News />} />

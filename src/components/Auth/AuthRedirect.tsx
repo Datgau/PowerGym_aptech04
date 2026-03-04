@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { CircularProgress, Box, Typography } from "@mui/material";
-import {useAuth} from "../../services/useAuth.ts";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 // Component to redirect based on auth state and user role
 const AuthRedirect = () => {

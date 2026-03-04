@@ -17,6 +17,24 @@ export interface StoryItem {
     readonly readTime?: string;
     readonly status?: string; // PENDING, APPROVED, REJECTED
     readonly timeAgo?: string;
+    readonly likeCount?: number;
+    readonly commentCount?: number;
+    readonly shareCount?: number; // New field for share count
+    readonly isLikedByCurrentUser?: boolean;
+}
+
+export interface StoryComment {
+    readonly id: string;
+    readonly user: {
+        readonly id: string;
+        readonly fullName: string;
+        readonly email: string;
+        readonly avatar?: string;
+    };
+    readonly content: string;
+    readonly createdAt: string;
+    readonly updatedAt?: string;
+    readonly timeAgo?: string;
 }
 
 export interface CreateStoryRequest {
@@ -45,6 +63,14 @@ export const storyService = {
      */
     fetchStoriesLegacy: async (): Promise<ApiResponse<StoryItem[]>> => {
         const response = await publicClient.get<ApiResponse<StoryItem[]>>('/stories');
+        return response.data;
+    },
+
+    /**
+     * Get a single story by ID (public)
+     */
+    getStoryById: async (storyId: string): Promise<ApiResponse<StoryItem>> => {
+        const response = await publicClient.get<ApiResponse<StoryItem>>(`/stories/${storyId}`);
         return response.data;
     },
 
@@ -92,6 +118,66 @@ export const storyService = {
      */
     deleteStory: async (storyId: string): Promise<ApiResponse<void>> => {
         const response = await privateClient.delete<ApiResponse<void>>(`/stories/${storyId}`);
+        return response.data;
+    },
+
+    // ==================== LIKE METHODS ====================
+
+    /**
+     * Like a story (requires authentication)
+     */
+    likeStory: async (storyId: string): Promise<ApiResponse<void>> => {
+        const response = await privateClient.post<ApiResponse<void>>(`/stories/${storyId}/like`);
+        return response.data;
+    },
+
+    /**
+     * Unlike a story (requires authentication)
+     */
+    unlikeStory: async (storyId: string): Promise<ApiResponse<void>> => {
+        const response = await privateClient.delete<ApiResponse<void>>(`/stories/${storyId}/like`);
+        return response.data;
+    },
+
+    // ==================== COMMENT METHODS ====================
+
+    /**
+     * Get comments for a story with pagination
+     */
+    getStoryComments: async (
+        storyId: string,
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryComment>>> => {
+        const response = await publicClient.get<ApiResponse<PageResponse<StoryComment>>>(`/stories/${storyId}/comments/paginated`, {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get comments for a story without pagination
+     */
+    getStoryCommentsLegacy: async (storyId: string): Promise<ApiResponse<StoryComment[]>> => {
+        const response = await publicClient.get<ApiResponse<StoryComment[]>>(`/stories/${storyId}/comments`);
+        return response.data;
+    },
+
+    /**
+     * Add a comment to a story (requires authentication)
+     */
+    addComment: async (storyId: string, content: string): Promise<ApiResponse<StoryComment>> => {
+        const response = await privateClient.post<ApiResponse<StoryComment>>(`/stories/${storyId}/comments`, {
+            content
+        });
+        return response.data;
+    },
+
+    /**
+     * Delete a comment (requires authentication)
+     */
+    deleteComment: async (commentId: string): Promise<ApiResponse<void>> => {
+        const response = await privateClient.delete<ApiResponse<void>>(`/stories/comments/${commentId}`);
         return response.data;
     },
 
@@ -145,6 +231,82 @@ export const storyService = {
      */
     countPendingStories: async (): Promise<ApiResponse<number>> => {
         const response = await privateClient.get<ApiResponse<number>>('/stories/admin/pending/count');
+        return response.data;
+    },
+
+    /**
+     * Count approved stories (admin only)
+     */
+    countApprovedStories: async (): Promise<ApiResponse<number>> => {
+        const response = await privateClient.get<ApiResponse<number>>('/stories/admin/approved/count');
+        return response.data;
+    },
+
+    /**
+     * Count rejected stories (admin only)
+     */
+    countRejectedStories: async (): Promise<ApiResponse<number>> => {
+        const response = await privateClient.get<ApiResponse<number>>('/stories/admin/rejected/count');
+        return response.data;
+    },
+
+    /**
+     * Get all stories for admin (all statuses) with pagination
+     */
+    getAllStoriesForAdmin: async (
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryItem>>> => {
+        const response = await privateClient.get<ApiResponse<PageResponse<StoryItem>>>('/stories/admin/all/paginated', {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get all stories for admin (all statuses) - without pagination (legacy)
+     */
+    getAllStoriesForAdminLegacy: async (): Promise<ApiResponse<StoryItem[]>> => {
+        const response = await privateClient.get<ApiResponse<StoryItem[]>>('/stories/admin/all');
+        return response.data;
+    },
+
+    /**
+     * Get stories by status with pagination
+     */
+    getStoriesByStatus: async (
+        status: 'PENDING' | 'APPROVED' | 'REJECTED',
+        page: number = 0,
+        size: number = 10
+    ): Promise<ApiResponse<PageResponse<StoryItem>>> => {
+        const response = await privateClient.get<ApiResponse<PageResponse<StoryItem>>>(`/stories/admin/status/${status}/paginated`, {
+            params: { page, size }
+        });
+        return response.data;
+    },
+
+    /**
+     * Get stories by status - without pagination (legacy)
+     */
+    getStoriesByStatusLegacy: async (
+        status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    ): Promise<ApiResponse<StoryItem[]>> => {
+        const response = await privateClient.get<ApiResponse<StoryItem[]>>(`/stories/admin/status/${status}`);
+        return response.data;
+    },
+
+    /**
+     * Update story status (admin only)
+     */
+    updateStoryStatus: async (
+        storyId: string,
+        status: 'PENDING' | 'APPROVED' | 'REJECTED'
+    ): Promise<ApiResponse<StoryItem>> => {
+        const response = await privateClient.put<ApiResponse<StoryItem>>(
+            `/stories/admin/${storyId}/status`,
+            null,
+            { params: { status } }
+        );
         return response.data;
     }
 }
