@@ -64,14 +64,14 @@ const ClientHome: React.FC = () => {
 
   // Use real membership data if available, otherwise use mock data
   const availablePackages = packages.length > 0 ? packages.map(pkg => ({
-    id: pkg.id,
+    id: pkg.packageId, // Use packageId as string ID for compatibility
     name: pkg.name,
     duration: `${pkg.duration} days`,
     price: `${pkg.price.toLocaleString('vi-VN')}đ`,
     originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
     features: pkg.features,
     isPopular: pkg.isPopular,
-    color: pkg.isPopular ? '#FF4444' : '#155e9a',
+    color: pkg.color || (pkg.isPopular ? '#FF4444' : '#155e9a'),
     description: pkg.description
   })) : membershipPackagesData;
 

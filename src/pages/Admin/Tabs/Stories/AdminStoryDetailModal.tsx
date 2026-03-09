@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  Box, Button, Stack, Chip, Menu, MenuItem,
-  ListItemIcon, ListItemText, Typography, Divider
+    Box, Button, Stack, Chip, Menu, MenuItem,
+    ListItemIcon, ListItemText, Typography, Divider, Snackbar, Alert
 } from '@mui/material';
 import {
   CheckCircle as ApproveIcon,
@@ -26,24 +26,41 @@ const AdminStoryDetailModal: React.FC<AdminStoryDetailModalProps> = ({
                                                                       onUpdateStatus, actionLoading
                                                                      }) => {
   const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement | null>(null);
-
+  const [snackbar, setSnackbar] = React.useState<{
+        open: boolean;
+        message: string;
+        severity: 'success' | 'error' | 'warning' | 'info';
+    }>({
+        open: false,
+        message: '',
+        severity: 'success',
+    });
 
   const handleMenuClose = () => {
     setMenuAnchor(null);
   };
 
-  const handleStatusUpdate = (newStatus: 'PENDING' | 'APPROVED' | 'REJECTED') => {
-    if (story) {
-      if (newStatus === 'REJECTED') {
-        if (confirm('Are you sure? Rejected stories cannot be updated and will be deleted when expired.')) {
-          onUpdateStatus?.(story.id, newStatus);
+    const handleStatusUpdate = (newStatus: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+        if (!story) return;
+
+        if (newStatus === 'REJECTED') {
+            const confirmed = window.confirm(
+                'Are you sure? Rejected stories cannot be updated and will be deleted when expired.'
+            );
+
+            if (!confirmed) return;
         }
-      } else {
+
         onUpdateStatus?.(story.id, newStatus);
-      }
-    }
-    handleMenuClose();
-  };
+
+        setSnackbar({
+            open: true,
+            message: `Story ${newStatus.toLowerCase()} successfully`,
+            severity: newStatus === 'APPROVED' ? 'success' : 'warning',
+        });
+
+        handleMenuClose();
+    };
 
   const adminFooter = story ? (
       <Box
@@ -121,6 +138,20 @@ const AdminStoryDetailModal: React.FC<AdminStoryDetailModalProps> = ({
                 />
             )}
         </Stack>
+          <Snackbar
+              open={snackbar.open}
+              autoHideDuration={3000}
+              onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+              <Alert
+                  onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                  severity={snackbar.severity}
+                  variant="filled"
+              >
+                  {snackbar.message}
+              </Alert>
+          </Snackbar>
       </Box>
   ) : undefined;
 
@@ -138,26 +169,26 @@ const AdminStoryDetailModal: React.FC<AdminStoryDetailModalProps> = ({
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
             onClose={handleMenuClose}
-            PaperProps={{
-              sx: { borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', minWidth: 200 }
+            slotProps={{
+              paper: { sx: { borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', minWidth: 200 } }
             }}
         >
           {story?.status !== 'PENDING' && (
               <MenuItem onClick={() => handleStatusUpdate('PENDING')}>
                 <ListItemIcon><PendingIcon fontSize="small" color="warning" /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ fontWeight: 500 }}>Set to Pending</ListItemText>
+                <ListItemText slotProps={{ primary: { fontWeight: 500 } }}>Set to Pending</ListItemText>
               </MenuItem>
           )}
           {story?.status !== 'APPROVED' && (
               <MenuItem onClick={() => handleStatusUpdate('APPROVED')}>
                 <ListItemIcon><ApproveIcon fontSize="small" color="success" /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ fontWeight: 500 }}>Set to Approved</ListItemText>
+                <ListItemText slotProps={{ primary: { fontWeight: 500 } }}>Set to Approved</ListItemText>
               </MenuItem>
           )}
           {story?.status !== 'REJECTED' && (
               <MenuItem onClick={() => handleStatusUpdate('REJECTED')}>
                 <ListItemIcon><RejectIcon fontSize="small" color="error" /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ fontWeight: 500 }}>Set to Rejected</ListItemText>
+                <ListItemText slotProps={{ primary: { fontWeight: 500 } }}>Set to Rejected</ListItemText>
               </MenuItem>
           )}
         </Menu>

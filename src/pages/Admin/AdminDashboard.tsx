@@ -6,6 +6,7 @@ import MembersTable from './Tabs/Members/MembersTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
+import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
 
 // Format currency helper
 const formatCurrency = (amount: number) => {
@@ -21,17 +22,11 @@ const MembersTab: React.FC = () => <MembersTable />;
 const TrainersTab: React.FC = () => <TrainersGrid />;
 const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const ServicesTab: React.FC = () => <ServicesManagement />;
+const MembershipTab: React.FC = () => <MembershipPackagesPage />;
 
 const EquipmentTab: React.FC = () => (
   <Box>
     <Typography variant="h5" fontWeight={600} mb={2}>Equipment Management</Typography>
-    <Typography color="text.secondary">Coming Soon</Typography>
-  </Box>
-);
-
-const MembershipTab: React.FC = () => (
-  <Box>
-    <Typography variant="h5" fontWeight={600} mb={2}>Membership Packages</Typography>
     <Typography color="text.secondary">Coming Soon</Typography>
   </Box>
 );

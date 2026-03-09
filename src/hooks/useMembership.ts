@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { MembershipService, type MembershipInfo, type MembershipPackage } from '../services/membershipService';
+import { MembershipService, type MembershipInfo } from '../services/membershipService';
+import membershipPackageService, { type MembershipPackageResponse } from '../services/membershipPackageService';
 import { getAccessToken } from '../services/authStorage';
 
 interface UseMembershipReturn {
   membership: MembershipInfo | null;
-  packages: MembershipPackage[];
+  packages: MembershipPackageResponse[];
   loading: boolean;
   error: string | null;
   refreshMembership: () => Promise<void>;
@@ -13,7 +14,7 @@ interface UseMembershipReturn {
 
 export const useMembership = (): UseMembershipReturn => {
   const [membership, setMembership] = useState<MembershipInfo | null>(null);
-  const [packages, setPackages] = useState<MembershipPackage[]>([]);
+  const [packages, setPackages] = useState<MembershipPackageResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,16 +44,10 @@ export const useMembership = (): UseMembershipReturn => {
   };
 
   const fetchPackages = async (): Promise<void> => {
-    // Check if user is authenticated
-    if (!getAccessToken()) {
-      return;
-    }
-
+    // Packages endpoint is public, no auth required
     try {
-      const response = await MembershipService.getPackages();
-      if (response.success && response.data) {
-        setPackages(response.data);
-      }
+      const data = await membershipPackageService.getActivePackages();
+      setPackages(data);
     } catch (err) {
       console.error('Error fetching packages:', err);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -22,7 +22,7 @@ import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { storyService, type CreateStoryRequest } from '../../../services/storyService.ts';
+import { storyService, type CreateStoryRequest, type StoryItem } from '../../../services/storyService.ts';
 import { useAuth } from '../../../hooks/useAuth.ts';
 import RichTextEditor from '../../../components/Common/RichTextEditor';
 
@@ -30,6 +30,7 @@ interface ShareStoryModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  story?: StoryItem | null; // Add story prop for edit mode
 }
 
 const STORY_TAGS = [
@@ -41,7 +42,7 @@ const STORY_TAGS = [
   { value: 'tips', label: 'Tips' }
 ];
 
-const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSuccess }) => {
+const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSuccess, story }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tag, setTag] = useState('');
@@ -51,6 +52,19 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { requireAuth } = useAuth();
+  
+  const isEditMode = !!story;
+
+  // Load story data when in edit mode
+  useEffect(() => {
+    if (story && open) {
+      setTitle(story.title || '');
+      setContent(story.content || '');
+      setTag(story.tag || '');
+      setImagePreview(story.imageUrl || null);
+      setImage(null); // Don't set file in edit mode unless user uploads new one
+    }
+  }, [story, open]);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -90,7 +104,8 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
   const handleSubmit = async () => {
     if (!requireAuth()) return;
     
-    if (!image) {
+    // In edit mode, image is optional (can keep existing image)
+    if (!isEditMode && !image) {
       setError('Please select an image');
       return;
     }
@@ -114,22 +129,35 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
     setError(null);
 
     try {
-      const request: CreateStoryRequest = {
-        image,
-        title: title.trim(),
-        content: content.trim() || undefined,
-        tag: tag || undefined
-      };
+      if (isEditMode && story) {
+        // Update existing story
+        const request: CreateStoryRequest = {
+          image: image || undefined, // Only include if new image uploaded
+          title: title.trim(),
+          content: content.trim() || undefined,
+          tag: tag || undefined
+        };
 
-      await storyService.createStory(request);
+        await storyService.updateStory(story.id, request);
+      } else {
+        // Create new story
+        const request: CreateStoryRequest = {
+          image: image!,
+          title: title.trim(),
+          content: content.trim() || undefined,
+          tag: tag || undefined
+        };
+
+        await storyService.createStory(request);
+      }
 
       handleClose();
       if (onSuccess) {
         onSuccess();
       }
     } catch (err: any) {
-      console.error('Failed to create story:', err);
-      setError(err.response?.data?.message || 'Failed to share story. Please try again.');
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} story:`, err);
+      setError(err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'share'} story. Please try again.`);
     } finally {
       setLoading(false);
     }
@@ -170,7 +198,7 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
         pb: 1
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-          Share Your Story
+          {isEditMode ? 'Edit Your Story' : 'Share Your Story'}
         </Typography>
         <IconButton 
           onClick={handleClose} 
@@ -188,9 +216,11 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
           </Alert>
         )}
 
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Your story will be reviewed by admin before appearing on the home page.
-        </Alert>
+        {!isEditMode && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Your story will be reviewed by admin before appearing on the home page.
+          </Alert>
+        )}
 
         {/* Image Upload */}
         <Box sx={{ mb: 3 }}>
@@ -322,10 +352,10 @@ const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSucc
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading || !image || !title.trim()}
+          disabled={loading || !title.trim() || (!isEditMode && !image)}
           startIcon={loading ? <CircularProgress size={20} /> : null}
         >
-          {loading ? 'Sharing...' : 'Share Story'}
+          {loading ? (isEditMode ? 'Updating...' : 'Sharing...') : (isEditMode ? 'Update Story' : 'Share Story')}
         </Button>
       </DialogActions>
     </Dialog>

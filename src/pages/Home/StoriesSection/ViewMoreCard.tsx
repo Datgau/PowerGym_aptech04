@@ -16,37 +16,36 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
   return (
       <Card
           sx={{
-              height: { xs: 380, sm: 420, md: 450 },
+              height: '100%',
+              minHeight: 480,
               display: 'flex',
               flexDirection: 'column',
-              background: `
-                  linear-gradient(
-                    135deg,
-                    rgba(0, 110, 170, 0.85) 0%,
-                    rgba(0, 70, 130, 0.85) 100%
-                  )
-                `,
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255,255,255,0.25)',
-              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+              border: '2px dashed rgba(255,255,255,0.4)',
+              borderRadius: '24px',
               overflow: 'hidden',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
               cursor: 'pointer',
               position: 'relative',
-              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.35)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                opacity: 0,
+                transition: 'opacity 0.3s ease',
+              },
               '&:hover': {
-                  transform: 'translateY(-8px) scale(1.03)',
-                  background: `
-                    linear-gradient(
-                      135deg,
-                      rgba(0, 160, 255, 0.9) 0%,
-                      rgba(0, 110, 200, 0.9) 100%
-                    )
-                  `,
-                boxShadow: `
-                0 0 0 2px rgba(255,255,255,0.35),
-                0 25px 60px rgba(0,0,0,0.45)
-              `,
+                  transform: 'translateY(-12px) scale(1.02)',
+                  background: 'rgba(255, 255, 255, 0.25)',
+                  border: '2px dashed rgba(255,255,255,0.6)',
+                  boxShadow: '0 24px 48px rgba(0, 0, 0, 0.25)',
+                  '&::before': {
+                    opacity: 1,
+                  }
               }
           }}
       >
@@ -59,27 +58,48 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          p: { xs: 2, sm: 3 } // Responsive padding
+          p: 4
         }}
       >
-        <VisibilityOutlined 
-          sx={{ 
-            fontSize: { xs: 48, sm: 64 },
-            color: 'rgba(255, 255, 255, 0.8)',
-            mb: 2
-          }} 
-        />
+        <Box
+          sx={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 3,
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+            transition: 'all 0.3s ease',
+            '.MuiCard-root:hover &': {
+              transform: 'scale(1.1) rotate(10deg)',
+              background: 'rgba(255, 255, 255, 0.3)',
+            }
+          }}
+        >
+          <VisibilityOutlined 
+            sx={{ 
+              fontSize: 40,
+              color: 'white',
+            }} 
+          />
+        </Box>
         
         <Typography
           variant="h5"
           component="h3"
           sx={{
             color: 'white',
-            fontWeight: 700,
+            fontWeight: 800,
             textAlign: 'center',
             mb: 2,
-            fontSize: { xs: '1.2rem', sm: '1.5rem' },
-            textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+            fontSize: '1.8rem',
+            textShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            letterSpacing: '0.02em'
           }}
         >
           View More
@@ -88,31 +108,42 @@ const ViewMoreCard: React.FC<ViewMoreCardProps> = ({ onClick, totalStories }) =>
         <Typography
           variant="body1"
           sx={{
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: 'rgba(255, 255, 255, 0.95)',
             textAlign: 'center',
-            mb: 3,
-            lineHeight: 1.5,
-            fontSize: { xs: '0.9rem', sm: '1rem' },
-            px: 1
+            mb: 4,
+            lineHeight: 1.6,
+            fontSize: '1rem',
+            fontWeight: 500,
+            textShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            maxWidth: '280px'
           }}
         >
-          Discover {totalStories - 10} more stories from the PowerGym community
+          Discover {totalStories - 5} more inspiring stories from our community
         </Typography>
 
         <Button
-          variant="outlined"
+          variant="contained"
           sx={{
-            color: 'white',
-            borderColor: 'rgba(255, 255, 255, 0.6)',
-            fontSize: { xs: '0.8rem', sm: '0.9rem' }, // Responsive button font
-            px: { xs: 2, sm: 3 }, // Responsive button padding
+            color: '#667eea',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            px: 4,
+            py: 1.5,
+            borderRadius: '16px',
+            textTransform: 'none',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+            transition: 'all 0.3s ease',
             '&:hover': {
-              borderColor: 'white',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
+              background: 'white',
+              transform: 'scale(1.05)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
             }
           }}
         >
-          View All
+          View All Stories
         </Button>
       </CardActionArea>
     </Card>

@@ -48,7 +48,7 @@ const Copyright: React.FC = () => {
                 </Link>
 
                 <Link 
-                    href="/terms-of-service" 
+                    href="/terms-of-service"
                     sx={{ 
                         color: '#ccc',
                         textDecoration: 'none',

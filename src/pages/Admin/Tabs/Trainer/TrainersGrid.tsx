@@ -124,8 +124,8 @@ const TrainersGrid: React.FC = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={handleOpenCreate}
-          sx={{ 
-            background: 'linear-gradient(135deg, #4caf50, #2e7d32)',
+          sx={{
+            background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
             fontSize: { xs: '0.875rem', md: '1rem' }
           }}
         >

@@ -1,4 +1,4 @@
-import { privateClient } from './api';
+import { privateClient, publicClient } from './api';
 import type { ApiResponse } from '../@type/apiResponse';
 
 export interface MembershipInfo {
@@ -38,13 +38,7 @@ export const MembershipService = {
     return response.data;
   },
 
-  /**
-   * Get all available membership packages
-   */
-  getPackages: async (): Promise<ApiResponse<MembershipPackage[]>> => {
-    const response = await privateClient.get<ApiResponse<MembershipPackage[]>>('/membership/packages');
-    return response.data;
-  },
+
 
   /**
    * Register for a new membership package

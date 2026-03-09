@@ -95,6 +95,15 @@ const refreshAccessToken = async (): Promise<string> => {
 privateClient.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError) => {
+        // Log detailed error information
+        console.error('=== API Error ===');
+        console.error('URL:', error.config?.url);
+        console.error('Method:', error.config?.method);
+        console.error('Status:', error.response?.status);
+        console.error('Status Text:', error.response?.statusText);
+        console.error('Response Data:', error.response?.data);
+        console.error('Error Message:', error.message);
+        
         const originalRequest = error.config as
             | (InternalAxiosRequestConfig & { _retry?: boolean })
             | undefined;

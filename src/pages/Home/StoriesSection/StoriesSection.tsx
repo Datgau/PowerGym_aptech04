@@ -10,6 +10,7 @@ import ShareStoryModal from './ShareStoryModal.tsx';
 import { useCarousel } from '../../../hooks/useCarousel.ts';
 import type {StoryItem} from "../../../services/storyService.ts";
 import {useAuth} from "../../../hooks/useAuth.ts";
+import {useNavigate} from "react-router-dom";
 
 interface StoriesSectionProps {
   readonly stories: readonly StoryItem[];
@@ -17,12 +18,13 @@ interface StoriesSectionProps {
   readonly onStoriesUpdate?: () => void;
 }
 
-const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, onStoriesUpdate }) => {
+const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdate }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const { requireAuth } = useAuth();
+  const navigate = useNavigate();
   const maxStories = 5;
   const displayStories = stories.slice(0, maxStories);
   const hasMoreStories = stories.length > maxStories;
@@ -39,12 +41,11 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
   } = useCarousel({ totalItems });
   
   const handleViewMore = () => {
-    window.location.href = '/stories';
+    navigate('/stories');
   };
 
   const handleStoryClick = (storyId: string) => {
-    // Navigate to story detail page
-    window.location.href = `/stories/${storyId}`;
+    navigate(`/stories/${storyId}`);
   };
 
   const handleShareClick = () => {
@@ -73,13 +74,20 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
     <Box 
       component="section" 
       sx={{
-        py: { xs: 6, md: 8 },
-        background: '#00b4ff',
+        py: { xs: 8, md: 6 },
+        background: 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)',
+        backgroundSize: '200% 200%',
+        animation: 'gradientShift 15s ease infinite',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        '@keyframes gradientShift': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        }
       }}
     >
-      {/* Background Pattern */}
+      {/* Animated Background Shapes */}
       <Box
         sx={{
           position: 'absolute',
@@ -87,8 +95,50 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%)',
-          pointerEvents: 'none'
+          opacity: 0.15,
+          pointerEvents: 'none',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            width: '500px',
+            height: '500px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
+            top: '-250px',
+            left: '-250px',
+            animation: 'float 20s ease-in-out infinite',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)',
+            bottom: '-200px',
+            right: '-200px',
+            animation: 'float 15s ease-in-out infinite reverse',
+          },
+          '@keyframes float': {
+            '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+            '33%': { transform: 'translate(30px, -30px) scale(1.1)' },
+            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' }
+          }
+        }}
+      />
+
+      {/* Decorative Grid Pattern */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px',
+          pointerEvents: 'none',
+          opacity: 0.5
         }}
       />
 
@@ -177,7 +227,8 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
             ref={scrollContainerRef}
             sx={{
               overflow: 'hidden',
-              mx: 2
+              mx: { xs: 0, sm: 2 },
+              px: { xs: 1, sm: 0 }
             }}
           >
             <Box
@@ -185,15 +236,16 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
                 display: 'flex',
                 transform: `translateX(-${getTransformValue()}%)`,
                 transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                gap: 3
+                gap: { xs: 2, sm: 2.5, md: 3 }
               }}
             >
               {displayStories.map((story) => (
                 <Box
                   key={story.id}
                   sx={{
-                    flex: `0 0 ${100 / itemsPerView}%`,
-                    maxWidth: `${100 / itemsPerView}%`
+                    flex: `0 0 calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (24 / itemsPerView))}px)`,
+                    maxWidth: `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (24 / itemsPerView))}px)`,
+                    minWidth: 0
                   }}
                 >
                   <StoryCard
@@ -207,8 +259,9 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoryClick, 
               {hasMoreStories && (
                 <Box
                   sx={{
-                    flex: `0 0 ${100 / itemsPerView}%`,
-                    maxWidth: `${100 / itemsPerView}%`
+                    flex: `0 0 calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (24 / itemsPerView))}px)`,
+                    maxWidth: `calc(${100 / itemsPerView}% - ${((itemsPerView - 1) * (24 / itemsPerView))}px)`,
+                    minWidth: 0
                   }}
                 >
                   <ViewMoreCard 

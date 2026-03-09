@@ -93,6 +93,24 @@ export const storyService = {
     },
 
     /**
+     * Update an existing story (requires authentication)
+     */
+    updateStory: async (storyId: string, data: CreateStoryRequest): Promise<ApiResponse<StoryItem>> => {
+        const formData = new FormData();
+        if (data.image) formData.append('image', data.image);
+        if (data.title) formData.append('title', data.title);
+        if (data.content) formData.append('content', data.content);
+        if (data.tag) formData.append('tag', data.tag);
+
+        const response = await privateClient.put<ApiResponse<StoryItem>>(`/stories/${storyId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
+    },
+
+    /**
      * Get my stories (requires authentication) with pagination
      */
     getMyStories: async (

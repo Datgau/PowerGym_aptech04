@@ -17,8 +17,8 @@ const DotsIndicator: React.FC<DotsIndicatorProps> = ({
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        gap: 1,
-        mt: 4
+        gap: 1.5,
+        mt: 5
       }}
     >
       {Array.from({ length: maxIndex + 1 }).map((_, index) => (
@@ -26,15 +26,23 @@ const DotsIndicator: React.FC<DotsIndicatorProps> = ({
           key={index}
           onClick={() => onDotClick(index)}
           sx={{
-            width: 12,
+            width: currentIndex === index ? 32 : 12,
             height: 12,
-            borderRadius: '50%',
-            backgroundColor: currentIndex === index ? 'white' : 'rgba(255, 255, 255, 0.4)',
+            borderRadius: '6px',
+            background: currentIndex === index 
+              ? 'rgba(255, 255, 255, 0.95)' 
+              : 'rgba(255, 255, 255, 1)',
+            backdropFilter: 'blur(4px)',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
+            transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            border: '1px solid rgba(255, 255, 255, 0.99)',
+            boxShadow: currentIndex === index 
+              ? '0 4px 12px rgba(0,0,0,0.2)' 
+              : 'none',
             '&:hover': {
-              backgroundColor: 'white',
-              transform: 'scale(1.2)'
+              background: 'rgba(255, 255, 255, 0.97)',
+              transform: 'scale(1.2)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
             }
           }}
         />

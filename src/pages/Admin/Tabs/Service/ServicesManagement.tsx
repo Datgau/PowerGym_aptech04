@@ -52,7 +52,6 @@ const ServicesManagement: React.FC = () => {
     autoConnect: true,
   });
 
-  // Reload when new registration comes
   useEffect(() => {
     if (lastMessage?.action === 'REGISTERED') {
       loadData(paginationState.page, paginationState.rowsPerPage);
@@ -109,9 +108,7 @@ const ServicesManagement: React.FC = () => {
 
   const handleSubmit = async (data: any) => {
     try {
-      // Check auth before submit
       const token = getAccessToken();
-      
       if (!token) {
         console.error('No token found! User needs to login.');
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');

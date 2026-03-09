@@ -27,37 +27,73 @@ interface PackageCardProps {
 
 const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, processing }) => {
   const IconComponent = pkg.icon || Star;
+  const cardColor = pkg.color || '#1976d2';
 
   return (
     <Card
-      elevation={pkg.isPopular ? 12 : 6}
+      elevation={0}
       sx={{
         position: 'relative',
         height: '100%',
+        minHeight: { xs: 500, sm: 520, md: 540, lg: 560 },
         display: 'flex',
         flexDirection: 'column',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        border: pkg.isPopular ? '2px solid #FFD700' : '1px solid rgba(255, 255, 255, 0.2)',
-        borderRadius: 3,
-        overflow: 'hidden',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-          transform: 'translateY(-12px) scale(1.02)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-          '& .package-icon': {
-            transform: 'scale(1.1) rotate(5deg)'
-          }
-        },
-        '&::before': pkg.isPopular ? {
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: 4,
+        overflow: 'visible',
+        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&::before': {
           content: '""',
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          background: 'linear-gradient(90deg, #FFD700, #FFA500)'
-        } : {}
+          inset: 0,
+          borderRadius: 4,
+          padding: '2px',
+          background: pkg.isPopular 
+            ? `linear-gradient(135deg, ${cardColor}, #FFD700, ${cardColor})`
+            : `linear-gradient(135deg, rgba(255,255,255,0.5), rgba(200,200,200,0.3))`,
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude',
+          zIndex: -1,
+          transition: 'all 0.5s ease'
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          inset: '-2px',
+          borderRadius: 4,
+          background: pkg.isPopular 
+            ? `linear-gradient(135deg, ${cardColor}20, #FFD70020)`
+            : 'transparent',
+          filter: 'blur(20px)',
+          opacity: 0,
+          transition: 'opacity 0.5s ease',
+          zIndex: -2
+        },
+        '&:hover': {
+          transform: 'translateY(-16px) scale(1.03)',
+          boxShadow: `0 25px 50px -12px ${cardColor}40`,
+          '&::before': {
+            background: `linear-gradient(135deg, ${cardColor}, #FFD700, ${cardColor})`,
+            animation: 'gradient-rotate 3s linear infinite'
+          },
+          '&::after': {
+            opacity: 1
+          },
+          '& .package-icon': {
+            transform: 'scale(1.15) rotate(10deg)',
+            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+          },
+          '& .price-wrapper': {
+            transform: 'scale(1.05)'
+          }
+        },
+        '@keyframes gradient-rotate': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        }
       }}
     >
       {/* Popular Badge */}
@@ -67,15 +103,19 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
           icon={<Star />}
           sx={{
             position: 'absolute',
-            top: 16,
-            right: 16,
-            backgroundColor: '#FFD700',
-            color: '#000',
+            top: -10,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}, #FFD700)`,
+            color: '#fff',
             fontWeight: 700,
-            fontSize: '0.75rem',
+            fontSize: '0.65rem',
+            height: 24,
             zIndex: 2,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             '& .MuiChip-icon': {
-              color: '#000'
+              color: '#fff',
+              fontSize: 16
             }
           }}
         />
@@ -88,38 +128,57 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
           icon={<LocalOffer />}
           sx={{
             position: 'absolute',
-            top: pkg.isPopular ? 56 : 16,
-            right: 16,
-            backgroundColor: '#FF4444',
+            top: 12,
+            right: 12,
+            background: 'linear-gradient(135deg, #FF4444, #FF6B6B)',
             color: 'white',
             fontWeight: 600,
-            fontSize: '0.7rem',
-            zIndex: 2
+            fontSize: '0.65rem',
+            height: 24,
+            zIndex: 2,
+            boxShadow: '0 4px 8px rgba(255,68,68,0.3)',
+            '& .MuiChip-icon': {
+              fontSize: 14
+            }
           }}
         />
       )}
 
-      <CardContent sx={{ p: { xs: 3, md: 4 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ p: { xs: 2, md: 2.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Package Header */}
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <IconComponent
-            className="package-icon"
+        <Box sx={{ textAlign: 'center', mb: 2 }}>
+          <Box
             sx={{
-              fontSize: { xs: 48, md: 56 },
-              color: pkg.color || '#1976d2',
-              mb: 2,
-              transition: 'all 0.3s ease'
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: { xs: 60, md: 70 },
+              height: { xs: 60, md: 70 },
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}15, ${pkg.color || '#1976d2'}30)`,
+              border: `2px solid ${pkg.color || '#1976d2'}40`,
+              mb: 1.5,
+              transition: 'all 0.4s ease'
             }}
-          />
+          >
+            <IconComponent
+              className="package-icon"
+              sx={{
+                fontSize: { xs: 32, md: 36 },
+                color: pkg.color || '#1976d2',
+                transition: 'all 0.4s ease'
+              }}
+            />
+          </Box>
           
           <Typography 
             variant="h5" 
             component="h3" 
             sx={{
               fontWeight: 700,
-              fontSize: { xs: '1.3rem', md: '1.5rem' },
+              fontSize: { xs: '1.1rem', md: '1.25rem' },
               color: '#2c3e50',
-              mb: 1,
+              mb: 0.5,
               textTransform: 'uppercase',
               letterSpacing: '0.02em'
             }}
@@ -131,7 +190,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
             variant="body1" 
             sx={{
               color: '#666',
-              fontSize: { xs: '0.9rem', md: '1rem' },
+              fontSize: { xs: '0.8rem', md: '0.9rem' },
               fontWeight: 500
             }}
           >
@@ -144,8 +203,8 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
               sx={{
                 color: '#888',
                 fontStyle: 'italic',
-                mt: 1,
-                fontSize: { xs: '0.8rem', md: '0.9rem' }
+                mt: 0.5,
+                fontSize: { xs: '0.75rem', md: '0.8rem' }
               }}
             >
               {pkg.description}
@@ -154,15 +213,26 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
         </Box>
 
         {/* Price Section */}
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Box 
+          className="price-wrapper"
+          sx={{ 
+            textAlign: 'center', 
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2,
+            background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}08, ${pkg.color || '#1976d2'}15)`,
+            border: `1px solid ${pkg.color || '#1976d2'}20`,
+            transition: 'transform 0.3s ease'
+          }}
+        >
           {pkg.originalPrice && (
             <Typography
               variant="h6"
               sx={{
                 color: '#999',
                 textDecoration: 'line-through',
-                fontSize: { xs: '1rem', md: '1.2rem' },
-                mb: 0.5
+                fontSize: { xs: '0.85rem', md: '1rem' },
+                mb: 0.25
               }}
             >
               {pkg.originalPrice}
@@ -175,9 +245,9 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
             sx={{
               color: pkg.color || '#1976d2',
               fontWeight: 800,
-              fontSize: { xs: '2rem', md: '2.5rem' },
+              fontSize: { xs: '1.75rem', md: '2rem' },
               lineHeight: 1,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
+              textShadow: `2px 2px 4px ${pkg.color || '#1976d2'}20`
             }}
           >
             {pkg.price}
@@ -185,23 +255,61 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
         </Box>
 
         {/* Features List */}
-        <List sx={{ flex: 1, py: 0 }}>
+        <List sx={{ 
+          flex: 1, 
+          py: 0,
+          minHeight: { xs: 180, md: 200 },
+          maxHeight: { xs: 220, md: 240 },
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '4px'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: `${pkg.color || '#1976d2'}40`,
+            borderRadius: '4px'
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: `${pkg.color || '#1976d2'}60`
+          }
+        }}>
           {pkg.features.map((feature, index) => (
             <ListItem 
               key={index} 
               sx={{ 
                 px: 0, 
                 py: 0.5,
-                minHeight: 'auto'
+                minHeight: 'auto',
+                borderRadius: 1.5,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: `${pkg.color || '#1976d2'}08`,
+                  transform: 'translateX(4px)'
+                }
               }}
             >
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <CheckCircle 
-                  sx={{ 
-                    color: pkg.color || '#1976d2', 
-                    fontSize: 18 
-                  }} 
-                />
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 20,
+                    height: 20,
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}20, ${pkg.color || '#1976d2'}40)`,
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <CheckCircle 
+                    sx={{ 
+                      color: pkg.color || '#1976d2', 
+                      fontSize: 14 
+                    }} 
+                  />
+                </Box>
               </ListItemIcon>
               <ListItemText
                 primary={feature}
@@ -209,7 +317,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
                   primary: {
                     variant: 'body2',
                     sx: {
-                      fontSize: { xs: '0.85rem', md: '0.9rem' },
+                      fontSize: { xs: '0.8rem', md: '0.85rem' },
                       color: '#555',
                       fontWeight: 500,
                       lineHeight: 1.4
@@ -222,32 +330,51 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
         </List>
       </CardContent>
 
-      <CardActions sx={{ p: { xs: 3, md: 4 }, pt: 0 }}>
+      <CardActions sx={{ p: { xs: 2, md: 2.5 }, pt: 0 }}>
         <Button
           variant="contained"
           fullWidth
-          size="large"
+          size="medium"
           onClick={onSelect}
           disabled={processing}
           sx={{
-            backgroundColor: pkg.color || '#1976d2',
+            position: 'relative',
+            background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}, ${pkg.color || '#1976d2'}dd)`,
             color: 'white',
             fontWeight: 700,
-            fontSize: { xs: '0.9rem', md: '1rem' },
-            py: { xs: 1.5, md: 2 },
+            fontSize: { xs: '0.8rem', md: '0.9rem' },
+            py: { xs: 1.2, md: 1.5 },
             borderRadius: 2,
             textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            boxShadow: `0 4px 12px ${pkg.color}40`,
+            letterSpacing: '0.08em',
+            overflow: 'hidden',
+            boxShadow: `0 6px 16px ${pkg.color || '#1976d2'}40`,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+              transition: 'left 0.5s ease'
+            },
             '&:hover': {
-              backgroundColor: pkg.color || '#1976d2',
-              filter: 'brightness(0.9)',
+              background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}ee, ${pkg.color || '#1976d2'})`,
+              transform: 'translateY(-4px)',
+              boxShadow: `0 12px 28px ${pkg.color || '#1976d2'}60`,
+              '&::before': {
+                left: '100%'
+              }
+            },
+            '&:active': {
               transform: 'translateY(-2px)',
-              boxShadow: `0 6px 16px ${pkg.color}60`
+              boxShadow: `0 6px 16px ${pkg.color || '#1976d2'}50`
             },
             '&:disabled': {
-              backgroundColor: '#ccc',
-              color: '#666'
+              background: 'linear-gradient(135deg, #ccc, #bbb)',
+              color: '#666',
+              boxShadow: 'none'
             }
           }}
         >

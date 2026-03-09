@@ -20,19 +20,26 @@ const CarouselNavigation: React.FC<CarouselNavigationProps> = ({
     top: '50%',
     transform: 'translateY(-50%)',
     zIndex: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#1e3c72',
-    width: 48,
-    height: 48,
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
+    color: '#667eea',
+    width: { xs: 40, sm: 48 },
+    height: { xs: 40, sm: 48 },
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
     '&:hover': {
-      backgroundColor: 'white',
-      transform: 'translateY(-50%) scale(1.1)'
+      background: 'white',
+      transform: 'translateY(-50%) scale(1.15)',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
+      border: '2px solid rgba(255, 255, 255, 0.5)',
     },
     '&:disabled': {
-      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-      color: 'rgba(0, 0, 0, 0.3)'
-    },
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+      background: 'rgba(255, 255, 255, 0.2)',
+      color: 'rgba(255, 255, 255, 0.4)',
+      border: '2px solid rgba(255, 255, 255, 0.1)',
+      boxShadow: 'none'
+    }
   };
 
   return (
@@ -42,10 +49,10 @@ const CarouselNavigation: React.FC<CarouselNavigationProps> = ({
         disabled={currentIndex === 0}
         sx={{
           ...buttonStyles,
-          left: -20
+          left: { xs: -12, sm: -20 }
         }}
       >
-        <ArrowBackIos />
+        <ArrowBackIos sx={{ fontSize: { xs: 16, sm: 20 } }} />
       </IconButton>
 
       <IconButton
@@ -53,10 +60,10 @@ const CarouselNavigation: React.FC<CarouselNavigationProps> = ({
         disabled={currentIndex >= maxIndex}
         sx={{
           ...buttonStyles,
-          right: -20
+          right: { xs: -12, sm: -20 }
         }}
       >
-        <ArrowForwardIos />
+        <ArrowForwardIos sx={{ fontSize: { xs: 16, sm: 20 } }} />
       </IconButton>
     </>
   );
