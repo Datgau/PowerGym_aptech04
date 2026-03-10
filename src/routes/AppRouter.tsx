@@ -19,12 +19,13 @@ import AuthRedirect from "../components/Auth/AuthRedirect";
 // PowerGym Pages
 import Service from "../pages/Services/Service.tsx";
 import StoryDetailPage from "../pages/Stories/StoryDetailPage.tsx";
-import Equipments from "../pages/PowerGym/Equipments.tsx";
-import Pricing from "../pages/PowerGym/Pricing";
+import Equipments from "../pages/Equipments/Equipments.tsx";
+import Pricing from "../pages/Pricing/Pricing.tsx";
 import News from "../pages/News/News.tsx";
 // import Promotions from "../pages/PowerGym/Promotions";
-import Rewards from "../pages/PowerGym/Rewards";
+import Rewards from "../pages/Rewards/Rewards.tsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.tsx";
+import Promotions from "../pages/Promotions/Promotions.tsx";
 
 export const AppRouter = () => (
     <>
@@ -39,6 +40,8 @@ export const AppRouter = () => (
             <Route path="/data-deletion" element={<DataDeletion />} />
             <Route path="/home" element={<Home />} />
             <Route path="/service" element={<Service />} />
+            <Route path={"/promotions"} element={<Promotions />} />
+            <Route path={"/rewards"} element={<Rewards />} />
             <Route path="/stories/:storyId" element={<StoryDetailPage />} />
             <Route path="/equipment" element={<Equipments />} />
             <Route path="/pricing" element={<Pricing />} />

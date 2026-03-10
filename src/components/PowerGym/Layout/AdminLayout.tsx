@@ -30,7 +30,7 @@ import {
   AccountCircle,
   Article
 } from '@mui/icons-material';
-import GlobalNotification from "../../Notification/GlobalNotification.tsx";
+import GlobalNotification from "../../Notifications/GlobalNotification.tsx";
 import { useTokenRefresh } from "../../../hooks/useTokenRefresh.ts";
 
 const drawerWidth = 260;

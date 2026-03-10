@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import AdminLayout from '../../components/PowerGym/Layout/AdminLayout';
 import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
+import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";
 
 // Format currency helper
 const formatCurrency = (amount: number) => {

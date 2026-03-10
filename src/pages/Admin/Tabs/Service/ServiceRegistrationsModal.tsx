@@ -109,7 +109,7 @@ const ServiceRegistrationsModal: React.FC<ServiceRegistrationsModalProps> = ({
     <Dialog 
       open={open} 
       onClose={onClose} 
-      maxWidth="lg" 
+      maxWidth="xl"
       fullWidth
       slotProps={{
         paper: {

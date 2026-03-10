@@ -8,7 +8,6 @@ export { default as TopHeader } from './Navigation/TopHeader';
 export { default as HeroBanner } from './HeroBanner/HeroBanner';
 export { default as ServicesSection } from '../../pages/Home/ServicesSection/ServicesSection';
 export { default as StoriesSection } from '../../pages/Home/StoriesSection/StoriesSection';
-export { BMISection } from '../../pages/Home/BMISection';
 // export { default as QuickActionsSection } from './QuickActionsSection/QuickActionsSection';
 export { default as MembershipStatsSection } from '../../pages/Home/MembershipStatsSection/MembershipStatsSection';
 export { default as MembershipPackagesSection } from './MembershipPackagesSection/MembershipPackagesSection';

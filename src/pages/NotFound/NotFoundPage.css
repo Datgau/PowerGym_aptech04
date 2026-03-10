@@ -1,7 +1,7 @@
 /* NotFound Page Container */
 .notFoundPage {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #16375c 0%, #017af6 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,7 +108,7 @@
 .errorNumber {
   font-size: 120px;
   font-weight: 900;
-  color: #667eea;
+  color: #1366BAFF;
   text-shadow: 2px 2px 4px rgba(102, 126, 234, 0.3);
   animation: bounce 2s ease-in-out infinite;
 }
@@ -192,7 +192,7 @@
 }
 
 .searchBox:focus-within {
-  border-color: #667eea;
+  border-color: #017af6;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -216,7 +216,7 @@
 }
 
 .searchButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #16375c 0%, #017af6 100%);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -266,7 +266,7 @@
 }
 
 .quickLink:hover {
-  background: #667eea;
+  background: #2077da;
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
@@ -300,14 +300,14 @@
 }
 
 .actionBtn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #16375c 0%, #017af6 100%);
   color: white;
 }
 
 .actionBtn.secondary {
   background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #017af6;
+  border: 2px solid #075cb1;
 }
 
 .actionBtn:hover {
@@ -316,7 +316,7 @@
 }
 
 .actionBtn.secondary:hover {
-  background: #667eea;
+  background: linear-gradient(135deg, #16375c 0%, #017af6 100%);
   color: white;
 }
 
@@ -352,7 +352,7 @@
 }
 
 .helpLink {
-  color: #667eea;
+  color: #0a3f75;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
@@ -361,8 +361,8 @@
 }
 
 .helpLink:hover {
-  color: #764ba2;
-  border-bottom-color: #764ba2;
+  color: #2e93fb;
+  border-bottom-color: #2591ff;
 }
 
 /* Decorative Elements */
@@ -547,7 +547,7 @@
 .actionBtn:focus,
 .quickLink:focus,
 .helpLink:focus {
-  outline: 2px solid #667eea;
+  outline: 2px solid #017af6;
   outline-offset: 2px;
 }
 

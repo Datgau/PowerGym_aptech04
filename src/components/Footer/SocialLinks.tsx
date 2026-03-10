@@ -1,104 +1,62 @@
 import React from 'react';
-import { Box, IconButton, Typography } from '@mui/material';
-import {
-    Facebook,
-    Instagram,
-    YouTube,
-    Twitter,
-    LinkedIn
-} from '@mui/icons-material';
+import { Box, IconButton, Typography, Tooltip } from '@mui/material';
+import { Facebook, Instagram, YouTube, Twitter, LinkedIn } from '@mui/icons-material';
 
 const socialLinks = [
-    {
-        name: 'Facebook',
-        icon: Facebook,
-        url: 'https://facebook.com/powergym',
-        color: '#1877F2'
-    },
-    {
-        name: 'Instagram',
-        icon: Instagram,
-        url: 'https://instagram.com/powergym',
-        color: '#E4405F'
-    },
-    {
-        name: 'YouTube',
-        icon: YouTube,
-        url: 'https://youtube.com/powergym',
-        color: '#FF0000'
-    },
-    {
-        name: 'Twitter',
-        icon: Twitter,
-        url: 'https://twitter.com/powergym',
-        color: '#1DA1F2'
-    },
-    {
-        name: 'LinkedIn',
-        icon: LinkedIn,
-        url: 'https://linkedin.com/company/powergym',
-        color: '#0A66C2'
-    }
+    { name: 'Facebook',  icon: Facebook,  url: 'https://facebook.com/powergym',            color: '#1877F2' },
+    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/powergym',           color: '#E4405F' },
+    { name: 'YouTube',   icon: YouTube,   url: 'https://youtube.com/powergym',             color: '#FF0000' },
+    { name: 'Twitter',   icon: Twitter,   url: 'https://twitter.com/powergym',             color: '#1DA1F2' },
+    { name: 'LinkedIn',  icon: LinkedIn,  url: 'https://linkedin.com/company/powergym',    color: '#0A66C2' },
 ];
 
 const SocialLinks: React.FC = () => {
     return (
-        <Box
-            sx={{
-                textAlign: 'center',
-                borderTop: '1px solid #333',
-                pt: 3
-            }}
-        >
-            <Typography
-                variant="h6"
-                sx={{
-                    mb: 2,
-                    color: '#00a1e4',
-                    fontWeight: 'bold'
-                }}
-            >
-                Connect With Us
+        <Box sx={{
+            pt: 4,
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+        }}>
+            <Typography variant="body2" sx={{
+                color: 'rgba(255,255,255,0.35)',
+                fontSize: '0.82rem',
+            }}>
+                Follow us to stay updated with the latest news and offers
             </Typography>
 
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                {socialLinks.map((social) => {
-                    const IconComponent = social.icon;
-                    return (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                {socialLinks.map(({ name, icon: Icon, url, color }) => (
+                    <Tooltip key={name} title={name} placement="top" arrow>
                         <IconButton
-                            key={social.name}
-                            href={social.url}
+                            href={url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            size="small"
                             sx={{
-                                color: '#ccc',
-                                backgroundColor: '#2a2a2a',
-                                border: '1px solid #444',
-                                transition: 'all 0.3s ease',
+                                color: 'rgba(255,255,255,0.45)',
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                width: 38, height: 38,
+                                borderRadius: '10px',
+                                transition: 'all 0.25s ease',
                                 '&:hover': {
-                                    color: social.color,
-                                    backgroundColor: '#333',
-                                    transform: 'translateY(-2px)',
-                                    borderColor: social.color
-                                }
+                                    color,
+                                    background: `${color}18`,
+                                    borderColor: `${color}60`,
+                                    transform: 'translateY(-3px)',
+                                    boxShadow: `0 6px 16px ${color}30`,
+                                },
                             }}
                         >
-                            <IconComponent />
+                            <Icon sx={{ fontSize: 18 }} />
                         </IconButton>
-                    );
-                })}
+                    </Tooltip>
+                ))}
             </Box>
-
-            <Typography
-                variant="body2"
-                sx={{
-                    mt: 2,
-                    color: '#888',
-                    fontSize: '0.85rem'
-                }}
-            >
-                Follow us to stay updated with the latest news and updates
-            </Typography>
         </Box>
     );
 };

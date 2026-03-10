@@ -3,14 +3,12 @@ import {
     Box,
     Container,
     Typography,
-    Card,
     Fade,
     Zoom,
 } from '@mui/material';
 import GroupIcon from '@mui/icons-material/Group';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useNavigate } from "react-router-dom";
 import type { ServiceItem } from '../../../@type/powergym.ts';
@@ -28,7 +26,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
         navigate('/service');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    
+
     const getServiceImage = (service: ServiceItem): string => {
         return service.images?.[0] || '/images/default-service.jpg';
     };
@@ -44,489 +42,398 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                 '&::before': {
                     content: '""',
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
+                    top: 0, left: 0, right: 0,
                     height: '100%',
                     background: `
-                        radial-gradient(circle at 20% 50%, rgba(0, 180, 255, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.05) 0%, transparent 50%)
+                        radial-gradient(circle at 20% 50%, rgba(0,180,255,0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0,102,255,0.05) 0%, transparent 50%)
                     `,
                     pointerEvents: 'none',
                 }
             }}
         >
             <Container maxWidth="xl">
-                {/* Header Section */}
+
+                {/* ── Header ── */}
                 <Fade in timeout={800}>
-                    <Box
-                        textAlign="center"
-                        mb={{ xs: 6, md: 8 }}
-                        sx={{
-                            position: 'relative',
-                            '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                bottom: '-20px',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                width: '80px',
-                                height: '4px',
-                                background: 'linear-gradient(90deg, #00b4ff, #0066ff)',
-                                borderRadius: '2px',
-                            }
-                        }}
-                    >
-                        <Box
-                            sx={{
+                    <Box sx={{ mb: { xs: 6, md: 10 }, position: 'relative' }}>
+                        {/* Big decorative background text */}
+                        <Typography sx={{
+                            position: 'absolute',
+                            top: { xs: -20, md: -40 },
+                            left: -10,
+                            fontSize: { xs: '5rem', md: '10rem' },
+                            fontWeight: 900,
+                            color: 'rgba(0,102,255,0.04)',
+                            lineHeight: 1,
+                            userSelect: 'none',
+                            pointerEvents: 'none',
+                            letterSpacing: '-4px',
+                            whiteSpace: 'nowrap',
+                        }}>
+                            SERVICES
+                        </Typography>
+
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                            {/* Pill badge */}
+                            <Box sx={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 1.5,
-                                mb: 2,
-                                px: 3,
-                                py: 1,
-                                background: 'linear-gradient(135deg, rgba(0, 180, 255, 0.1), rgba(0, 102, 255, 0.1))',
+                                gap: 1,
+                                mb: 2.5,
+                                px: 2.5,
+                                py: 0.8,
+                                background: 'linear-gradient(135deg, rgba(0,180,255,0.1), rgba(0,102,255,0.1))',
                                 borderRadius: '50px',
-                                border: '1px solid rgba(0, 180, 255, 0.2)',
-                            }}
-                        >
-                            <FitnessCenterIcon sx={{ color: '#00b4ff', fontSize: 24 }} />
-                            <Typography
-                                variant="overline"
-                                sx={{
-                                    color: '#00b4ff',
-                                    fontWeight: 700,
-                                    letterSpacing: '0.1em',
-                                    fontSize: '0.875rem'
-                                }}
-                            >
-                                OUR SERVICES
-                            </Typography>
-                        </Box>
+                                border: '1px solid rgba(0,180,255,0.2)',
+                            }}>
+                                <FitnessCenterIcon sx={{ color: '#00b4ff', fontSize: 18 }} />
+                                <Typography variant="overline" sx={{
+                                    color: '#00b4ff', fontWeight: 700,
+                                    letterSpacing: '0.12em', fontSize: '0.75rem',
+                                }}>
+                                    OUR SERVICES
+                                </Typography>
+                            </Box>
 
-                        <Typography
-                            variant="h1"
-                            component="h1"
-                            sx={{
-                                height: 60,
-                                fontWeight: 700,
-                                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                                color: '#1a1a1a',
-                                textTransform: 'capitalize',
-                                letterSpacing: '0.02em',
-                                mb: 3,
-                                background: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                backgroundClip: 'text',
-                            }}
-                        >
-                            Amazing Experience
-                        </Typography>
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                color: '#666',
-                                fontSize: { xs: '1rem', md: '1.15rem' },
-                                lineHeight: 1.7,
-                                maxWidth: '700px',
-                                mx: 'auto',
-                                fontWeight: 400,
-                            }}
-                        >
-                            Train at POWERGYM to enjoy the best and most optimal facilities
-                        </Typography>
+                            {/* Title row — asymmetric */}
+                            <Box sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: { xs: 'flex-start', md: 'flex-end' },
+                                justifyContent: 'space-between',
+                                gap: 3,
+                            }}>
+                                <Box>
+                                    <Typography variant="h1" component="h2" sx={{
+                                        fontWeight: 800,
+                                        fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.5rem' },
+                                        lineHeight: 1.1,
+                                        letterSpacing: '-1px',
+                                        background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                        mb: 0,
+                                    }}>
+                                        Amazing<br />
+                                        <Box component="span" sx={{
+                                            background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                            backgroundClip: 'text',
+                                        }}>Experience</Box>
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{ maxWidth: 340, mb: { md: 0.5 } }}>
+                                    {/* Accent line */}
+                                    <Box sx={{
+                                        width: 48, height: 3,
+                                        background: 'linear-gradient(90deg, #00b4ff, #0066ff)',
+                                        borderRadius: 2, mb: 1.5,
+                                    }} />
+                                    <Typography variant="body1" sx={{
+                                        color: '#666', lineHeight: 1.75,
+                                        fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 400,
+                                    }}>
+                                        Train at POWERGYM to enjoy the best and most optimal facilities
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
                     </Box>
                 </Fade>
 
-                {/* Equipments Grid */}
+                {/* ── Grid ── */}
                 {!servicesData || servicesData.length === 0 ? (
                     <Box textAlign="center" py={4}>
-                        <Typography variant="h4" color="error">
-                            No services to display
-                        </Typography>
+                        <Typography variant="h4" color="error">No services to display</Typography>
                     </Box>
                 ) : (
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                                xs: '1fr',
-                                sm: 'repeat(2, 1fr)',
-                                lg: 'repeat(4, 1fr)'
-                            },
-                            gap: { xs: 3, sm: 3, md: 4 },
-                            px: { xs: 2, sm: 0 }
-                        }}
-                    >
-                        {/* Regular Service Cards - Show first 3 services */}
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', lg: 'repeat(4,1fr)' },
+                        gap: { xs: 3, md: 3 },
+                    }}>
+
+                        {/* ── Service Cards ── */}
                         {servicesData.slice(0, 3).map((service, index) => (
-                            <Zoom
-                                key={service.id}
-                                in
-                                timeout={500}
-                                style={{ transitionDelay: `${index * 100}ms` }}
-                            >
-                                <Card
+                            <Zoom key={service.id} in timeout={500} style={{ transitionDelay: `${index * 100}ms` }}>
+                                <Box
                                     onMouseEnter={() => setHoveredCard(service.id)}
                                     onMouseLeave={() => setHoveredCard(null)}
-                                    sx={{
-                                        width: '100%',
-                                        height: { xs: 'auto', md: 600 },
-                                        minHeight: { xs: 500, md: 600 },
-                                        background: 'linear-gradient(145deg, #00d4ff 0%, #00b4ff 40%, #0066ff 100%)',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        borderRadius: 3,
-                                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        boxShadow: hoveredCard === service.id
-                                            ? '0 25px 50px -12px rgba(0, 102, 255, 0.5), 0 0 0 1px rgba(0, 180, 255, 0.1)'
-                                            : '0 10px 30px -10px rgba(0, 102, 255, 0.3)',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-
-                                        '&:hover': {
-                                            transform: 'translateY(-12px)',
-                                        },
-
-                                        '&:active': {
-                                            transform: 'translateY(-8px)',
-                                        }
-                                    }}
                                     onClick={() => onServiceClick(service.id)}
+                                    sx={{
+                                        position: 'relative',
+                                        height: { xs: 520, md: 600 },
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        background: 'linear-gradient(145deg, #00d4ff 0%, #00b4ff 40%, #0066ff 100%)',
+                                        boxShadow: hoveredCard === service.id
+                                            ? '0 32px 64px -12px rgba(0,102,255,0.5)'
+                                            : '0 12px 32px -8px rgba(0,102,255,0.28)',
+                                        transition: 'transform 0.45s cubic-bezier(.22,.97,.44,1), box-shadow 0.45s ease',
+                                        '&:hover': { transform: 'translateY(-10px)' },
+                                    }}
                                 >
-                                    {/* Image Section - Fixed size, no scaling */}
-                                    <Box 
-                                        sx={{ 
-                                            position: 'relative', 
-                                            overflow: 'hidden', 
-                                            height: { xs: 300, md: 400 },
-                                            width: '100%',
-                                            flexShrink: 0,
-                                        }}
-                                    >
+                                    {/* Index number — editorial style */}
+                                    <Typography sx={{
+                                        position: 'absolute',
+                                        top: 16, left: 20,
+                                        fontSize: '4.5rem',
+                                        fontWeight: 900,
+                                        lineHeight: 1,
+                                        color: 'rgba(255,255,255,0.15)',
+                                        zIndex: 3,
+                                        userSelect: 'none',
+                                        letterSpacing: '-3px',
+                                    }}>
+                                        {String(index + 1).padStart(2, '0')}
+                                    </Typography>
+
+                                    {/* Image */}
+                                    <Box sx={{
+                                        position: 'absolute', inset: 0,
+                                        transition: 'transform 0.55s cubic-bezier(.22,.97,.44,1)',
+                                        transform: hoveredCard === service.id ? 'scale(1.06)' : 'scale(1)',
+                                    }}>
                                         <Box
                                             component="img"
                                             src={getServiceImage(service)}
                                             alt={service.name}
                                             loading="lazy"
-                                            sx={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                                objectPosition: 'center',
-                                                display: 'block',
-                                            }}
                                             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                                                 e.currentTarget.src = '/images/default-service.jpg';
                                             }}
-                                        />
-                                        <Box
                                             sx={{
-                                                position: 'absolute',
-                                                bottom: 0,
-                                                left: 0,
-                                                right: 0,
-                                                height: '50%',
-                                                background: 'linear-gradient(to top, rgba(0, 102, 255, 0.4), transparent)',
-                                                pointerEvents: 'none',
+                                                width: '100%', height: '100%',
+                                                objectFit: 'cover', objectPosition: 'center',
+                                                display: 'block',
                                             }}
                                         />
                                     </Box>
 
-                                    {/* Content Section - Fixed height */}
-                                    <Box
-                                        sx={{
-                                            p: 2.5,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            height: 200,
-                                            position: 'relative',
-                                            zIndex: 2,
-                                            flexShrink: 0,
-                                        }}
-                                    >
-                                        {/* Service Name */}
-                                        <Typography
-                                            variant="h5"
-                                            sx={{
-                                                color: '#fff',
-                                                fontWeight: 700,
-                                                mb: 1,
-                                                fontSize: { xs: '1.15rem', sm: '1.25rem' },
-                                                lineHeight: 1.3,
-                                                textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                                            }}
-                                        >
+                                    {/* Gradient overlays */}
+                                    <Box sx={{
+                                        position: 'absolute', inset: 0,
+                                        background: 'linear-gradient(180deg, rgba(0,60,160,0.15) 0%, transparent 35%, rgba(0,30,120,0.85) 75%, rgba(0,20,100,0.97) 100%)',
+                                        zIndex: 2,
+                                    }} />
+
+                                    {/* Content pinned to bottom */}
+                                    <Box sx={{
+                                        position: 'absolute', bottom: 0, left: 0, right: 0,
+                                        p: { xs: 2.5, md: 3 },
+                                        zIndex: 3,
+                                    }}>
+                                        {/* Name */}
+                                        <Typography variant="h5" sx={{
+                                            color: '#fff', fontWeight: 800,
+                                            fontSize: { xs: '1.15rem', md: '1.3rem' },
+                                            lineHeight: 1.25, mb: 1,
+                                            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                                            letterSpacing: '-0.2px',
+                                        }}>
                                             {service.name}
                                         </Typography>
 
-                                        {/* Description - Optimized */}
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                color: 'rgba(255, 255, 255, 0.95)',
-                                                lineHeight: 1.5,
-                                                mb: 1.5,
-                                                fontSize: '0.9rem',
-                                                overflow: 'hidden',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                textOverflow: 'ellipsis',
-                                            }}
-                                        >
+                                        {/* Description */}
+                                        <Typography variant="body2" sx={{
+                                            color: 'rgba(255,255,255,0.8)',
+                                            fontSize: '0.85rem', lineHeight: 1.55, mb: 2,
+                                            overflow: 'hidden',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                        }}>
                                             {service.description}
                                         </Typography>
 
-                                        {/* Info Section */}
-                                        <Box sx={{ mt: 'auto' }}>
-                                            {/* Participants */}
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    mb: 1.5,
-                                                    p: 1.2,
-                                                    background: 'rgba(255, 255, 255, 0.15)',
-                                                    borderRadius: 2,
-                                                    backdropFilter: 'blur(10px)',
-                                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                }}
-                                            >
-                                                <GroupIcon sx={{ color: '#fff', fontSize: 20 }} />
-                                                <Typography
-                                                    variant="body2"
-                                                    sx={{
-                                                        color: '#fff',
-                                                        fontWeight: 600,
-                                                        fontSize: '0.9rem',
-                                                    }}
-                                                >
-                                                    Tối đa {service.maxParticipants} người
+                                        {/* Participants pill */}
+                                        <Box sx={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 0.75,
+                                            px: 1.5, py: 0.6,
+                                            background: 'rgba(255,255,255,0.15)',
+                                            backdropFilter: 'blur(8px)',
+                                            border: '1px solid rgba(255,255,255,0.22)',
+                                            borderRadius: '50px', mb: 2,
+                                        }}>
+                                            <GroupIcon sx={{ color: '#fff', fontSize: 15 }} />
+                                            <Typography variant="caption" sx={{
+                                                color: '#fff', fontWeight: 600, fontSize: '0.78rem',
+                                            }}>
+                                                Max {service.maxParticipants} people
+                                            </Typography>
+                                        </Box>
+
+                                        {/* Price row */}
+                                        <Box sx={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            background: '#fff',
+                                            borderRadius: '12px',
+                                            px: 2, py: 1.2,
+                                            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                                        }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <AttachMoneyIcon sx={{ color: '#ff5026', fontSize: 20 }} />
+                                                <Typography sx={{
+                                                    color: '#ff5026', fontWeight: 800,
+                                                    fontSize: { xs: '1.05rem', md: '1.15rem' },
+                                                    letterSpacing: '-0.3px',
+                                                }}>
+                                                    {service.price?.toLocaleString('vi-VN')}đ
                                                 </Typography>
                                             </Box>
-
-                                            {/* Price Badge - Optimized */}
                                             <Box sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                gap: 1.5,
-                                                backgroundColor: '#ffffff',
-                                                padding: '12px 18px',
-                                                borderRadius: 2.5,
-                                                boxShadow: '0 0 25px rgba(255, 80, 38, 0.4), 0 8px 20px rgba(0, 0, 0, 0.15)',
-                                                border: '2px solid rgba(255, 255, 255, 0.95)',
-                                                position: 'relative',
-                                                overflow: 'hidden',
-                                                transition: 'all 0.3s ease',
-
-                                                '&:hover': {
-                                                    transform: 'translateY(-2px)',
-                                                    boxShadow: '0 0 30px rgba(255, 80, 38, 0.5), 0 10px 25px rgba(0, 0, 0, 0.2)',
-                                                }
+                                                px: 1.2, py: 0.3,
+                                                background: 'rgba(0,102,255,0.08)',
+                                                borderRadius: '6px',
                                             }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <AttachMoneyIcon sx={{
-                                                        color: '#ff5026',
-                                                        fontSize: 24,
-                                                        filter: 'drop-shadow(0 2px 4px rgba(255, 80, 38, 0.3))'
-                                                    }} />
-                                                    <Typography
-                                                        variant="h6"
-                                                        sx={{
-                                                            color: '#ff5026',
-                                                            fontWeight: 700,
-                                                            fontSize: { xs: '1.15rem', sm: '1.3rem' },
-                                                            textShadow: '0 1px 2px rgba(255, 80, 38, 0.2)',
-                                                            letterSpacing: '0.3px'
-                                                        }}
-                                                    >
-                                                        {service.price?.toLocaleString('vi-VN')}đ
-                                                    </Typography>
-                                                </Box>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{
-                                                        color: '#666',
-                                                        fontWeight: 600,
-                                                        fontSize: '0.8rem',
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                                                        px: 1.2,
-                                                        py: 0.4,
-                                                        borderRadius: 1,
-                                                    }}
-                                                >
-                                                    {service.duration} tháng
+                                                <Typography variant="caption" sx={{
+                                                    color: '#0066ff', fontWeight: 700, fontSize: '0.75rem',
+                                                }}>
+                                                    {service.duration} months
                                                 </Typography>
                                             </Box>
                                         </Box>
                                     </Box>
-                                </Card>
+                                </Box>
                             </Zoom>
                         ))}
 
-                        {/* Special "See More" Card - Fixed size */}
+                        {/* ── See More Card ── */}
                         <Zoom in timeout={500} style={{ transitionDelay: '300ms' }}>
-                            <Card
+                            <Box
                                 onMouseEnter={() => setHoveredCard('see-more')}
                                 onMouseLeave={() => setHoveredCard(null)}
-                                sx={{
-                                    width: '100%',
-                                    height: { xs: 'auto', md: 600 },
-                                    minHeight: { xs: 500, md: 600 },
-                                    background: 'linear-gradient(135deg, rgb(4,100,223) 0%, rgb(15,110,236) 100%)',
-                                    cursor: 'pointer',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    borderRadius: 3,
-                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    boxShadow: hoveredCard === 'see-more'
-                                        ? '0 25px 50px -12px rgba(0, 102, 255, 0.5)'
-                                        : '0 10px 30px -10px rgba(0, 102, 255, 0.3)',
-                                    border: '3px solid rgba(255, 255, 255, 0.3)',
-
-                                    '&:hover': {
-                                        transform: 'translateY(-12px)',
-                                    },
-
-                                    '&:active': {
-                                        transform: 'translateY(-8px)',
-                                    }
-                                }}
                                 onClick={onSeeMoreClick}
+                                sx={{
+                                    position: 'relative',
+                                    height: { xs: 520, md: 600 },
+                                    borderRadius: '20px',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    background: 'linear-gradient(135deg, rgb(4,100,223) 0%, rgb(15,110,236) 100%)',
+                                    border: '3px solid rgba(255,255,255,0.3)',
+                                    boxShadow: hoveredCard === 'see-more'
+                                        ? '0 32px 64px -12px rgba(0,102,255,0.5)'
+                                        : '0 12px 32px -8px rgba(0,102,255,0.3)',
+                                    transition: 'transform 0.45s cubic-bezier(.22,.97,.44,1), box-shadow 0.45s ease',
+                                    '&:hover': { transform: 'translateY(-10px)' },
+                                }}
                             >
-                                {/* Content - Centered Design */}
-                                <Box
-                                    sx={{
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        p: { xs: 3, sm: 4 },
+                                {/* Decorative circles */}
+                                <Box sx={{
+                                    position: 'absolute', top: -60, right: -60,
+                                    width: 220, height: 220, borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.07)', pointerEvents: 'none',
+                                }} />
+                                <Box sx={{
+                                    position: 'absolute', bottom: -40, left: -40,
+                                    width: 160, height: 160, borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.06)', pointerEvents: 'none',
+                                }} />
+                                {/* Grid texture */}
+                                <Box sx={{
+                                    position: 'absolute', inset: 0,
+                                    backgroundImage: `
+                                        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                                        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+                                    `,
+                                    backgroundSize: '32px 32px',
+                                    pointerEvents: 'none',
+                                }} />
+
+                                {/* Centered content */}
+                                <Box sx={{
+                                    position: 'relative', zIndex: 2,
+                                    height: '100%',
+                                    display: 'flex', flexDirection: 'column',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    p: { xs: 3, md: 4 }, textAlign: 'center',
+                                    gap: 0,
+                                }}>
+                                    {/* Animated ring icon */}
+                                    <Box sx={{
+                                        width: 100, height: 100, borderRadius: '50%',
+                                        border: '2.5px solid rgba(255,255,255,0.35)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        mb: 3,
                                         position: 'relative',
-                                        zIndex: 2,
-                                    }}
-                                >
-                                    {/* Icon with rotation animation */}
-                                    <Box
-                                        sx={{
-                                            width: 120,
-                                            height: 120,
+                                        transition: 'transform 0.5s ease, border-color 0.3s',
+                                        transform: hoveredCard === 'see-more' ? 'rotate(45deg) scale(1.08)' : 'rotate(0deg)',
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute', inset: 8,
                                             borderRadius: '50%',
-                                            background: 'rgba(255, 255, 255, 0.25)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            mb: 3,
-                                            backdropFilter: 'blur(10px)',
-                                            border: '3px solid rgba(255, 255, 255, 0.4)',
-                                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-                                            transition: 'all 0.4s ease',
-                                            transform: hoveredCard === 'see-more' ? 'rotate(360deg) scale(1.1)' : 'rotate(0deg) scale(1)',
-                                        }}
-                                    >
-                                        <MoreHorizIcon sx={{
-                                            color: '#fff',
-                                            fontSize: 60,
-                                            filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))'
+                                            background: 'rgba(255,255,255,0.12)',
+                                        },
+                                    }}>
+                                        <ArrowForwardIcon sx={{
+                                            color: '#fff', fontSize: 36,
+                                            transition: 'transform 0.5s ease',
+                                            transform: hoveredCard === 'see-more' ? 'rotate(-45deg)' : 'rotate(0deg)',
                                         }} />
                                     </Box>
 
-                                    {/* Title */}
-                                    <Typography
-                                        variant="h3"
-                                        sx={{
-                                            color: '#fff',
-                                            fontWeight: 800,
-                                            mb: 2,
-                                            fontSize: { xs: '2rem', sm: '2.5rem' },
-                                            textAlign: 'center',
-                                            textShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                                            letterSpacing: '0.5px',
-                                        }}
-                                    >
-                                        View More
+                                    <Typography variant="h3" sx={{
+                                        color: '#fff', fontWeight: 900,
+                                        fontSize: { xs: '2rem', md: '2.4rem' },
+                                        letterSpacing: '-0.5px', lineHeight: 1.1, mb: 1.5,
+                                        textShadow: '0 4px 16px rgba(0,0,0,0.25)',
+                                    }}>
+                                        View<br />More
                                     </Typography>
 
-                                    {/* Subtitle */}
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            color: 'rgba(255, 255, 255, 0.95)',
-                                            fontWeight: 600,
-                                            mb: 4,
-                                            fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                                            textAlign: 'center',
-                                            maxWidth: '280px',
-                                            lineHeight: 1.5,
-                                            textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                                        }}
-                                    >
+                                    <Typography variant="body1" sx={{
+                                        color: 'rgba(255,255,255,0.82)',
+                                        fontSize: '0.95rem', lineHeight: 1.6,
+                                        maxWidth: 220, mb: 4, fontWeight: 400,
+                                    }}>
                                         Discover other amazing services
                                     </Typography>
 
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1.5,
-                                            px: 4,
-                                            py: 2,
-                                            background: '#ffffff',
-                                            borderRadius: 3,
-                                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                                            transition: 'all 0.3s ease',
-                                            transform: hoveredCard === 'see-more' ? 'scale(1.05)' : 'scale(1)',
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                color: '#ff5026',
-                                                fontWeight: 700,
-                                                fontSize: '1.15rem',
-                                            }}
-                                        >
+                                    {/* CTA Button */}
+                                    <Box sx={{
+                                        display: 'flex', alignItems: 'center', gap: 1.2,
+                                        px: 3.5, py: 1.4,
+                                        background: '#fff',
+                                        borderRadius: '50px',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                                        transform: hoveredCard === 'see-more' ? 'scale(1.06)' : 'scale(1)',
+                                        mb: 3,
+                                    }}>
+                                        <Typography sx={{
+                                            color: '#ff5026', fontWeight: 800, fontSize: '1rem',
+                                        }}>
                                             Explore Now
                                         </Typography>
                                         <ArrowForwardIcon sx={{
-                                            color: '#ff5228',
-                                            fontSize: 28,
+                                            color: '#ff5026', fontSize: 20,
                                             transition: 'transform 0.3s ease',
-                                            transform: hoveredCard === 'see-more' ? 'translateX(5px)' : 'translateX(0)',
+                                            transform: hoveredCard === 'see-more' ? 'translateX(4px)' : 'translateX(0)',
                                         }} />
                                     </Box>
 
-                                    {/* Service count badge */}
-                                    <Box
-                                        sx={{
-                                            mt: 3,
-                                            px: 3,
-                                            py: 1,
-                                            background: 'rgba(255, 255, 255, 0.2)',
-                                            borderRadius: 2,
-                                            backdropFilter: 'blur(10px)',
-                                            border: '2px solid rgba(255, 255, 255, 0.3)',
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                color: '#fff',
-                                                fontWeight: 600,
-                                                fontSize: '0.95rem',
-                                            }}
-                                        >
+                                    {/* Count badge */}
+                                    <Box sx={{
+                                        px: 2.5, py: 0.8,
+                                        background: 'rgba(255,255,255,0.15)',
+                                        backdropFilter: 'blur(8px)',
+                                        border: '1px solid rgba(255,255,255,0.25)',
+                                        borderRadius: '50px',
+                                    }}>
+                                        <Typography variant="body2" sx={{
+                                            color: '#fff', fontWeight: 700, fontSize: '0.85rem',
+                                        }}>
                                             +{servicesData.length - 3} other services
                                         </Typography>
                                     </Box>
                                 </Box>
-                            </Card>
+                            </Box>
                         </Zoom>
                     </Box>
                 )}

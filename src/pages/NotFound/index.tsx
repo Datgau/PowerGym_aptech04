@@ -62,21 +62,21 @@ const NotFound = () => {
         <div className="quickLinks">
           <h3 className="quickLinksTitle">Quick Navigation</h3>
           <div className="linksGrid">
-            <Link to="/" className="quickLink">
+            <Link to="/home" className="quickLink">
               <FaHome className="linkIcon" />
               <span>Home</span>
             </Link>
-            <Link to="/shop" className="quickLink">
+            <Link to="/service" className="quickLink">
               <FaSearch className="linkIcon" />
-              <span>Shop</span>
+              <span>Service</span>
             </Link>
-            <Link to="/about" className="quickLink">
+            <Link to="/news" className="quickLink">
               <FaSearch className="linkIcon" />
-              <span>About</span>
+              <span>News</span>
             </Link>
-            <Link to="/contact" className="quickLink">
+            <Link to="/pricing" className="quickLink">
               <FaSearch className="linkIcon" />
-              <span>Contact</span>
+              <span>Pricing</span>
             </Link>
           </div>
         </div>
@@ -101,19 +101,20 @@ const NotFound = () => {
             our support team is here to help!
           </p>
           <div className="helpLinks">
-            <Link to="/contact" className="helpLink">Contact Support</Link>
-            <Link to="/about" className="helpLink">About Us</Link>
-            <Link to="/shop" className="helpLink">Browse Products</Link>
+            <Link to="/service" className="helpLink">Service</Link>
+            <Link to="/pricing" className="helpLink">Pricing</Link>
+            <Link to="/news" className="helpLink">News</Link>
           </div>
         </div>
       </div>
 
       {/* Decorative Elements */}
       <div className="decorativeElements">
-        <div className="floatingElement element1">📚</div>
-        <div className="floatingElement element2">🎯</div>
-        <div className="floatingElement element3">✨</div>
+        <div className="floatingElement element1">⛹️</div>
+        <div className="floatingElement element2">🤸</div>
+        <div className="floatingElement element3">💪</div>
         <div className="floatingElement element4">🌟</div>
+
       </div>
     </div>
   );

@@ -1,20 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMembership } from '../../hooks/useMembership';
-import {
-  MembershipPackagesSection,
-  BMISection
-} from '../../components/PowerGym';
+
 import {
   bannerPromotionData,
   membershipPackagesData,
 } from '../../data/powerGymData';
-import globalStyles from '../../styles/PowerGym/PowerGym.module.css';
-import HeroBanner from "../../components/PowerGym/HeroBanner/HeroBanner.tsx";
 import ServicesSection from "./ServicesSection/ServicesSection.tsx";
 import StoriesSection from "./StoriesSection/StoriesSection.tsx";
 import {useGymServices} from "../../hooks/useGymServices.ts";
 import {useGymStory} from "../../hooks/useGymStory.ts";
+import BMISection from "../BMISection/BMISection.tsx";
+import HeroBanner from "../../components/PowerGym/HeroBanner/HeroBanner.tsx";
+import {MembershipPackagesSection} from "../../components/PowerGym";
 // Import test for debugging
 
 const ClientHome: React.FC = () => {
@@ -26,23 +24,16 @@ const ClientHome: React.FC = () => {
 
   // Event Handlers
   const handleRegisterClick = (): void => {
-    navigate('/powergym/register-package');
+    navigate('/pricing');
   };
 
 
   const handleServiceClick = (serviceId: string): void => {
-    const serviceRoutes: Record<string, string> = {
-      'personal-trainer': '/powergym/personal-trainer',
-      'yoga': '/powergym/classes/yoga',
-      'group-x': '/powergym/classes/group-x',
-      'cardio-more': '/powergym/services'
-    };
-
-    navigate(serviceRoutes[serviceId] || '/powergym/services');
+    navigate('/service/' + serviceId);
   };
 
   const handleStoryClick = (storyId: string): void => {
-    navigate(`/powergym/stories/${storyId}`);
+    navigate(`/stories/${storyId}`);
   };
 
   const handlePackageSelect = async (packageId: string): Promise<void> => {
@@ -51,7 +42,7 @@ const ClientHome: React.FC = () => {
 
       if (success) {
         alert('Package registration successful!');
-        navigate('/powergym/membership');
+        navigate('/membership');
       } else {
         alert('Package registration failed. Please try again.');
       }
@@ -76,7 +67,7 @@ const ClientHome: React.FC = () => {
   })) : membershipPackagesData;
 
   return (
-    <div className={`${globalStyles.container} ${globalStyles.fullWidth}`}>
+    <div >
       {/* Debug Auth Info - Remove after fixing */}
 
       <HeroBanner

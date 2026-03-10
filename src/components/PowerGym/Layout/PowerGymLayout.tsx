@@ -1,7 +1,6 @@
 import React from 'react';
 import TopHeader from '../Navigation/TopHeader';
-import styles from './PowerGymLayout.module.css';
-import {Footer} from "../../Footer";
+import Footer from "../../Footer/Footer.tsx";
 
 interface PowerGymLayoutProps {
   children: React.ReactNode;
@@ -9,10 +8,9 @@ interface PowerGymLayoutProps {
 
 const PowerGymLayout: React.FC<PowerGymLayoutProps> = ({ children }) => {
   return (
-    <div className={styles.layout}>
+    <div >
       <TopHeader />
-      
-      <main className={styles.mainContent}>
+      <main >
         {children}
       </main>
       <Footer/>
