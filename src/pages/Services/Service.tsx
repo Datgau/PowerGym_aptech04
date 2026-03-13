@@ -1,32 +1,41 @@
 import React, { useState } from 'react';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
 import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Button,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  Container,
-  Chip,
-  Stack,
-  Divider,
+    Box,
+    Card,
+    CardContent,
+    CardMedia,
+    Typography,
+    Button,
+    CircularProgress,
+    Snackbar,
+    Alert,
+    Container,
+    Chip,
+    Stack,
+    Divider, Pagination,
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { useGymServices } from "../../hooks/useGymServices.ts";
+import {useGymServices, useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
 import { registerService } from '../../services/serviceRegistrationService';
 import { useAuth } from "../../hooks/useAuth.ts";
 
+
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const Service: React.FC = () => {
-  const { services } = useGymServices();
+  const { 
+    services, 
+    loading, 
+    error, 
+    currentPage, 
+    totalPages, 
+    totalElements,
+    goToPage 
+  } = useGymServicesPaginated(6);
   const [selectedService, setSelectedService] = useState<any>(null);
   const [registering, setRegistering] = useState<string | null>(null);
   const { requireAuth } = useAuth();
@@ -147,19 +156,44 @@ const Service: React.FC = () => {
                     Service Categories
                 </Typography>
                   <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
-                      {services.length} Available Services
+                      {totalElements} Available Services
                   </Typography>
               </Box>
             </Stack>
 
             {/* Grid */}
-            <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' },
-                  gap: 3,
-                }}
-            >
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                <CircularProgress size={60} />
+              </Box>
+            ) : error ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="h6" color="error" mb={2}>
+                  {error}
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => window.location.reload()}
+                  sx={{ borderRadius: 2 }}
+                >
+                  Retry
+                </Button>
+              </Box>
+            ) : services.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="h6" color="text.secondary">
+                  No services available at the moment.
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' },
+                      gap: 3,
+                    }}
+                >
               {services.map((service, idx) => (
                   <Card
                       key={service.id}
@@ -251,26 +285,91 @@ const Service: React.FC = () => {
                       <Divider sx={{ my: 2 }} />
 
                       {/* Price & Duration */}
-                      <Stack direction="row" spacing={3} mb={2.5}>
-                        <Stack direction="row" alignItems="center" spacing={0.75}>
-                          <AttachMoneyIcon sx={{ fontSize: 18, color: '#045668' }} />
-                          <Box>
-                            <Typography variant="h6" fontWeight={800} color="text.primary" lineHeight={1}>
-                              {service.price.toLocaleString()}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">USD</Typography>
-                          </Box>
+                        <Stack direction="row" spacing={2.5} mb={3}>
+                            {/* Price */}
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    p: 1.5,
+                                    borderRadius: 2,
+                                    background: 'rgba(4, 86, 104, 0.05)',
+                                    border: '1px solid rgba(4, 86, 104, 0.1)',
+                                    transition: 'all .25s ease',
+                                    '&:hover': {
+                                        background: 'rgba(4, 86, 104, 0.1)',
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: 'rgba(4, 86, 104, 0.12)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <AttachMoneyIcon sx={{ fontSize: 20, color: '#02cbf8' }} />
+                                </Box>
+
+                                <Box>
+                                    <Typography variant="body2" color="text.secondary" lineHeight={1}>
+                                        Price
+                                    </Typography>
+                                    <Typography variant="inherit" fontWeight={500} lineHeight={1}>
+                                        ${service.price.toLocaleString()}
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            {/* Duration */}
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    p: 1.5,
+                                    borderRadius: 2,
+                                    background: 'rgba(4, 86, 104, 0.05)',
+                                    border: '1px solid rgba(4, 86, 104, 0.1)',
+                                    transition: 'all .25s ease',
+                                    '&:hover': {
+                                        background: 'rgba(4, 86, 104, 0.1)',
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: 'rgba(4,86,104,0.12)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <AccessTimeIcon sx={{ fontSize: 20, color: '#02cbf8' }} />
+                                </Box>
+
+                                <Box>
+                                    <Typography variant="body2" color="text.secondary" lineHeight={1}>
+                                        Duration
+                                    </Typography>
+                                    <Typography variant="inherit" fontWeight={500} lineHeight={1}>
+                                        {service.duration} days
+                                    </Typography>
+                                </Box>
+                            </Box>
                         </Stack>
-                        <Stack direction="row" alignItems="center" spacing={0.75}>
-                          <AccessTimeIcon sx={{ fontSize: 18, color: '#045668' }} />
-                          <Box>
-                            <Typography variant="h6" fontWeight={800} color="text.primary" lineHeight={1}>
-                              {service.duration}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">ngày</Typography>
-                          </Box>
-                        </Stack>
-                      </Stack>
 
                       {/* Buttons */}
                       <Stack direction="row" spacing={1.5}>
@@ -326,6 +425,34 @@ const Service: React.FC = () => {
                   </Card>
               ))}
             </Box>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage + 1}
+                  onChange={(event, page) => goToPage(page - 1)}
+                  color="primary"
+                  size="large"
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      '&.Mui-selected': {
+                        background: BRAND_GRADIENT,
+                        color: '#fff',
+                        '&:hover': {
+                          background: BRAND_GRADIENT,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            )}
+          </>
+        )}
           </Container>
         </Box>
 

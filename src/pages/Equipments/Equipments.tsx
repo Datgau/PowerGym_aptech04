@@ -9,28 +9,31 @@ import {
   Button,
   Chip,
   Stack,
-  Grid,
   CircularProgress,
   Zoom
 } from '@mui/material';
-import {  Group, AttachMoney } from '@mui/icons-material';
-import { useGymServices } from '../../hooks/useGymServices.ts';
-import {PowerGymLayout} from "../../components/PowerGym";
+import { AttachMoney } from '@mui/icons-material';
+import { PowerGymLayout } from "../../components/PowerGym";
+import { useEquipments, useEquipmentCategories } from '../../hooks/useEquipments';
+import type { Equipment } from '../../services/equipmentService';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const Equipments: React.FC = () => {
-  const { services, loading, error } = useGymServices('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+  const { equipments, loading: equipmentsLoading, error: equipmentsError } = useEquipments(true, selectedCategoryId);
+  const { categories, loading: categoriesLoading } = useEquipmentCategories(true);
 
-  const categories = [
-    { value: 'ALL', label: 'Tất cả' },
-    { value: 'PERSONAL_TRAINER', label: 'Personal Trainer' },
-    { value: 'GROUP_CLASS', label: 'Lớp nhóm' },
-    { value: 'YOGA', label: 'Yoga' },
-    { value: 'CARDIO', label: 'Cardio' }
-  ];
-
+  // Debug logging
+  console.log('=== EQUIPMENT DEBUG ===');
+  console.log('Equipments count:', equipments.length);
+  console.log('Equipments data:', equipments);
+  console.log('Categories count:', categories.length);
+  console.log('Categories data:', categories);
+  console.log('Equipments loading:', equipmentsLoading);
+  console.log('Equipments error:', equipmentsError);
+  console.log('Selected category ID:', selectedCategoryId);
+  console.log('========================');  
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -39,14 +42,10 @@ const Equipments: React.FC = () => {
     }).format(price);
   };
 
-  const filteredServices = selectedCategory === 'ALL' 
-    ? services 
-    : services.filter(service => service.category === selectedCategory);
+  const getEquipmentImage = (equipment: Equipment) =>
+    equipment.image || '/images/default-equipment.jpg';
 
-  const getServiceImage = (service: any) =>
-    service.images?.[0] || '/images/default-service.jpg';
-
-  if (loading) {
+  if (equipmentsLoading || categoriesLoading) {
     return (
       <PowerGymLayout>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -56,12 +55,12 @@ const Equipments: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (equipmentsError) {
     return (
       <PowerGymLayout>
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Typography variant="h6" color="error">
-            Failed to reload: {error}
+            Error occurred: {equipmentsError}
           </Typography>
         </Box>
       </PowerGymLayout>
@@ -121,7 +120,7 @@ const Equipments: React.FC = () => {
                 letterSpacing: '-0.5px',
               }}
             >
-              Training Equipments
+              Gym Equipment
             </Typography>
 
             <Box sx={{
@@ -131,22 +130,23 @@ const Equipments: React.FC = () => {
             }} />
 
             <Typography
-                variant="body1"
-                sx={{
-                  color: 'rgba(255,255,255,0.78)',
-                  fontSize: { xs: '0.95rem', md: '1.05rem' },
-                  lineHeight: 1.8,
-                  maxWidth: 520,
-                  mx: 'auto',
-                }}
+              variant="body1"
+              sx={{
+                color: 'rgba(255,255,255,0.78)',
+                fontSize: { xs: '0.95rem', md: '1.05rem' },
+                lineHeight: 1.8,
+                maxWidth: 520,
+                mx: 'auto',
+              }}
             >
-              Fully equipped with modern training equipment for the best workout experience.
+              Discover high-quality gym equipment — from modern cardio machines
+              to professional training tools.
             </Typography>
           </Box>
         </Container>
       </Box>
 
-      {/* ── Services Section ── */}
+      {/* ── Equipments Section ── */}
       <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
         <Container maxWidth="xl">
           {/* Section header */}
@@ -156,10 +156,10 @@ const Equipments: React.FC = () => {
                 variant="overline"
                 sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
               >
-                Available Equipments
+                Training Equipment
               </Typography>
               <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
-                {filteredServices.length} Equipment Available
+                {equipments.length} Equipment Available
               </Typography>
             </Box>
           </Stack>
@@ -167,13 +167,26 @@ const Equipments: React.FC = () => {
           {/* Category Filter */}
           <Box sx={{ mb: 5 }}>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Chip
+                label="All"
+                onClick={() => setSelectedCategoryId(undefined)}
+                color={selectedCategoryId === undefined ? 'primary' : 'default'}
+                variant={selectedCategoryId === undefined ? 'filled' : 'outlined'}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  '&.MuiChip-filled': {
+                    background: BRAND_GRADIENT,
+                  },
+                }}
+              />
               {categories.map((category) => (
                 <Chip
-                  key={category.value}
-                  label={category.label}
-                  onClick={() => setSelectedCategory(category.value)}
-                  color={selectedCategory === category.value ? 'primary' : 'default'}
-                  variant={selectedCategory === category.value ? 'filled' : 'outlined'}
+                  key={category.id}
+                  label={category.name}
+                  onClick={() => setSelectedCategoryId(category.id)}
+                  color={selectedCategoryId === category.id ? 'primary' : 'default'}
+                  variant={selectedCategoryId === category.id ? 'filled' : 'outlined'}
                   sx={{
                     borderRadius: 2,
                     fontWeight: 600,
@@ -186,17 +199,39 @@ const Equipments: React.FC = () => {
             </Stack>
           </Box>
 
-          {/* Services Grid */}
-          {filteredServices.length === 0 ? (
+          {/* Equipments Grid */}
+          {equipments.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Typography variant="h6" color="text.secondary">
-                No data
+              <Typography variant="h6" color="text.secondary" mb={2}>
+                {selectedCategoryId 
+                  ? 'No equipment available in this category.' 
+                  : 'No equipment available.'}
               </Typography>
+              <Typography variant="body2" color="text.secondary" mb={3}>
+                {selectedCategoryId 
+                  ? 'Try selecting a different category or check back later.'
+                  : 'Equipment data is being loaded or no equipment has been added yet.'}
+              </Typography>
+              <Button 
+                variant="outlined" 
+                onClick={() => window.location.reload()}
+                sx={{ borderRadius: 2 }}
+              >
+                Refresh Page
+              </Button>
             </Box>
           ) : (
-            <Grid container spacing={3}>
-              {filteredServices.map((service, idx) => (
-                <Grid item xs={12} sm={6} lg={4} key={service.id}>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { 
+                xs: '1fr', 
+                sm: 'repeat(2, 1fr)', 
+                lg: 'repeat(3, 1fr)' 
+              }, 
+              gap: 3 
+            }}>
+              {equipments.map((equipment, idx) => (
+                <Box key={equipment.id}>
                   <Zoom in timeout={500 + idx * 100}>
                     <Card
                       elevation={0}
@@ -208,7 +243,7 @@ const Equipments: React.FC = () => {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        opacity: service.isActive ? 1 : 0.6,
+                        opacity: equipment.isActive ? 1 : 0.6,
                         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                         '&:hover': {
                           transform: 'translateY(-6px)',
@@ -220,8 +255,8 @@ const Equipments: React.FC = () => {
                       <Box sx={{ position: 'relative', height: 200 }}>
                         <CardMedia
                           component="img"
-                          image={getServiceImage(service)}
-                          alt={service.name}
+                          image={getEquipmentImage(equipment)}
+                          alt={equipment.name}
                           sx={{
                             height: '100%',
                             objectFit: 'cover',
@@ -234,7 +269,7 @@ const Equipments: React.FC = () => {
                           background: 'linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.45) 100%)',
                         }} />
                         <Chip
-                          label={service.category}
+                          label={equipment.category.name}
                           size="small"
                           sx={{
                             position: 'absolute', top: 12, left: 12,
@@ -248,9 +283,9 @@ const Equipments: React.FC = () => {
                             textTransform: 'uppercase',
                           }}
                         />
-                        {!service.isActive && (
+                        {!equipment.isActive && (
                           <Chip
-                            label="Tạm ngưng"
+                            label="Inactive"
                             size="small"
                             sx={{
                               position: 'absolute', top: 12, right: 12,
@@ -264,7 +299,7 @@ const Equipments: React.FC = () => {
                       {/* Content */}
                       <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
-                          {service.name}
+                          {equipment.name}
                         </Typography>
 
                         <Typography
@@ -272,66 +307,53 @@ const Equipments: React.FC = () => {
                           color="text.secondary"
                           sx={{ lineHeight: 1.75, flex: 1, mb: 2 }}
                         >
-                          {service.description.length > 100
-                            ? service.description.slice(0, 100) + '…'
-                            : service.description}
+                          {equipment.description && equipment.description.length > 100
+                            ? equipment.description.slice(0, 100) + '…'
+                            : equipment.description || 'No description available'}
                         </Typography>
 
-                        {/* Service Details */}
-                        <Stack spacing={2}>
-                          {service.price && (
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <AttachMoney sx={{ fontSize: 18, color: '#045668' }} />
-                              <Typography variant="h6" fontWeight={700} color="text.primary">
-                                {formatPrice(service.price)}
-                              </Typography>
-                              {service.duration && (
-                                <Typography variant="body2" color="text.secondary">
-                                  / {service.duration} phút
-                                </Typography>
-                              )}
-                            </Stack>
-                          )}
-
-                          {service.maxParticipants && (
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <Group sx={{ fontSize: 18, color: '#045668' }} />
-                              <Typography variant="body2" color="text.secondary">
-                                Tối đa {service.maxParticipants} người
-                              </Typography>
-                            </Stack>
-                          )}
-
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            disabled={!service.isActive}
-                            sx={{
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                              background: BRAND_GRADIENT,
-                              boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
-                              '&:hover': {
-                                boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                                background: BRAND_GRADIENT,
-                              },
-                              '&.Mui-disabled': {
-                                background: '#ccc',
-                                boxShadow: 'none',
-                              },
-                            }}
-                          >
-                            Đăng Ký Ngay
-                          </Button>
+                        {/* Price and Quantity */}
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <AttachMoney sx={{ fontSize: 18, color: '#045668' }} />
+                            <Typography variant="h6" fontWeight={700} color="text.primary">
+                              {formatPrice(equipment.price)}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                            Qty: {equipment.quantity}
+                          </Typography>
                         </Stack>
+
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          disabled={!equipment.isActive}
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            background: BRAND_GRADIENT,
+                            boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
+                            '&:hover': {
+                              boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
+                              background: BRAND_GRADIENT,
+                            },
+                            '&.Mui-disabled': {
+                              background: '#ccc',
+                              boxShadow: 'none',
+                            },
+                          }}
+                        >
+                          View Details
+                        </Button>
                       </CardContent>
                     </Card>
                   </Zoom>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           )}
         </Container>
       </Box>

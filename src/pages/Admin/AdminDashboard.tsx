@@ -6,6 +6,7 @@ import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
+import EquipmentManagementPage from './Tabs/Equipment/EquipmentManagementPage.tsx';
 import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";
 
 // Format currency helper
@@ -23,13 +24,7 @@ const TrainersTab: React.FC = () => <TrainersGrid />;
 const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const ServicesTab: React.FC = () => <ServicesManagement />;
 const MembershipTab: React.FC = () => <MembershipPackagesPage />;
-
-const EquipmentTab: React.FC = () => (
-  <Box>
-    <Typography variant="h5" fontWeight={600} mb={2}>Equipment Management</Typography>
-    <Typography color="text.secondary">Coming Soon</Typography>
-  </Box>
-);
+const EquipmentTab: React.FC = () => <EquipmentManagementPage />;
 
 const FinancialTab: React.FC = () => (
   <Box>

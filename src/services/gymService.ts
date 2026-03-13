@@ -71,6 +71,19 @@ export const gymServiceApi = {
   },
 
   /**
+   * Get active gym services with pagination
+   */
+  getServicesActivePaginated: async (
+    page: number = 0,
+    size: number = 6
+  ): Promise<ApiResponse<PageResponse<GymServiceDto>>> => {
+    const response = await publicClient.get<ApiResponse<PageResponse<GymServiceDto>>>('/gym/services/active/paginated', {
+      params: { page, size }
+    });
+    return response.data;
+  },
+
+  /**
    * Get all services (Admin) with pagination
    */
   getAllServices: async (
@@ -146,6 +159,21 @@ export const gymServiceApi = {
    */
   deleteService: async (id: number): Promise<ApiResponse<void>> => {
     const response = await privateClient.delete<ApiResponse<void>>(`/gym/services/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Get service registration stats
+   */
+  getServiceRegistrationStats: async (id: number): Promise<ApiResponse<{
+    serviceId: number;
+    serviceName: string;
+    registrationCount: number;
+    maxParticipants: number;
+    availableSlots: number;
+    isFullyBooked: boolean;
+  }>> => {
+    const response = await publicClient.get(`/gym/services/${id}/registration-stats`);
     return response.data;
   },
 };

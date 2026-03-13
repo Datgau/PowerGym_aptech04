@@ -160,7 +160,7 @@ const MembersTable: React.FC = () => {
           onChange={handleFilterChange}
           size="small"
         >
-          <ToggleButton value="ALL">Tất cả ({members.length})</ToggleButton>
+          <ToggleButton value="ALL">All ({members.length})</ToggleButton>
           <ToggleButton value="USER">
             User ({members.filter(m => m.role?.name === 'USER').length})
           </ToggleButton>

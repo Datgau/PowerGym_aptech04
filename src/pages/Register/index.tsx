@@ -139,7 +139,6 @@ const Register = () => {
           <OTPVerification
             email={registeredEmail}
             onSubmit={handleOTPSubmit}
-            onBack={() => setShowOTP(false)}
             submitting={submitting}
           />
         )}

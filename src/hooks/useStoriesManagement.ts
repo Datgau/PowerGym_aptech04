@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { storyService, type StoryItem } from '../../../../../services/storyService';
-import { usePagination } from '../../../../../hooks/usePagination';
-import type { StoryStatus, StoryStats } from '../types';
+import { storyService, type StoryItem } from '../services/storyService.ts';
+import { usePagination } from './usePagination.ts';
+import type { StoryStatus, StoryStats } from '../pages/Admin/Tabs/Stories/types.ts';
 
 interface AlertState {
   open: boolean;

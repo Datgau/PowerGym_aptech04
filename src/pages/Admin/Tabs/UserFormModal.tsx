@@ -12,6 +12,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import type { Role, UserResponse } from '../../../services/adminService.ts';
+import {Form} from "antd";
 
 interface UserFormModalProps {
   open: boolean;
@@ -20,7 +21,7 @@ interface UserFormModalProps {
   user?: UserResponse | null;
   roles?: Role[];
   mode: 'create' | 'edit';
-  allowedRoles?: string[]; // Các role được phép chọn
+  allowedRoles?: string[];
 }
 
 const UserFormModal: React.FC<UserFormModalProps> = ({
@@ -67,23 +68,22 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: typeof formData) => {
     setError('');
     setLoading(true);
 
     try {
-      const submitData: any = {
-        email: formData.email,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        roleId: parseInt(formData.roleId)
+      const submitData = {
+        email: values.email,
+        fullName: values.fullName,
+        phoneNumber: values.phoneNumber,
+        roleId: parseInt(values.roleId, 10),
       };
 
       await onSubmit(submitData);
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Có lỗi xảy ra');
+    } catch (err) {
+      setError((err as any)?.response?.data?.message || 'Có lỗi xảy ra');
     } finally {
       setLoading(false);
     }
@@ -95,99 +95,99 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     : roles;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="sm" 
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 3 }
-      }}
-    >
-      <form onSubmit={handleSubmit}>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-          {mode === 'create' ? 'Thêm User Mới' : 'Chỉnh Sửa User'}
-        </DialogTitle>
-        
-        <DialogContent>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+      <Dialog
+          open={open}
+          onClose={onClose}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: 3 }
+          }}
+      >
+        <Form onFinish={handleSubmit}>
+          <DialogTitle sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            {mode === 'create' ? 'Add New User' : 'Edit User'}
+          </DialogTitle>
 
-          {mode === 'create' && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Mật khẩu sẽ được tạo tự động và gửi qua email
-            </Alert>
-          )}
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              fullWidth
-              disabled={mode === 'edit'}
-            />
-            
-            <TextField
-              label="Họ và tên"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              required
-              fullWidth
-            />
-            
-            <TextField
-              label="Số điện thoại"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              fullWidth
-            />
-            
-            <TextField
-              select
-              label="Vai trò"
-              name="roleId"
-              value={formData.roleId}
-              onChange={handleChange}
-              required
-              fullWidth
-              disabled={mode === 'edit'}
+          <DialogContent>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+            )}
+
+            {mode === 'create' && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  The password will be generated automatically and sent via email
+                </Alert>
+            )}
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              <TextField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  disabled={mode === 'edit'}
+              />
+
+              <TextField
+                  label="Full Name"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+              />
+
+              <TextField
+                  label="Phone Number"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  fullWidth
+              />
+
+              <TextField
+                  select
+                  label="Role"
+                  name="roleId"
+                  value={formData.roleId}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  disabled={mode === 'edit'}
+              >
+                {filteredRoles.map((role) => (
+                    <MenuItem key={role.id} value={role.id}>
+                      {role.name}
+                    </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
+            <Button onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                sx={{
+                  background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+                  minWidth: 100
+                }}
             >
-              {filteredRoles.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-        </DialogContent>
-        
-        <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
-          <Button onClick={onClose} disabled={loading}>
-            Hủy
-          </Button>
-          <Button 
-            type="submit" 
-            variant="contained"
-            disabled={loading}
-            sx={{ 
-              background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-              minWidth: 100
-            }}
-          >
-            {loading ? <CircularProgress size={24} /> : (mode === 'create' ? 'Thêm' : 'Lưu')}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+              {loading ? <CircularProgress size={24} /> : (mode === 'create' ? 'Add' : 'Save')}
+            </Button>
+          </DialogActions>
+        </Form>
+      </Dialog>
   );
 };
 

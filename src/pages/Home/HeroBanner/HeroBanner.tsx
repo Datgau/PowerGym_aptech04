@@ -12,7 +12,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { Launch, Star, LocalFireDepartment } from '@mui/icons-material';
-import type { BannerPromotion } from "../../../@type/powergym";
+import type { BannerPromotion } from "../../../@type/powergym.ts";
 
 interface HeroBannerProps {
   readonly promotion: BannerPromotion;

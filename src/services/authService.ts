@@ -2,7 +2,6 @@ import { publicClient } from "./api";
 import type {ApiResponse} from "../@type/apiResponse.ts";
 
 export interface RegisterPayload {
-  username: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -39,6 +38,27 @@ export interface OAuthLoginRequest {
   accessToken: string;
 }
 
+export interface OtpStatusResponse {
+  canResend: boolean;
+  secondsUntilResend: number;
+  sessionRemainingSeconds: number;
+  sessionExpired: boolean;
+  message: string;
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResendOtpRequest {
+  email: string;
+}
+
+export interface OtpStatusRequest {
+  email: string;
+}
+
 export const AuthService = {
   register: async (payload: RegisterPayload) => {
     const response = await publicClient.post<ApiResponse<RegisterResult>>(
@@ -56,8 +76,27 @@ export const AuthService = {
     return response.data;
   },
 
-  verifyOtp: async (data: { email: string; otp: string }) => {
-    const response = await publicClient.post("/auth/verify-otp", data);
+  verifyOtp: async (data: VerifyOtpRequest) => {
+    const response = await publicClient.post<ApiResponse<any>>(
+        "/auth/verify-otp", 
+        data
+    );
+    return response.data;
+  },
+
+  resendOtp: async (data: ResendOtpRequest) => {
+    const response = await publicClient.post<ApiResponse<any>>(
+        "/auth/resend-otp", 
+        data
+    );
+    return response.data;
+  },
+
+  getOtpStatus: async (data: OtpStatusRequest) => {
+    const response = await publicClient.post<ApiResponse<OtpStatusResponse>>(
+        "/auth/otp-status", 
+        data
+    );
     return response.data;
   },
 

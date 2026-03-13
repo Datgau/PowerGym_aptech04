@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   gymServiceApi,
   type GymServiceDto as GymServiceType,
@@ -7,6 +7,7 @@ import {
 } from '../services/gymService';
 // import { getAccessToken } from '../services/authStorage';
 import type {ServiceItem} from "../@type/powergym.ts";
+import type { PageResponse } from '../@type/apiResponse';
 
 interface UseGymServicesReturn {
   services: GymServiceDto[];
@@ -19,6 +20,20 @@ interface UseGymServicesReturn {
   // checkIn: (qrCode: string) => Promise<boolean>;
   // refreshSchedules: () => Promise<void>;
   // refreshBookings: () => Promise<void>;
+}
+
+interface UseGymServicesPaginatedReturn {
+  services: GymServiceDto[];
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  goToPage: (page: number) => void;
+  nextPage: () => void;
+  previousPage: () => void;
 }
 
 export const useGymServices = (): UseGymServicesReturn => {
@@ -176,6 +191,7 @@ export const useGymServices = (): UseGymServicesReturn => {
                 duration: service.duration,
                 maxParticipants: service.maxParticipants,
                 isActive: service.isActive,
+                registrationCount: service.registrationCount || 0,
             })
         );
 
@@ -193,6 +209,73 @@ export const useGymServices = (): UseGymServicesReturn => {
   }, []);
 
   return { services, loading, error };
+};
+
+export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPaginatedReturn => {
+  const [services, setServices] = useState<GymServiceDto[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageInfo, setPageInfo] = useState<PageResponse<GymServiceDto> | null>(null);
+
+  const fetchServices = useCallback(async (page: number) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await gymServiceApi.getServicesActivePaginated(page, pageSize);
+      console.log('Paginated API Response:', response);
+      
+      if (response.success && response.data) {
+        setServices(response.data.content);
+        setPageInfo(response.data);
+        setCurrentPage(page);
+      } else {
+        setError(response.message || 'Failed to fetch services');
+      }
+    } catch (err) {
+      console.error('Error fetching paginated services:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch services');
+    } finally {
+      setLoading(false);
+    }
+  }, [pageSize]);
+
+  useEffect(() => {
+    fetchServices(0);
+  }, [fetchServices]);
+
+  const goToPage = useCallback((page: number) => {
+    if (pageInfo && page >= 0 && page < pageInfo.totalPages) {
+      fetchServices(page);
+    }
+  }, [fetchServices, pageInfo]);
+
+  const nextPage = useCallback(() => {
+    if (pageInfo && !pageInfo.last) {
+      fetchServices(currentPage + 1);
+    }
+  }, [fetchServices, currentPage, pageInfo]);
+
+  const previousPage = useCallback(() => {
+    if (pageInfo && !pageInfo.first) {
+      fetchServices(currentPage - 1);
+    }
+  }, [fetchServices, currentPage, pageInfo]);
+
+  return {
+    services,
+    loading,
+    error,
+    currentPage,
+    totalPages: pageInfo?.totalPages || 0,
+    totalElements: pageInfo?.totalElements || 0,
+    hasNext: pageInfo ? !pageInfo.last : false,
+    hasPrevious: pageInfo ? !pageInfo.first : false,
+    goToPage,
+    nextPage,
+    previousPage
+  };
 };
 
 //   return {

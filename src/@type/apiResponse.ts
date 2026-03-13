@@ -12,6 +12,7 @@ export function unwrapApiResponse<T>(res: ApiResponse<T>): T {
 }
 
 export interface PageResponse<T> {
+    first: boolean;
     content: T[];
     pageNumber: number;
     pageSize: number;

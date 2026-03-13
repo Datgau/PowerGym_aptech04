@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
-import type { StoryStats } from '../types';
+import type {StoryStats, StoryStatus} from '../types';
 
 interface StatsCardsProps {
   stats: StoryStats;
   activeFilter?: string;
-  onFilterClick?: (filter: string) => void;
+  onFilterClick?: (filter: StoryStatus) => void;
 }
 
 const StatsCards: React.FC<StatsCardsProps> = ({ stats, activeFilter = 'ALL', onFilterClick }) => {
@@ -20,9 +20,10 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats, activeFilter = 'ALL', on
       {statCards.map((card) => (
         <Paper
           key={card.filter}
-          onClick={() => onFilterClick?.(card.filter)}
+          onClick={() => onFilterClick?.(card.filter as StoryStatus)}
           sx={{
             p: 2,
+            mr:5,
             textAlign: 'center',
             bgcolor: card.bgcolor,
             cursor: onFilterClick ? 'pointer' : 'default',

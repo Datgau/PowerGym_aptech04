@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  Card,
-  CardActionArea,
-  Typography,
-  Button
+    Card,
+    CardActionArea,
+    Typography,
+    Button, Box
 } from '@mui/material';
 import { VisibilityOutlined } from '@mui/icons-material';
 

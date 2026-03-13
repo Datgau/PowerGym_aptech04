@@ -27,9 +27,10 @@ import {
     Share,
     Person,
 } from '@mui/icons-material';
-import { storyService, type StoryItem, type StoryComment } from '../../services/storyService';
-import RichTextDisplay from '../../components/Common/RichTextDisplay';
-import { useAuth } from '../../hooks/useAuth';
+import { storyService, type StoryItem, type StoryComment } from '../../../services/storyService.ts';
+import RichTextDisplay from '../../../components/Common/RichTextDisplay.tsx';
+import { useAuth } from '../../../hooks/useAuth.ts';
+import PowerGymLayout from "../../../components/PowerGym/Layout/PowerGymLayout.tsx";
 
 const StoryDetailPage = () => {
     const { storyId } = useParams<{ storyId: string }>();
@@ -245,7 +246,9 @@ const StoryDetailPage = () => {
     }
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+        <PowerGymLayout>
+
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
             {/* Header */}
             <Box 
                 sx={{ 
@@ -256,7 +259,7 @@ const StoryDetailPage = () => {
                     zIndex: 100,
                 }}
             >
-                <Container maxWidth="md">
+                <Container maxWidth="xl">
                     <Box sx={{ display: 'flex', alignItems: 'center', py: 2 }}>
                         <IconButton 
                             onClick={() => navigate(-1)}
@@ -271,7 +274,7 @@ const StoryDetailPage = () => {
                 </Container>
             </Box>
 
-            <Container maxWidth="md" sx={{ py: 3 }}>
+            <Container maxWidth="lg" sx={{ py: 3, pt:3, bt: 10 }}>
                 {/* Story Content */}
                 <Card sx={{ mb: 3, borderRadius: 3, overflow: 'hidden' }}>
                     {/* Author Header */}
@@ -448,7 +451,7 @@ const StoryDetailPage = () => {
                 </Card>
 
                 {/* Comments Section */}
-                <Card sx={{ borderRadius: 3 }}>
+                <Card sx={{ borderRadius: 3, bt:10 }}>
                     <CardContent>
                         <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
                             Comments ({story.commentCount || 0})
@@ -565,6 +568,7 @@ const StoryDetailPage = () => {
                 </Alert>
             </Snackbar>
         </Box>
+</PowerGymLayout>
     );
 };
 

@@ -19,8 +19,8 @@ import {
     Schedule,
     LocalOffer,
 } from '@mui/icons-material';
-import RichTextDisplay from '../../../components/Common/RichTextDisplay';
-import type { StoryItem } from '../../../services/storyService';
+import RichTextDisplay from '../../../../../components/Common/RichTextDisplay.tsx';
+import type { StoryItem } from '../../../../../services/storyService.ts';
 
 interface Props {
     open: boolean;

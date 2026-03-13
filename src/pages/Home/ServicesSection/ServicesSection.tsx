@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Box,
     Container,
@@ -18,6 +18,68 @@ interface ServicesSectionProps {
     readonly onServiceClick: (serviceId: string) => void;
 }
 
+// ── Collage Slideshow for See More card ──
+const SeeMoreCollage = ({ services }: { services: ServiceItem[] }) => {
+    const allImages = services
+        .flatMap(s => s.images?.length ? s.images : ['/images/default-service.jpg'])
+        .slice(0, 12);
+
+    const [activeIdx, setActiveIdx] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        if (allImages.length <= 1) return;
+        intervalRef.current = setInterval(() => {
+            setActiveIdx(prev => (prev + 1) % allImages.length);
+        }, 1800);
+        return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    }, [allImages.length]);
+
+    if (allImages.length === 0) return null;
+
+    return (
+        <Box sx={{
+            position: 'absolute', inset: 0,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateRows: 'repeat(4, 1fr)',
+            gap: '2px',
+            overflow: 'hidden',
+        }}>
+            {Array.from({ length: 12 }).map((_, i) => {
+                const img = allImages[i % allImages.length];
+                const isActive = i === activeIdx;
+                return (
+                    <Box
+                        key={i}
+                        sx={{
+                            overflow: 'hidden',
+                            position: 'relative',
+                            transition: 'filter 0.6s ease, transform 0.6s ease',
+                            filter: isActive ? 'brightness(1.15) saturate(1.3)' : 'brightness(0.55) saturate(0.7)',
+                            transform: isActive ? 'scale(1.06)' : 'scale(1)',
+                            zIndex: isActive ? 2 : 1,
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={img}
+                            alt=""
+                            sx={{
+                                width: '100%', height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                                transition: 'transform 4s ease',
+                                transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                            }}
+                        />
+                    </Box>
+                );
+            })}
+        </Box>
+    );
+};
+
 const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServiceClick }) => {
     const [hoveredCard, setHoveredCard] = React.useState<string | null>(null);
     const navigate = useNavigate();
@@ -30,6 +92,11 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
     const getServiceImage = (service: ServiceItem): string => {
         return service.images?.[0] || '/images/default-service.jpg';
     };
+
+    // remaining services (after first 3) used as collage source
+    const remainingServices = servicesData.slice(3);
+    // if fewer than 4 remaining, fallback to all services for collage
+    const collageServices = remainingServices.length > 0 ? remainingServices : servicesData;
 
     return (
         <Box
@@ -57,7 +124,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                 {/* ── Header ── */}
                 <Fade in timeout={800}>
                     <Box sx={{ mb: { xs: 6, md: 10 }, position: 'relative' }}>
-                        {/* Big decorative background text */}
                         <Typography sx={{
                             position: 'absolute',
                             top: { xs: -20, md: -40 },
@@ -75,7 +141,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                         </Typography>
 
                         <Box sx={{ position: 'relative', zIndex: 1 }}>
-                            {/* Pill badge */}
                             <Box sx={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -96,7 +161,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                 </Typography>
                             </Box>
 
-                            {/* Title row — asymmetric */}
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: { xs: 'column', md: 'row' },
@@ -127,7 +191,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                 </Box>
 
                                 <Box sx={{ maxWidth: 340, mb: { md: 0.5 } }}>
-                                    {/* Accent line */}
                                     <Box sx={{
                                         width: 48, height: 3,
                                         background: 'linear-gradient(90deg, #00b4ff, #0066ff)',
@@ -178,7 +241,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         '&:hover': { transform: 'translateY(-10px)' },
                                     }}
                                 >
-                                    {/* Index number — editorial style */}
                                     <Typography sx={{
                                         position: 'absolute',
                                         top: 16, left: 20,
@@ -193,7 +255,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         {String(index + 1).padStart(2, '0')}
                                     </Typography>
 
-                                    {/* Image */}
                                     <Box sx={{
                                         position: 'absolute', inset: 0,
                                         transition: 'transform 0.55s cubic-bezier(.22,.97,.44,1)',
@@ -215,20 +276,17 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         />
                                     </Box>
 
-                                    {/* Gradient overlays */}
                                     <Box sx={{
                                         position: 'absolute', inset: 0,
                                         background: 'linear-gradient(180deg, rgba(0,60,160,0.15) 0%, transparent 35%, rgba(0,30,120,0.85) 75%, rgba(0,20,100,0.97) 100%)',
                                         zIndex: 2,
                                     }} />
 
-                                    {/* Content pinned to bottom */}
                                     <Box sx={{
                                         position: 'absolute', bottom: 0, left: 0, right: 0,
                                         p: { xs: 2.5, md: 3 },
                                         zIndex: 3,
                                     }}>
-                                        {/* Name */}
                                         <Typography variant="h5" sx={{
                                             color: '#fff', fontWeight: 800,
                                             fontSize: { xs: '1.15rem', md: '1.3rem' },
@@ -239,7 +297,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             {service.name}
                                         </Typography>
 
-                                        {/* Description */}
                                         <Typography variant="body2" sx={{
                                             color: 'rgba(255,255,255,0.8)',
                                             fontSize: '0.85rem', lineHeight: 1.55, mb: 2,
@@ -251,7 +308,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             {service.description}
                                         </Typography>
 
-                                        {/* Participants pill */}
                                         <Box sx={{
                                             display: 'inline-flex', alignItems: 'center', gap: 0.75,
                                             px: 1.5, py: 0.6,
@@ -264,11 +320,10 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             <Typography variant="caption" sx={{
                                                 color: '#fff', fontWeight: 600, fontSize: '0.78rem',
                                             }}>
-                                                Max {service.maxParticipants} people
+                                                {service.registrationCount || 0}/{service.maxParticipants || 0} registered
                                             </Typography>
                                         </Box>
 
-                                        {/* Price row */}
                                         <Box sx={{
                                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                             background: '#fff',
@@ -294,7 +349,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                                 <Typography variant="caption" sx={{
                                                     color: '#0066ff', fontWeight: 700, fontSize: '0.75rem',
                                                 }}>
-                                                    {service.duration} months
+                                                    {service.duration} days
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -303,7 +358,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                             </Zoom>
                         ))}
 
-                        {/* ── See More Card ── */}
+                        {/* ── See More Card with Collage Slideshow ── */}
                         <Zoom in timeout={500} style={{ transitionDelay: '300ms' }}>
                             <Box
                                 onMouseEnter={() => setHoveredCard('see-more')}
@@ -315,8 +370,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                     borderRadius: '20px',
                                     overflow: 'hidden',
                                     cursor: 'pointer',
-                                    background: 'linear-gradient(135deg, rgb(4,100,223) 0%, rgb(15,110,236) 100%)',
-                                    border: '3px solid rgba(255,255,255,0.3)',
                                     boxShadow: hoveredCard === 'see-more'
                                         ? '0 32px 64px -12px rgba(0,102,255,0.5)'
                                         : '0 12px 32px -8px rgba(0,102,255,0.3)',
@@ -324,23 +377,22 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                     '&:hover': { transform: 'translateY(-10px)' },
                                 }}
                             >
-                                {/* Decorative circles */}
+                                {/* Collage background */}
+                                <SeeMoreCollage services={collageServices} />
+
+                                {/* Dark overlay so content is readable */}
                                 <Box sx={{
-                                    position: 'absolute', top: -60, right: -60,
-                                    width: 220, height: 220, borderRadius: '50%',
-                                    background: 'rgba(255,255,255,0.07)', pointerEvents: 'none',
+                                    position: 'absolute', inset: 0, zIndex: 3,
+                                    background: 'linear-gradient(160deg, rgba(0,20,80,0.55) 0%, rgba(0,40,120,0.72) 50%, rgba(0,10,60,0.88) 100%)',
+                                    backdropFilter: 'blur(1px)',
                                 }} />
+
+                                {/* Grid texture overlay */}
                                 <Box sx={{
-                                    position: 'absolute', bottom: -40, left: -40,
-                                    width: 160, height: 160, borderRadius: '50%',
-                                    background: 'rgba(255,255,255,0.06)', pointerEvents: 'none',
-                                }} />
-                                {/* Grid texture */}
-                                <Box sx={{
-                                    position: 'absolute', inset: 0,
+                                    position: 'absolute', inset: 0, zIndex: 4,
                                     backgroundImage: `
-                                        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-                                        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+                                        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
                                     `,
                                     backgroundSize: '32px 32px',
                                     pointerEvents: 'none',
@@ -348,8 +400,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
 
                                 {/* Centered content */}
                                 <Box sx={{
-                                    position: 'relative', zIndex: 2,
-                                    height: '100%',
+                                    position: 'absolute', inset: 0, zIndex: 5,
                                     display: 'flex', flexDirection: 'column',
                                     alignItems: 'center', justifyContent: 'center',
                                     p: { xs: 3, md: 4 }, textAlign: 'center',
@@ -358,7 +409,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                     {/* Animated ring icon */}
                                     <Box sx={{
                                         width: 100, height: 100, borderRadius: '50%',
-                                        border: '2.5px solid rgba(255,255,255,0.35)',
+                                        border: '2.5px solid rgba(255,255,255,0.45)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         mb: 3,
                                         position: 'relative',
@@ -378,17 +429,8 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         }} />
                                     </Box>
 
-                                    <Typography variant="h3" sx={{
-                                        color: '#fff', fontWeight: 900,
-                                        fontSize: { xs: '2rem', md: '2.4rem' },
-                                        letterSpacing: '-0.5px', lineHeight: 1.1, mb: 1.5,
-                                        textShadow: '0 4px 16px rgba(0,0,0,0.25)',
-                                    }}>
-                                        View<br />More
-                                    </Typography>
-
                                     <Typography variant="body1" sx={{
-                                        color: 'rgba(255,255,255,0.82)',
+                                        color: 'rgba(255,255,255,0.85)',
                                         fontSize: '0.95rem', lineHeight: 1.6,
                                         maxWidth: 220, mb: 4, fontWeight: 400,
                                     }}>
@@ -401,7 +443,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         px: 3.5, py: 1.4,
                                         background: '#fff',
                                         borderRadius: '50px',
-                                        boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
                                         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                         transform: hoveredCard === 'see-more' ? 'scale(1.06)' : 'scale(1)',
                                         mb: 3,
@@ -423,7 +465,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                         px: 2.5, py: 0.8,
                                         background: 'rgba(255,255,255,0.15)',
                                         backdropFilter: 'blur(8px)',
-                                        border: '1px solid rgba(255,255,255,0.25)',
+                                        border: '1px solid rgba(255,255,255,0.3)',
                                         borderRadius: '50px',
                                     }}>
                                         <Typography variant="body2" sx={{

@@ -45,11 +45,11 @@ const TopHeader: React.FC = () => {
     { label: 'SETTINGS', path: '/admin/settings' }
   ] : [
     { label: 'SERVICES', path: '/service' },
-    { label: 'EQUIPMENTS', path: '/equipment ' },
     { label: 'PRICING', path: '/pricing' },
-    { label: 'NEWS', path: '/news' },
+    { label: 'EQUIPMENTS', path: '/equipment ' },
     { label: 'PROMOTIONS', path: '/promotions' },
-    { label: 'CITIREWARDS', path: '/rewards' }
+    { label: 'NEWS', path: '/news' },
+    { label: 'REWARDS', path: '/rewards' }
   ];
 
   const handleMenuClick = (path: string) => {

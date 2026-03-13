@@ -11,7 +11,7 @@ import StoriesSection from "./StoriesSection/StoriesSection.tsx";
 import {useGymServices} from "../../hooks/useGymServices.ts";
 import {useGymStory} from "../../hooks/useGymStory.ts";
 import BMISection from "../BMISection/BMISection.tsx";
-import HeroBanner from "../../components/PowerGym/HeroBanner/HeroBanner.tsx";
+import HeroBanner from "./HeroBanner/HeroBanner.tsx";
 import {MembershipPackagesSection} from "../../components/PowerGym";
 // Import test for debugging
 

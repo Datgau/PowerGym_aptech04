@@ -8,7 +8,7 @@ import {
   Cancel as RejectIcon,
   Schedule as PendingIcon
 } from '@mui/icons-material';
-import StoryDetailModal from '../../../Home/StoriesSection/StoryDetailModal';
+import StoryDetailModal from './components/StoryDetailModal.tsx';
 import type { StoryItem } from '../../../../services/storyService';
 
 interface AdminStoryDetailModalProps {

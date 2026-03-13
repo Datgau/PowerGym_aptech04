@@ -8,10 +8,11 @@ import {
 import TablePagination from '../../../../components/Common/TablePagination';
 import AdminStoryDetailModal from './AdminStoryDetailModal';
 import ShareStoryModal from '../../../Home/StoriesSection/ShareStoryModal';
-import { useStoriesManagement } from './hooks';
 import { Header, StatsCards, StoryCard, EmptyState } from './components';
 import type { StoryItem } from '../../../../services/storyService';
 import { loadAuthSession } from '../../../../services/authStorage';
+import {useStoriesManagement} from "../../../../hooks/useStoriesManagement.ts";
+import type {StoryStatus} from "./types.ts";
 
 const AdminStoriesManagement: React.FC = () => {
   const [selectedStory, setSelectedStory] = useState<StoryItem | null>(null);
@@ -64,7 +65,7 @@ const AdminStoriesManagement: React.FC = () => {
     setShareModalOpen(true);
   };
 
-  const handleStatCardClick = (filter: string) => {
+  const handleStatCardClick = (filter: StoryStatus) => {
     handleStatusFilterChange(filter);
   };
 

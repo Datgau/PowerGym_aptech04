@@ -5,7 +5,6 @@
 
 import type { SvgIconComponent } from "@mui/icons-material";
 
-// dịch vụ của phòng gym
 export interface ServiceItem {
   id: string;
   name: string;
@@ -16,6 +15,7 @@ export interface ServiceItem {
   duration?: number;
   maxParticipants?: number;
   isActive: boolean;
+  registrationCount?: number; // Số lượng người đã đăng ký
 }
 
 

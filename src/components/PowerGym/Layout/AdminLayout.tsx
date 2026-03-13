@@ -32,6 +32,8 @@ import {
 } from '@mui/icons-material';
 import GlobalNotification from "../../Notifications/GlobalNotification.tsx";
 import { useTokenRefresh } from "../../../hooks/useTokenRefresh.ts";
+import {useAuth} from "../../../hooks/useAuth.ts";
+import {useNavigate} from "react-router-dom";
 
 const drawerWidth = 260;
 
@@ -46,8 +48,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // Automatically refresh token before expiration
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+
+    // Automatically refresh token before expiration
   useTokenRefresh();
 
   const menuItems = [
@@ -83,11 +88,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    // Add logout logic here
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-  };
+  const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login', { replace: true });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (error) {
+            console.error('Logout error:', error);
+            navigate('/login', { replace: true });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>

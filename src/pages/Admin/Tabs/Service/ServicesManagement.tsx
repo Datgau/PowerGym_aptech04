@@ -73,7 +73,7 @@ const ServicesManagement: React.FC = () => {
         setPaginationData(pageData.totalPages, pageData.totalElements);
       }
     } catch (err: any) {
-      setError(err.message || 'Không thể tải dữ liệu');
+      setError(err.message || 'Data not found');
     } finally {
       setLoading(false);
     }
@@ -109,27 +109,29 @@ const ServicesManagement: React.FC = () => {
   const handleSubmit = async (data: any) => {
     try {
       const token = getAccessToken();
+
       if (!token) {
-        console.error('No token found! User needs to login.');
-        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        console.error('No token found! User needs to log in.');
+        setError('Your session has expired. Please log in again.');
         return;
       }
-      
+
       if (formMode === 'create') {
         await gymServiceApi.createService(data);
       } else if (selectedService) {
         await gymServiceApi.updateService(parseInt(selectedService.id), data);
       }
-      
+
       await loadData(paginationState.page, paginationState.rowsPerPage);
       setOpenForm(false);
+
     } catch (err: any) {
       console.error('Submit error:', err);
-      
+
       if (err.response?.status === 401) {
-        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setError('Your session has expired. Please log in again.');
       } else {
-        setError(err.response?.data?.message || 'Không thể lưu service');
+        setError(err.response?.data?.message || 'Unable to save the service.');
       }
     }
   };
@@ -141,7 +143,8 @@ const ServicesManagement: React.FC = () => {
         await loadData(paginationState.page, paginationState.rowsPerPage);
       } catch (err: any) {
         console.error('Delete error:', err);
-        const errorMessage = err.response?.data?.message || 'Không thể xóa service';
+        const errorMessage =
+            err.response?.data?.message || 'Unable to delete the service';
         setError(errorMessage);
         throw err;
       }

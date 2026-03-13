@@ -5,7 +5,6 @@ import ProtectedRoute from "./ProtectedRoute.tsx";
 import NotFound from "../pages/NotFound";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import VerifyOtp from "../pages/VerifyOtp";
 import Home from "../pages/Home";
 import TermsOfService from "../pages/TermsOfService";
 import DataDeletion from "../pages/DataDeletion";
@@ -18,7 +17,7 @@ import AuthRedirect from "../components/Auth/AuthRedirect";
 
 // PowerGym Pages
 import Service from "../pages/Services/Service.tsx";
-import StoryDetailPage from "../pages/Stories/StoryDetailPage.tsx";
+import StoryDetailPage from "../pages/Home/StoriesSection/StoryDetailPage.tsx";
 import Equipments from "../pages/Equipments/Equipments.tsx";
 import Pricing from "../pages/Pricing/Pricing.tsx";
 import News from "../pages/News/News.tsx";
@@ -34,7 +33,6 @@ export const AppRouter = () => (
             <Route path="/" element={<AuthRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/data-deletion" element={<DataDeletion />} />

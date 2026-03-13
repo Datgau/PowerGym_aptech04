@@ -5,7 +5,7 @@ export { default as PowerGymLayout } from './Layout/PowerGymLayout';
 export { default as TopHeader } from './Navigation/TopHeader';
 
 // Home Page Sections
-export { default as HeroBanner } from './HeroBanner/HeroBanner';
+export { default as HeroBanner } from '../../pages/Home/HeroBanner/HeroBanner';
 export { default as ServicesSection } from '../../pages/Home/ServicesSection/ServicesSection';
 export { default as StoriesSection } from '../../pages/Home/StoriesSection/StoriesSection';
 // export { default as QuickActionsSection } from './QuickActionsSection/QuickActionsSection';
