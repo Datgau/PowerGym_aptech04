@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import type { GymServiceDto } from '../../../../services/gymService.ts';
-import RichTextEditor from '../../../../components/Common/RichTextEditor';
-import ImageUpload from '../../../../components/Common/ImageUpload';
+import RichTextEditor from '../../../../components/Common/RichTextEditor.tsx';
+import ImageUpload from '../../../../components/Common/ImageUpload.tsx';
 
 interface ServiceFormModalProps {
   open: boolean;

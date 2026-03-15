@@ -12,6 +12,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useNavigate } from "react-router-dom";
 import type { ServiceItem } from '../../../@type/powergym.ts';
+import RichTextDisplay from "../../../components/Common/RichTextDisplay.tsx";
 
 interface ServicesSectionProps {
     readonly servicesData: ServiceItem[];
@@ -297,16 +298,9 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             {service.name}
                                         </Typography>
 
-                                        <Typography variant="body2" sx={{
-                                            color: 'rgba(255,255,255,0.8)',
-                                            fontSize: '0.85rem', lineHeight: 1.55, mb: 2,
-                                            overflow: 'hidden',
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                        }}>
-                                            {service.description}
-                                        </Typography>
+                                        <Box sx={{ mb: 3 }}>
+                                            <RichTextDisplay content={service.description} />
+                                        </Box>
 
                                         <Box sx={{
                                             display: 'inline-flex', alignItems: 'center', gap: 0.75,

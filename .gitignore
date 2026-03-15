@@ -6,7 +6,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-.md
 node_modules
 dist
 dist-ssr
@@ -24,6 +23,7 @@ dist-ssr
 *.sw?
 # Ignore environment files
 .env
+*.md
 .env.*
 *.env
 

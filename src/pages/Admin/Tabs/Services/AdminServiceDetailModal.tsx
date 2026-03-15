@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import  { useState, useCallback, useMemo } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -10,11 +10,10 @@ import {
     IconButton,
     useTheme,
     useMediaQuery,
-    Divider,
-    Grid,
-    Card,
+    Divider, Card,
     CardContent,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
     ChevronLeft,
     ChevronRight,
@@ -91,6 +90,33 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
     };
 
     if (!service) return null;
+
+    const stats = [
+        {
+            label: "Price",
+            value: `$${service.price?.toLocaleString()}`,
+            icon: <AttachMoney />,
+            color: "#00b4ff"
+        },
+        {
+            label: "Duration",
+            value: `${service.duration} min`,
+            icon: <Schedule />,
+            color: "#ff9800"
+        },
+        {
+            label: "Max Participants",
+            value: service.maxParticipants,
+            icon: <Group />,
+            color: "#9c27b0"
+        },
+        {
+            label: "Status",
+            value: service.isActive ? "Active" : "Inactive",
+            icon: <Visibility />,
+            color: service.isActive ? "#4caf50" : "#f44336"
+        }
+    ];
 
     return (
         <Dialog 
@@ -360,100 +386,108 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                     <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
                         Service Information
                     </Typography>
-                    <Grid container spacing={2} sx={{ mb: 3 }}  >
-                        <Grid  x={12} sm={6} md={3}  component="div">
-                            <Card variant="outlined" sx={{ height: '100%' }}>
-                                <CardContent sx={{ textAlign: 'center' }}>
-                                    <AttachMoney sx={{ color: '#00b4ff', fontSize: 32, mb: 1 }} />
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        Price
-                                    </Typography>
-                                    <Typography variant="h6" fontWeight={700} color="#00b4ff">
-                                        ${service.price?.toLocaleString()}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                        {stats.map((item, index) => (
+                            <Grid  xs={12} sm={6} md={3} key={index}>
+                                <Card
+                                    variant="outlined"
+                                    sx={{
+                                        height: "100%",
+                                        borderRadius: 3,
+                                        transition: "all 0.25s ease",
+                                        "&:hover": {
+                                            transform: "translateY(-4px)",
+                                            boxShadow: "0 8px 24px rgba(0,0,0,0.08)"
+                                        }
+                                    }}
+                                >
+                                    <CardContent sx={{ textAlign: "center", py: 3 }}>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card variant="outlined" sx={{ height: '100%' }}>
-                                <CardContent sx={{ textAlign: 'center' }}>
-                                    <Schedule sx={{ color: '#ff9800', fontSize: 32, mb: 1 }} />
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        Duration
-                                    </Typography>
-                                    <Typography variant="h6" fontWeight={700} color="#ff9800">
-                                        {service.duration} min
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                                        <Box
+                                            sx={{
+                                                width: 56,
+                                                height: 56,
+                                                mx: "auto",
+                                                mb: 1.5,
+                                                borderRadius: "50%",
+                                                background: `${item.color}15`,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                color: item.color,
+                                                fontSize: 28
+                                            }}
+                                        >
+                                            {item.icon}
+                                        </Box>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card variant="outlined" sx={{ height: '100%' }}>
-                                <CardContent sx={{ textAlign: 'center' }}>
-                                    <Group sx={{ color: '#9c27b0', fontSize: 32, mb: 1 }} />
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        Max Participants
-                                    </Typography>
-                                    <Typography variant="h6" fontWeight={700} color="#9c27b0">
-                                        {service.maxParticipants}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            display="block"
+                                            sx={{ mb: 0.5 }}
+                                        >
+                                            {item.label}
+                                        </Typography>
 
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card variant="outlined" sx={{ height: '100%' }}>
-                                <CardContent sx={{ textAlign: 'center' }}>
-                                    <Visibility sx={{ color: '#4caf50', fontSize: 32, mb: 1 }} />
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        Status
-                                    </Typography>
-                                    <Typography 
-                                        variant="h6" 
-                                        fontWeight={700} 
-                                        color={service.isActive ? '#4caf50' : '#f44336'}
-                                    >
-                                        {service.isActive ? 'Active' : 'Inactive'}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
+                                        <Typography
+                                            variant="h6"
+                                            fontWeight={700}
+                                            sx={{ color: item.color }}
+                                        >
+                                            {item.value}
+                                        </Typography>
+
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
                     </Grid>
 
-                    {/* Timestamps */}
                     <Divider sx={{ my: 3 }} />
-                    <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
+
+                    <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        sx={{ mb: 2, color: "#333" }}
+                    >
                         Timestamps
                     </Typography>
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={12} md={6}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                <CalendarToday sx={{ color: '#6c757d' }} />
-                                <Box>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Created At
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={600}>
-                                        {formatDate(service.createdAt)}
-                                    </Typography>
+
+                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                        {[
+                            { label: "Created At", value: formatDate(service.createdAt) },
+                            { label: "Updated At", value: formatDate(service.updatedAt) }
+                        ].map((item, i) => (
+                            <Grid xs={12} md={6} key={i}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 2,
+                                        p: 2,
+                                        borderRadius: 3,
+                                        bgcolor: "#f8f9fa",
+                                        transition: "all 0.2s",
+                                        "&:hover": {
+                                            bgcolor: "#f1f3f5"
+                                        }
+                                    }}
+                                >
+                                    <CalendarToday sx={{ color: "#6c757d" }} />
+
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {item.label}
+                                        </Typography>
+
+                                        <Typography variant="body2" fontWeight={600}>
+                                            {item.value}
+                                        </Typography>
+                                    </Box>
                                 </Box>
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                                <CalendarToday sx={{ color: '#6c757d' }} />
-                                <Box>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Updated At
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={600}>
-                                        {formatDate(service.updatedAt)}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Grid>
+                            </Grid>
+                        ))}
                     </Grid>
 
                     {/* Action Buttons */}

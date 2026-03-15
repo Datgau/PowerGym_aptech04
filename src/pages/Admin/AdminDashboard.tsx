@@ -4,7 +4,7 @@ import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
-import ServicesManagement from './Tabs/Service/ServicesManagement.tsx';
+import ServicesManagement from './Tabs/Services/ServicesManagement.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
 import EquipmentManagementPage from './Tabs/Equipment/EquipmentManagementPage.tsx';
 import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";

@@ -16,22 +16,26 @@ import {
   Alert,
   Chip
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
-import { getAllUsers, createUser, updateUser, deleteUser, getAllRolesLegacy, type UserResponse, type Role } from '../../../../services/adminService.ts';
-import UserFormModal from '../UserFormModal.tsx';
-import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
+import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
+import { 
+  getAllTrainers, 
+  deactivateTrainer,
+  type TrainerResponse 
+} from '../../../../services/trainerService';
+import CreateTrainerModal from './CreateTrainerModal';
+import TrainerDetailModal from './TrainerDetailModal';
+import DeleteConfirmModal from '../DeleteConfirmModal';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 
 const TrainersGrid: React.FC = () => {
-  const [trainers, setTrainers] = useState<UserResponse[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [trainers, setTrainers] = useState<TrainerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [openForm, setOpenForm] = useState(false);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [selectedTrainer, setSelectedTrainer] = useState<TrainerResponse | null>(null);
 
   const {
     paginationState,
@@ -41,62 +45,54 @@ const TrainersGrid: React.FC = () => {
   } = usePagination(10);
 
   useEffect(() => {
-    loadData(paginationState.page, paginationState.rowsPerPage);
+    loadTrainers(paginationState.page, paginationState.rowsPerPage);
   }, [paginationState.page, paginationState.rowsPerPage]);
 
-  const loadData = async (page: number = 0, size: number = 10) => {
+  const loadTrainers = async (page: number = 0, size: number = 10) => {
     try {
       setLoading(true);
-      const [usersRes, rolesRes] = await Promise.all([
-        getAllUsers(page, size),
-        getAllRolesLegacy()
-      ]);
+      const response = await getAllTrainers(page, size);
       
-      if (usersRes.success && rolesRes.success) {
-        const pageData = usersRes.data;
-        // Lọc chỉ lấy user có role TRAINER
-        const trainerUsers = pageData.content.filter((u: UserResponse) => u.role?.name === 'TRAINER');
-        setTrainers(trainerUsers);
-        setRoles(rolesRes.data);
+      if (response.success) {
+        const pageData = response.data;
+        setTrainers(pageData.content);
         setPaginationData(pageData.totalPages, pageData.totalElements);
+      } else {
+        setError(response.message);
       }
     } catch (err: any) {
-      setError(err.message || 'Không thể tải dữ liệu');
+      setError(err.message || 'Không thể tải dữ liệu trainers');
     } finally {
       setLoading(false);
     }
   };
 
   const handleOpenCreate = () => {
-    setSelectedUser(null);
-    setFormMode('create');
-    setOpenForm(true);
+    setOpenCreateModal(true);
   };
 
-  const handleOpenEdit = (user: UserResponse) => {
-    setSelectedUser(user);
-    setFormMode('edit');
-    setOpenForm(true);
+  const handleOpenDetail = (trainer: TrainerResponse) => {
+    setSelectedTrainer(trainer);
+    setOpenDetailModal(true);
   };
 
-  const handleOpenDelete = (user: UserResponse) => {
-    setSelectedUser(user);
+  const handleOpenDelete = (trainer: TrainerResponse) => {
+    setSelectedTrainer(trainer);
     setOpenDelete(true);
   };
 
-  const handleSubmit = async (data: any) => {
-    if (formMode === 'create') {
-      await createUser(data);
-    } else if (selectedUser) {
-      await updateUser(selectedUser.id, data);
-    }
-    await loadData(paginationState.page, paginationState.rowsPerPage);
+  const handleCreateSuccess = () => {
+    loadTrainers(paginationState.page, paginationState.rowsPerPage);
   };
 
   const handleDelete = async () => {
-    if (selectedUser) {
-      await deleteUser(selectedUser.id);
-      await loadData(paginationState.page, paginationState.rowsPerPage);
+    if (selectedTrainer) {
+      try {
+        await deactivateTrainer(selectedTrainer.id);
+        await loadTrainers(paginationState.page, paginationState.rowsPerPage);
+      } catch (err: any) {
+        setError(err.message || 'Không thể xóa trainer');
+      }
     }
   };
 
@@ -129,7 +125,7 @@ const TrainersGrid: React.FC = () => {
             fontSize: { xs: '0.875rem', md: '1rem' }
           }}
         >
-          Add Trainer
+          Tạo Trainer Mới
         </Button>
       </Box>
       
@@ -139,8 +135,9 @@ const TrainersGrid: React.FC = () => {
             <TableRow>
               <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Trainer</TableCell>
               <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Phone</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Join Date</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Role</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Specialties</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', md: 'table-cell' } }}>Experience</TableCell>
+              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Status</TableCell>
               <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -165,23 +162,57 @@ const TrainersGrid: React.FC = () => {
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                   {trainer.phoneNumber || '-'}
                 </TableCell>
-                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                  {trainer.createDate ? new Date(trainer.createDate).toLocaleDateString('vi-VN') : '-'}
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                    {trainer.specialties?.slice(0, 2).map((spec: any, index: number) => (
+                      <Chip
+                        key={index}
+                        label={spec.specialty}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.75rem' }}
+                      />
+                    ))}
+                    {trainer.specialties?.length > 2 && (
+                      <Chip
+                        label={`+${trainer.specialties.length - 2}`}
+                        size="small"
+                        color="default"
+                        sx={{ fontSize: '0.75rem' }}
+                      />
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                  {trainer.totalExperienceYears ? `${trainer.totalExperienceYears} năm` : '-'}
                 </TableCell>
                 <TableCell>
                   <Chip 
-                    label={trainer.role?.name || 'TRAINER'} 
-                    color="success"
+                    label={trainer.isActive ? 'Active' : 'Inactive'} 
+                    color={trainer.isActive ? 'success' : 'error'}
                     size="small"
                     sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
                   />
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={0.5}>
-                    <IconButton size="small" onClick={() => handleOpenEdit(trainer)}>
+                    <IconButton 
+                      size="small" 
+                      title="Xem chi tiết"
+                      onClick={() => handleOpenDetail(trainer)}
+                    >
+                      <Visibility fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" title="Chỉnh sửa">
                       <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleOpenDelete(trainer)}>
+                    <IconButton 
+                      size="small" 
+                      color="error" 
+                      onClick={() => handleOpenDelete(trainer)}
+                      title="Xóa"
+                    >
                       <Delete fontSize="small" />
                     </IconButton>
                   </Box>
@@ -206,14 +237,16 @@ const TrainersGrid: React.FC = () => {
         </Box>
       )}
 
-      <UserFormModal
-        open={openForm}
-        onClose={() => setOpenForm(false)}
-        onSubmit={handleSubmit}
-        user={selectedUser}
-        roles={roles}
-        mode={formMode}
-        allowedRoles={['TRAINER']}
+      <CreateTrainerModal
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        onSuccess={handleCreateSuccess}
+      />
+
+      <TrainerDetailModal
+        open={openDetailModal}
+        onClose={() => setOpenDetailModal(false)}
+        trainerId={selectedTrainer?.id || null}
       />
 
       <DeleteConfirmModal
@@ -221,7 +254,7 @@ const TrainersGrid: React.FC = () => {
         onClose={() => setOpenDelete(false)}
         onConfirm={handleDelete}
         title="Xóa Trainer"
-        message={`Bạn có chắc chắn muốn xóa trainer "${selectedUser?.fullName}"?`}
+        message={`Bạn có chắc chắn muốn xóa trainer "${selectedTrainer?.fullName}"?`}
       />
     </Box>
   );

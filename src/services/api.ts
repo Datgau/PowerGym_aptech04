@@ -94,16 +94,7 @@ const refreshAccessToken = async (): Promise<string> => {
 // Response interceptor for private client
 privateClient.interceptors.response.use(
     (response: AxiosResponse) => response,
-    async (error: AxiosError) => {
-        // Log detailed error information
-        console.error('=== API Error ===');
-        console.error('URL:', error.config?.url);
-        console.error('Method:', error.config?.method);
-        console.error('Status:', error.response?.status);
-        console.error('Status Text:', error.response?.statusText);
-        console.error('Response Data:', error.response?.data);
-        console.error('Error Message:', error.message);
-        
+    async (error: AxiosError) => {        
         const originalRequest = error.config as
             | (InternalAxiosRequestConfig & { _retry?: boolean })
             | undefined;
@@ -154,7 +145,6 @@ privateClient.interceptors.response.use(
         } else if (!error.response) {
             console.error('Network error - no response received');
         }
-
         return Promise.reject(error);
     }
 );

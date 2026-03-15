@@ -48,13 +48,10 @@ class NewsService {
     });
   }
 
-  // Get English Gym & Health News (Method 1: everything with gym keywords)
   async getEnglishGymNews(): Promise<NewsResponse> {
     try {
       const client = this.createNewsApiClient();
-      
-      // Try specific gym and fitness keywords
-      const gymQueries = [
+            const gymQueries = [
         'gym OR fitness OR workout OR bodybuilding',
         'health OR wellness OR exercise OR training',
         'muscle OR strength OR cardio OR weightlifting',
@@ -95,8 +92,6 @@ class NewsService {
           continue;
         }
       }
-
-      // If specific domains fail, try without domain restrictions
       const response = await client.get('/everything', {
         params: {
           q: 'gym fitness workout health',
@@ -127,13 +122,10 @@ class NewsService {
     }
   }
 
-  // Get English Health Headlines (Method 2: top-headlines)
   async getEnglishHealthHeadlines(): Promise<NewsResponse> {
     try {
       const client = this.createNewsApiClient();
-      
-      // Try health category from major English-speaking countries
-      const countries = ['us', 'gb', 'ca', 'au'];
+            const countries = ['us', 'gb', 'ca', 'au'];
       
       for (const country of countries) {
         try {
@@ -146,7 +138,6 @@ class NewsService {
           });
 
           if (response.data.articles && response.data.articles.length > 0) {
-            // Filter for fitness/gym related content
             const fitnessArticles = response.data.articles.filter((article: any) => {
               const content = `${article.title} ${article.description}`.toLowerCase();
               return content.includes('gym') || 
@@ -183,8 +174,6 @@ class NewsService {
           continue;
         }
       }
-
-      // If no health articles found, try sports category
       const response = await client.get('/top-headlines', {
         params: {
           country: 'us',
@@ -212,14 +201,10 @@ class NewsService {
       return this.getEnglishGymNewsFromGNews();
     }
   }
-
-  // GNews API implementation for English gym news
   async getEnglishGymNewsFromGNews(): Promise<NewsResponse> {
     try {
       const client = this.createGNewsClient();
-      
-      // Try English fitness search terms
-      const searchTerms = [
+            const searchTerms = [
         'gym fitness workout',
         'health wellness exercise', 
         'bodybuilding muscle training',

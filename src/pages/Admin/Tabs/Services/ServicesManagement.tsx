@@ -21,12 +21,12 @@ import { gymServiceApi, type GymServiceDto } from '../../../../services/gymServi
 import ServiceFormModal from './ServiceFormModal.tsx';
 import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
 import ServiceRegistrationsModal from './ServiceRegistrationsModal.tsx';
-import AdminServiceDetailModal from '../Services/AdminServiceDetailModal.tsx';
-import { useWebSocket } from '../../../../hooks/useWebSocket';
-import { getAccessToken } from '../../../../services/authStorage';
-import TablePagination from '../../../../components/Common/TablePagination';
-import { usePagination } from '../../../../hooks/usePagination';
-import RichTextDisplay from '../../../../components/Common/RichTextDisplay';
+import AdminServiceDetailModal from './AdminServiceDetailModal.tsx';
+import { useWebSocket } from '../../../../hooks/useWebSocket.ts';
+import { getAccessToken } from '../../../../services/authStorage.ts';
+import TablePagination from '../../../../components/Common/TablePagination.tsx';
+import { usePagination } from '../../../../hooks/usePagination.ts';
+import RichTextDisplay from '../../../../components/Common/RichTextDisplay.tsx';
 
 const ServicesManagement: React.FC = () => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
