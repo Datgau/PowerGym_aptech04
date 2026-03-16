@@ -140,11 +140,24 @@ const validationSchema = Yup.object({
     .matches(/^[0-9+\-\s()]+$/, 'Invalid phone number')
     .required('Phone number is required'),
   bio: Yup.string().max(1000),
-  totalExperienceYears: Yup.number().min(0).max(50),
+  totalExperienceYears: Yup.number().min(0).max(50).nullable(),
   education: Yup.string().max(200),
   emergencyContact: Yup.string().max(100),
   emergencyPhone: Yup.string().matches(/^[0-9+\-\s()]*$/, 'Invalid phone number'),
-  specialties: Yup.array().min(1, 'At least one specialty is required').required(),
+  specialties: Yup.array()
+    .min(1, 'At least one specialty is required')
+    .of(
+      Yup.object().shape({
+        specialty: Yup.object().shape({
+          id: Yup.number().min(1, 'Please select a specialty type').required('Specialty type is required')
+        }).required('Specialty is required'),
+        description: Yup.string().max(500).nullable(),
+        experienceYears: Yup.number().min(0).max(50).nullable(),
+        certifications: Yup.string().max(500).nullable(),
+        level: Yup.string().required('Level is required')
+      })
+    )
+    .required('At least one specialty is required'),
 });
 
 // Step Icon Component
@@ -183,31 +196,46 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
       specialties: [],
     },
     validationSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
     onSubmit: async (values) => {
       await handleSubmit(values);
     },
   });
 
   const handleSubmit = async (values: CreateTrainerRequest) => {
+    console.log('handleSubmit called with values:', values);
     try {
       setLoading(true);
       setError('');
       
+      console.log('Calling createTrainer API...');
       const trainerResponse = await createTrainer(values);
+      console.log('createTrainer response:', trainerResponse);
+      
       if (!trainerResponse.success) throw new Error(trainerResponse.message);
 
       const trainerId = trainerResponse.data.id;
+      console.log('Trainer created with ID:', trainerId);
       
-      if (avatarFile) await uploadTrainerAvatar(trainerId, avatarFile);
-      if (coverFile) await uploadTrainerCoverPhoto(trainerId, coverFile);
+      if (avatarFile) {
+        console.log('Uploading avatar...');
+        await uploadTrainerAvatar(trainerId, avatarFile);
+      }
+      if (coverFile) {
+        console.log('Uploading cover photo...');
+        await uploadTrainerCoverPhoto(trainerId, coverFile);
+      }
       
       for (const doc of documents) {
+        console.log('Uploading document:', doc.documentType);
         await uploadTrainerDocument(trainerId, doc.file, doc.documentType, doc.description, doc.expiryDate);
       }
 
       setSuccess('Trainer created successfully!');
       setTimeout(() => { onSuccess(); handleClose(); }, 1500);
     } catch (err: any) {
+      console.error('Error in handleSubmit:', err);
       setError(err.message || 'An error occurred while creating the trainer');
     } finally {
       setLoading(false);
@@ -224,27 +252,85 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
     onClose();
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    setError(''); // Clear previous errors
+    
     if (activeStep === 0) {
+      // Validate basic fields
       const basicFields = ['email', 'fullName', 'phoneNumber'];
       const hasErrors = basicFields.some(f => formik.errors[f as keyof typeof formik.errors] && formik.touched[f as keyof typeof formik.touched]);
-      if (hasErrors || !formik.values.email || !formik.values.fullName || !formik.values.phoneNumber) {
+      const hasEmptyFields = !formik.values.email || !formik.values.fullName || !formik.values.phoneNumber;
+      
+      if (hasErrors || hasEmptyFields) {
         formik.setTouched({ email: true, fullName: true, phoneNumber: true });
+        
+        // Show specific error messages
+        const errors = [];
+        if (!formik.values.email) errors.push('Email is required');
+        else if (formik.errors.email) errors.push(formik.errors.email);
+        
+        if (!formik.values.fullName) errors.push('Full name is required');
+        else if (formik.errors.fullName) errors.push(formik.errors.fullName);
+        
+        if (!formik.values.phoneNumber) errors.push('Phone number is required');
+        else if (formik.errors.phoneNumber) errors.push(formik.errors.phoneNumber);
+        
+        setError(errors.join(', '));
+        return;
+      }
+      
+      // Validate totalExperienceYears if provided
+      if (formik.values.totalExperienceYears && (formik.values.totalExperienceYears < 0 || formik.values.totalExperienceYears > 50)) {
+        formik.setTouched({ totalExperienceYears: true });
+        setError('Total experience years must be between 0 and 50');
         return;
       }
     }
-    if (activeStep === 1 && formik.values.specialties.length === 0) {
-      setError('Please add at least one specialty');
-      return;
+    
+    if (activeStep === 1) {
+      // Validate specialties
+      if (formik.values.specialties.length === 0) {
+        setError('Please add at least one specialty');
+        return;
+      }
+      
+      const invalidSpecialties = formik.values.specialties.some(s => !s.specialty || s.specialty.id === 0);
+      if (invalidSpecialties) {
+        setError('Please select a category for all specialties');
+        return;
+      }
+      
+      // Validate specialty fields
+      const specialtyErrors: string[] = [];
+      formik.values.specialties.forEach((spec, index) => {
+        if (!spec.level) {
+          specialtyErrors.push(`Specialty ${index + 1}: Level is required`);
+        }
+        if (spec.experienceYears && (spec.experienceYears < 0 || spec.experienceYears > 50)) {
+          specialtyErrors.push(`Specialty ${index + 1}: Experience years must be between 0 and 50`);
+        }
+      });
+      
+      if (specialtyErrors.length > 0) {
+        setError(specialtyErrors.join(', '));
+        return;
+      }
     }
+    
+    // If all validations pass, move to next step
     setActiveStep(p => p + 1);
-    setError('');
   };
 
   const handleBack = () => { setActiveStep(p => p - 1); setError(''); };
 
   const addSpecialty = () => {
-    const s: TrainerSpecialtyRequest = { specialty: '', description: '', experienceYears: 0, certifications: '', level: 'BEGINNER' };
+    const s: TrainerSpecialtyRequest = { 
+      specialty: { id: 0 }, // Initialize with empty ID
+      description: '', 
+      experienceYears: 0, 
+      certifications: '', 
+      level: 'BEGINNER' // Set default level
+    };
     formik.setFieldValue('specialties', [...formik.values.specialties, s]);
   };
 
@@ -430,7 +516,49 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
 
           {activeStep === steps.length - 1 ? (
             <GradientButton
-              onClick={() => formik.handleSubmit()}
+              onClick={async (e) => {
+                e.preventDefault();
+                console.log('Create Trainer button clicked');
+                console.log('Current form values:', formik.values);
+                console.log('Form errors:', formik.errors);
+                console.log('Form isValid:', formik.isValid);
+                console.log('Form touched:', formik.touched);
+                
+                // Log specialties in detail
+                console.log('Specialties detail:', formik.values.specialties);
+                formik.values.specialties.forEach((spec, index) => {
+                  console.log(`Specialty ${index}:`, spec);
+                  console.log(`Specialty ${index} - specialty.id:`, spec.specialty?.id);
+                });
+                
+                // Validate form manually
+                const errors = await formik.validateForm();
+                console.log('Manual validation errors:', errors);
+                
+                if (Object.keys(errors).length === 0) {
+                  console.log('Form is valid, calling handleSubmit directly');
+                  await handleSubmit(formik.values);
+                } else {
+                  console.log('Form has errors, setting touched fields');
+                  console.log('Detailed errors:', JSON.stringify(errors, null, 2));
+                  formik.setTouched({
+                    email: true,
+                    fullName: true,
+                    phoneNumber: true,
+                    specialties: formik.values.specialties.map(() => ({})) as any,
+                    totalExperienceYears: true,
+                  });
+                  
+                  // Show error message
+                  if (errors.totalExperienceYears) {
+                    setError(`Total Experience Years: ${errors.totalExperienceYears}`);
+                  } else if (errors.specialties) {
+                    setError('Please check your specialties - make sure all have a category selected');
+                  } else {
+                    setError('Please check all required fields');
+                  }
+                }
+              }}
               disabled={loading}
               startIcon={loading ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <CheckCircle sx={{ fontSize: 18 }} />}
             >

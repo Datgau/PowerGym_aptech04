@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Typography,
@@ -12,7 +12,9 @@ import {
     Fade,
     Stack,
     Divider,
-    MenuItem
+    MenuItem,
+    CircularProgress,
+    Alert
 } from "@mui/material";
 
 import { styled, alpha } from "@mui/material/styles";
@@ -22,9 +24,13 @@ import type { FormikProps } from "formik";
 import {
     type CreateTrainerRequest,
     LEVELS,
-    SPECIALTIES,
     type TrainerSpecialtyRequest
 } from "../../../../../services/trainerService.ts";
+
+import { 
+    getAllServiceCategoriesNoPaging,
+    type ServiceCategoryResponse 
+} from "../../../../../services/serviceCategoryService.ts";
 
 import TextField from "@mui/material/TextField";
 
@@ -85,6 +91,46 @@ const SpecialtiesStep: React.FC<Props> = ({
                                               removeSpecialty,
                                               updateSpecialty
                                           }) => {
+    const [categories, setCategories] = useState<ServiceCategoryResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                setLoading(true);
+                const response = await getAllServiceCategoriesNoPaging();
+                if (response.success) {
+                    setCategories(response.data);
+                } else {
+                    setError('Failed to load service categories');
+                }
+            } catch (err: any) {
+                setError(err.message || 'Failed to load service categories');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCategories();
+    }, []);
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                <CircularProgress />
+                <Typography ml={2}>Loading service categories...</Typography>
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+            </Alert>
+        );
+    }
     return (
         <Fade in timeout={300}>
             <Box>
@@ -167,9 +213,6 @@ const SpecialtiesStep: React.FC<Props> = ({
                     <Stack spacing={3}>
 
                         {formik.values.specialties.map((specialty, index) => {
-
-                            const base = `specialties.${index}`;
-
                             return (
                                 <SpecialtyCard key={index}>
 
@@ -210,9 +253,9 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     <Chip
                                                         size="small"
                                                         label={
-                                                            SPECIALTIES.find(
-                                                                s => s.value === specialty.specialty
-                                                            )?.label
+                                                            categories.find(
+                                                                c => c.id === specialty.specialty?.id
+                                                            )?.displayName || 'Unknown'
                                                         }
                                                         sx={{
                                                             background: alpha("#0066ff", 0.1),
@@ -251,11 +294,17 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     select
                                                     fullWidth
                                                     label="Specialty Type"
-                                                    {...formik.getFieldProps(`${base}.specialty`)}
+                                                    value={specialty.specialty?.id || ''}
+                                                    onChange={(e) => {
+                                                        const selectedCategoryId = Number(e.target.value);
+                                                        updateSpecialty(index, 'specialty', { id: selectedCategoryId });
+                                                    }}
+                                                    error={!specialty.specialty || specialty.specialty.id === 0}
+                                                    helperText={!specialty.specialty || specialty.specialty.id === 0 ? 'Please select a specialty type' : ''}
                                                 >
-                                                    {SPECIALTIES.map(spec => (
-                                                        <MenuItem key={spec.value} value={spec.value}>
-                                                            {spec.label}
+                                                    {categories.map(category => (
+                                                        <MenuItem key={category.id} value={category.id}>
+                                                            {category.displayName}
                                                         </MenuItem>
                                                     ))}
                                                 </StyledTextField>
@@ -264,7 +313,10 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     select
                                                     fullWidth
                                                     label="Level"
-                                                    {...formik.getFieldProps(`${base}.level`)}
+                                                    value={specialty.level || ''}
+                                                    onChange={(e) => updateSpecialty(index, 'level', e.target.value)}
+                                                    error={!specialty.level}
+                                                    helperText={!specialty.level ? 'Level is required' : ''}
                                                 >
                                                     {LEVELS.map(level => (
                                                         <MenuItem key={level.value} value={level.value}>
@@ -284,13 +336,17 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     fullWidth
                                                     type="number"
                                                     label="Years of Experience"
-                                                    {...formik.getFieldProps(`${base}.experienceYears`)}
+                                                    value={specialty.experienceYears || ''}
+                                                    onChange={(e) => updateSpecialty(index, 'experienceYears', Number(e.target.value))}
+                                                    error={specialty.experienceYears !== undefined && (specialty.experienceYears < 0 || specialty.experienceYears > 50)}
+                                                    helperText={specialty.experienceYears !== undefined && (specialty.experienceYears < 0 || specialty.experienceYears > 50) ? 'Must be between 0 and 50' : ''}
                                                 />
 
                                                 <StyledTextField
                                                     fullWidth
                                                     label="Certifications"
-                                                    {...formik.getFieldProps(`${base}.certifications`)}
+                                                    value={specialty.certifications || ''}
+                                                    onChange={(e) => updateSpecialty(index, 'certifications', e.target.value)}
                                                 />
                                             </Stack>
 
@@ -301,7 +357,8 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                 multiline
                                                 rows={3}
                                                 label="Description"
-                                                {...formik.getFieldProps(`${base}.description`)}
+                                                value={specialty.description || ''}
+                                                onChange={(e) => updateSpecialty(index, 'description', e.target.value)}
                                             />
 
                                         </Stack>

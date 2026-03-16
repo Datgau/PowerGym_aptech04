@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
+import ServiceCategoryGrid from './Tabs/ServiceCategory/ServiceCategoryGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Services/ServicesManagement.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
@@ -21,8 +22,9 @@ const formatCurrency = (amount: number) => {
 const DashboardTab: React.FC = () => <DashboardOverview formatCurrency={formatCurrency} />;
 const MembersTab: React.FC = () => <MembersTable />;
 const TrainersTab: React.FC = () => <TrainersGrid />;
-const StoriesTab: React.FC = () => <AdminStoriesManagement />;
+const CategoriesTab: React.FC = () => <ServiceCategoryGrid />;
 const ServicesTab: React.FC = () => <ServicesManagement />;
+const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const MembershipTab: React.FC = () => <MembershipPackagesPage />;
 const EquipmentTab: React.FC = () => <EquipmentManagementPage />;
 
@@ -51,8 +53,9 @@ const AdminDashboard: React.FC = () => {
     <DashboardTab key="dashboard" />,
     <MembersTab key="members" />,
     <TrainersTab key="trainers" />,
-    <StoriesTab key="stories" />,
+    <CategoriesTab key="categories" />,
     <ServicesTab key="services" />,
+    <StoriesTab key="stories" />,
     <EquipmentTab key="equipment" />,
     <MembershipTab key="membership" />,
     <FinancialTab key="financial" />,

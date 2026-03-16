@@ -167,7 +167,7 @@ const TrainersGrid: React.FC = () => {
                     {trainer.specialties?.slice(0, 2).map((spec: any, index: number) => (
                       <Chip
                         key={index}
-                        label={spec.specialty}
+                        label={spec.specialty?.displayName || 'Unknown'}
                         size="small"
                         color="primary"
                         variant="outlined"
@@ -185,7 +185,19 @@ const TrainersGrid: React.FC = () => {
                   </Box>
                 </TableCell>
                 <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                  {trainer.totalExperienceYears ? `${trainer.totalExperienceYears} năm` : '-'}
+                  {(() => {
+                    // Show totalExperienceYears if available
+                    if (trainer.totalExperienceYears) {
+                      return `${trainer.totalExperienceYears} năm`;
+                    }
+                    
+                    // Otherwise, show max experience from specialties
+                    const maxSpecialtyExp = trainer.specialties?.reduce((max, spec) => {
+                      return Math.max(max, spec.experienceYears || 0);
+                    }, 0);
+                    
+                    return maxSpecialtyExp > 0 ? `${maxSpecialtyExp} năm` : '-';
+                  })()}
                 </TableCell>
                 <TableCell>
                   <Chip 

@@ -1,325 +1,379 @@
 import React, { useState } from 'react';
 import {
-  Box,
-  Drawer,
-  List,
-  Typography,
-  Divider,
-  IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  Menu,
-  MenuItem,
-  useMediaQuery,
-  useTheme
+    Box,
+    Drawer,
+    List,
+    Typography,
+    Divider,
+    IconButton,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Avatar,
+    Menu,
+    MenuItem,
+    useMediaQuery,
+    useTheme,
+    Tooltip,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Dashboard,
-  People,
-  FitnessCenter,
-  Build,
-  Assignment,
-  CardMembership,
-  AttachMoney,
-  Settings,
-  Logout,
-  AccountCircle,
-  Article
+    Menu as MenuIcon,
+    Dashboard,
+    People,
+    FitnessCenter,
+    Build,
+    Assignment,
+    CardMembership,
+    AttachMoney,
+    Settings,
+    Logout,
+    AccountCircle,
+    Article,
+    Category,
+    KeyboardArrowRight,
 } from '@mui/icons-material';
-import GlobalNotification from "../../Notifications/GlobalNotification.tsx";
-import { useTokenRefresh } from "../../../hooks/useTokenRefresh.ts";
-import {useAuth} from "../../../hooks/useAuth.ts";
-import {useNavigate} from "react-router-dom";
+import GlobalNotification from '../../Notifications/GlobalNotification.tsx';
+import { useTokenRefresh } from '../../../hooks/useTokenRefresh.ts';
+import { useAuth } from '../../../hooks/useAuth.ts';
+import { useNavigate } from 'react-router-dom';
 
-const drawerWidth = 260;
+const DRAWER_WIDTH = 260;
 
 interface AdminLayoutProps {
-  children: React.ReactNode;
-  activeTab?: number;
-  onTabChange?: (tabIndex: number) => void;
+    children: React.ReactNode;
+    activeTab?: number;
+    onTabChange?: (tabIndex: number) => void;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTabChange }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-
-    // Automatically refresh token before expiration
-  useTokenRefresh();
-
-  const menuItems = [
-    { text: 'Overview', icon: <Dashboard /> },
-    { text: 'Members', icon: <People /> },
-    { text: 'Trainers', icon: <FitnessCenter /> },
-    { text: 'Stories', icon: <Article /> },
-    { text: 'Services', icon: <Assignment /> },
-    { text: 'Equipment', icon: <Build /> },
+const menuItems = [
+    { text: 'Overview',   icon: <Dashboard /> },
+    { text: 'Members',    icon: <People /> },
+    { text: 'Trainers',   icon: <FitnessCenter /> },
+    { text: 'Categories', icon: <Category /> },
+    { text: 'Services',   icon: <Assignment /> },
+    { text: 'Stories',    icon: <Article /> },
+    { text: 'Equipment',  icon: <Build /> },
     { text: 'Membership', icon: <CardMembership /> },
-    { text: 'Financial', icon: <AttachMoney /> },
-    { text: 'Settings', icon: <Settings /> }
-  ];
+    { text: 'Financial',  icon: <AttachMoney /> },
+    { text: 'Settings',   icon: <Settings /> },
+];
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTabChange }) => {
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { logout } = useAuth();
+    const navigate = useNavigate();
 
-  const handleMenuClick = (index: number) => {
-    if (onTabChange) {
-      onTabChange(index);
-    }
-    if (isMobile) {
-      setMobileOpen(false);
-    }
-  };
+    useTokenRefresh();
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+    const handleDrawerToggle = () => setMobileOpen((v) => !v);
 
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = async () => {
-        try {
-            await logout();
-            navigate('/login', { replace: true });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (error) {
-            console.error('Logout error:', error);
-            navigate('/login', { replace: true });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    const handleMenuClick = (index: number) => {
+        onTabChange?.(index);
+        if (isMobile) setMobileOpen(false);
     };
 
-  const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo Section */}
-      <Box sx={{ 
-        p: 2.5, 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 2,
-        background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-        color: 'white'
-      }}>
-        <FitnessCenter sx={{ fontSize: 32 }} />
-        <Box>
-          <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-            PowerGym
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.9 }}>
-            Admin Panel
-          </Typography>
-        </Box>
-      </Box>
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (_) {}
+        navigate('/login', { replace: true });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-      <Divider />
+    /* ── Sidebar content ─────────────────────────────────────── */
+    const drawer = (
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
 
-      {/* Navigation Menu */}
-      <List sx={{ flex: 1, py: 2 }}>
-        {menuItems.map((item, index) => {
-          const isActive = activeTab === index;
-          return (
-            <ListItem key={item.text} disablePadding sx={{ px: 1.5, mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => handleMenuClick(index)}
+            {/* Logo */}
+            <Box
                 sx={{
-                  borderRadius: 2,
-                  backgroundColor: isActive ? 'rgba(0, 180, 255, 0.15)' : 'transparent',
-                  color: isActive ? '#00b4ff' : 'inherit',
-                  border: isActive ? '1px solid rgba(0, 180, 255, 0.3)' : '1px solid transparent',
-                  '&:hover': {
-                    backgroundColor: isActive ? 'rgba(0, 180, 255, 0.2)' : 'rgba(0, 0, 0, 0.04)',
-                    border: isActive ? '1px solid rgba(0, 180, 255, 0.4)' : '1px solid transparent'
-                  }
+                    px: 3,
+                    py: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    background: 'linear-gradient(135deg, #00b4ff 0%, #0066ff 100%)',
                 }}
-              >
-                <ListItemIcon sx={{ color: isActive ? '#00b4ff' : 'inherit', minWidth: 40 }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: isActive ? 700 : 400,
-                    fontSize: '0.95rem'
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-
-      <Divider />
-
-      {/* User Profile Section */}
-      <Box sx={{ p: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            cursor: 'pointer',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)'
-            }
-          }}
-          onClick={handleProfileMenuOpen}
-        >
-          <Avatar sx={{ width: 36, height: 36, bgcolor: '#00b4ff' }}>
-            A
-          </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={600} noWrap>
-              Admin User
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
-              admin@powergym.com
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  );
-
-  return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true,
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: drawerWidth,
-            border: 'none'
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
-
-      {/* Desktop Drawer - Fixed (always visible) */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: 'none', md: 'block' },
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: drawerWidth,
-            border: 'none',
-            boxShadow: '2px 0 8px rgba(0,0,0,0.05)',
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          minHeight: '100vh',
-          backgroundColor: '#f5f7fa',
-          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
-        }}
-      >
-        {/* Mobile Menu Button */}
-        {isMobile && (
-          <Box sx={{ 
-            p: 2, 
-            backgroundColor: 'white',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 2
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" fontWeight={600}>
-              Admin Dashboard
-            </Typography>
+            >
+                <Box
+                    sx={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 2,
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <FitnessCenter sx={{ color: '#fff', fontSize: 22 }} />
+                </Box>
+                <Box>
+                    <Typography variant="h6" fontWeight={800} color="#fff" lineHeight={1.1} letterSpacing={-0.3}>
+                        PowerGym
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)', fontWeight: 500, letterSpacing: 0.5 }}>
+                        Admin Panel
+                    </Typography>
+                </Box>
             </Box>
-            <GlobalNotification />
-          </Box>
-        )}
-        
-        {/* Desktop Notification */}
-        {!isMobile && (
-          <Box sx={{ 
-            p: 2, 
-            backgroundColor: 'white',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }}>
-            <GlobalNotification />
-          </Box>
-        )}
-        
-        <Box sx={{ p: { xs: 2, md: 3 } }}>
-          {children}
-        </Box>
-      </Box>
 
-      {/* Profile Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleProfileMenuClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem onClick={handleProfileMenuClose}>
-          <ListItemIcon>
-            <AccountCircle fontSize="small" />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        <MenuItem onClick={handleProfileMenuClose}>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
-    </Box>
-  );
+            {/* Section label */}
+            <Box sx={{ px: 3, pt: 2.5, pb: 0.5 }}>
+                <Typography variant="caption" fontWeight={700} letterSpacing={1.2} color="text.disabled" textTransform="uppercase">
+                    Navigation
+                </Typography>
+            </Box>
+
+            {/* Nav items */}
+            <List sx={{ flex: 1, px: 1.5, py: 1 }}>
+                {menuItems.map((item, index) => {
+                    const isActive = activeTab === index;
+                    return (
+                        <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+                            <ListItemButton
+                                onClick={() => handleMenuClick(index)}
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 1.5,
+                                    py: 1,
+                                    position: 'relative',
+                                    bgcolor: isActive ? 'rgba(0,180,255,0.1)' : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: isActive ? 'rgba(0,180,255,0.3)' : 'transparent',
+                                    '&:hover': {
+                                        bgcolor: isActive ? 'rgba(0,180,255,0.15)' : 'rgba(0,0,0,0.035)',
+                                        borderColor: isActive ? 'rgba(0,180,255,0.4)' : 'transparent',
+                                    },
+                                    transition: 'all 0.15s ease',
+                                }}
+                            >
+                                {/* Active indicator bar */}
+                                {isActive && (
+                                    <Box
+                                        sx={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            top: '20%',
+                                            height: '60%',
+                                            width: 3,
+                                            borderRadius: '0 3px 3px 0',
+                                            bgcolor: '#00b4ff',
+                                        }}
+                                    />
+                                )}
+
+                                <ListItemIcon
+                                    sx={{
+                                        minWidth: 36,
+                                        color: isActive ? '#00b4ff' : 'text.secondary',
+                                        '& svg': { fontSize: 20 },
+                                    }}
+                                >
+                                    {item.icon}
+                                </ListItemIcon>
+
+                                <ListItemText
+                                    primary={item.text}
+                                    primaryTypographyProps={{
+                                        fontWeight: isActive ? 700 : 500,
+                                        fontSize: '0.9rem',
+                                        color: isActive ? '#00b4ff' : 'text.primary',
+                                    }}
+                                />
+
+                                {isActive && (
+                                    <KeyboardArrowRight sx={{ fontSize: 16, color: '#00b4ff', opacity: 0.6 }} />
+                                )}
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
+
+            <Divider sx={{ mx: 2 }} />
+
+            {/* User profile */}
+            <Box sx={{ p: 2 }}>
+                <Tooltip title="Account options" placement="top">
+                    <Box
+                        onClick={(e) => setAnchorEl(e.currentTarget)}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.5,
+                            borderRadius: 2.5,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                            '&:hover': {
+                                bgcolor: 'rgba(0,180,255,0.06)',
+                                borderColor: 'rgba(0,180,255,0.3)',
+                            },
+                        }}
+                    >
+                        <Avatar
+                            sx={{
+                                width: 34,
+                                height: 34,
+                                fontSize: 14,
+                                fontWeight: 800,
+                                background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+                            }}
+                        >
+                            A
+                        </Avatar>
+                        <Box flex={1} minWidth={0}>
+                            <Typography variant="body2" fontWeight={700} noWrap>
+                                Admin User
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                                admin@powergym.com
+                            </Typography>
+                        </Box>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#22c55e', flexShrink: 0 }} />
+                    </Box>
+                </Tooltip>
+            </Box>
+        </Box>
+    );
+
+    /* ── Render ───────────────────────────────────────────────── */
+    return (
+        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+
+            {/* Mobile drawer */}
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{ keepMounted: true }}
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    '& .MuiDrawer-paper': { width: DRAWER_WIDTH, border: 'none', boxShadow: '4px 0 24px rgba(0,0,0,0.1)' },
+                }}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Desktop drawer */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: 'none', md: 'block' },
+                    width: DRAWER_WIDTH,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: DRAWER_WIDTH,
+                        border: 'none',
+                        boxShadow: '2px 0 12px rgba(0,0,0,0.06)',
+                    },
+                }}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Main content */}
+            <Box
+                component="main"
+                sx={{
+                    flexGrow: 1,
+                    minHeight: '100vh',
+                    bgcolor: '#f5f7fa',
+                    width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                {/* Top bar */}
+                <Box
+                    sx={{
+                        px: { xs: 2, md: 3 },
+                        py: 1.5,
+                        bgcolor: '#fff',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 2,
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 100,
+                    }}
+                >
+                    {/* Left: mobile menu toggle + breadcrumb */}
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                        {isMobile && (
+                            <IconButton size="small" onClick={handleDrawerToggle} sx={{ color: 'text.secondary' }}>
+                                <MenuIcon />
+                            </IconButton>
+                        )}
+                        <Box>
+                            <Typography variant="caption" color="text.disabled" fontWeight={600} letterSpacing={0.5}>
+                                ADMIN PANEL
+                            </Typography>
+                            <Typography variant="subtitle1" fontWeight={700} lineHeight={1.1} letterSpacing={-0.2}>
+                                {menuItems[activeTab]?.text ?? 'Dashboard'}
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    {/* Right: notifications */}
+                    <GlobalNotification />
+                </Box>
+
+                {/* Page content */}
+                <Box sx={{ p: { xs: 2, md: 3 }, flex: 1 }}>
+                    {children}
+                </Box>
+            </Box>
+
+            {/* Profile dropdown */}
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
+                transformOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+                anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
+                PaperProps={{
+                    sx: {
+                        borderRadius: 2.5,
+                        minWidth: 180,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        mt: -1,
+                    },
+                }}
+            >
+                <Box sx={{ px: 2, py: 1.5 }}>
+                    <Typography variant="body2" fontWeight={700}>Admin User</Typography>
+                    <Typography variant="caption" color="text.secondary">admin@powergym.com</Typography>
+                </Box>
+                <Divider />
+                <MenuItem onClick={() => setAnchorEl(null)} sx={{ gap: 1.5, py: 1 }}>
+                    <AccountCircle fontSize="small" sx={{ color: 'text.secondary' }} />
+                    <Typography variant="body2" fontWeight={500}>Profile</Typography>
+                </MenuItem>
+                <MenuItem onClick={() => setAnchorEl(null)} sx={{ gap: 1.5, py: 1 }}>
+                    <Settings fontSize="small" sx={{ color: 'text.secondary' }} />
+                    <Typography variant="body2" fontWeight={500}>Settings</Typography>
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={handleLogout} sx={{ gap: 1.5, py: 1 }}>
+                    <Logout fontSize="small" sx={{ color: 'error.main' }} />
+                    <Typography variant="body2" fontWeight={500} color="error.main">Logout</Typography>
+                </MenuItem>
+            </Menu>
+        </Box>
+    );
 };
 
 export default AdminLayout;

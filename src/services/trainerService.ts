@@ -1,7 +1,9 @@
 import { privateClient, publicClient } from './api';
+import { getPublicServiceCategories } from './serviceCategoryService';
+import type { ServiceCategoryResponse } from './serviceCategoryService';
 
 export interface TrainerSpecialtyRequest {
-  specialty: string;
+  specialty: { id: number }; // Send only the ID to match backend expectations
   description?: string;
   experienceYears?: number;
   certifications?: string;
@@ -34,7 +36,16 @@ export interface TrainerDocumentResponse {
 
 export interface TrainerSpecialtyResponse {
   id: number;
-  specialty: string;
+  specialty: {
+    id: number;
+    name: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    isActive: boolean;
+    sortOrder: number;
+  };
   description?: string;
   experienceYears?: number;
   certifications?: string;
@@ -159,32 +170,37 @@ export const deleteTrainerDocument = async (trainerId: number, documentId: numbe
   return response.data;
 };
 
+// ServiceCategory operations (Public endpoints - No authentication required)
+export const getServiceCategories = async (): Promise<ApiResponse<ServiceCategoryResponse[]>> => {
+  return await getPublicServiceCategories();
+};
+
+export const getServiceCategoryById = async (id: number): Promise<ApiResponse<ServiceCategoryResponse>> => {
+  const response = await publicClient.get(`/public/service-categories/${id}`);
+  return response.data;
+};
+
+export const getServiceCategoryByName = async (name: string): Promise<ApiResponse<ServiceCategoryResponse>> => {
+  const response = await publicClient.get(`/public/service-categories/name/${name}`);
+  return response.data;
+};
+
 // Public endpoints (No authentication required)
 export const getPublicTrainers = async (page: number = 0, size: number = 10): Promise<ApiResponse<PageResponse<TrainerResponse>>> => {
   const response = await publicClient.get(`/public/trainers?page=${page}&size=${size}`);
   return response.data;
 };
 
-export const getTrainersBySpecialty = async (specialty: string): Promise<ApiResponse<TrainerResponse[]>> => {
-  const response = await publicClient.get(`/public/trainers/specialty/${specialty}`);
+export const getTrainersBySpecialty = async (specialtyName: string): Promise<ApiResponse<TrainerResponse[]>> => {
+  const response = await publicClient.get(`/public/trainers/specialty/${specialtyName}`);
   return response.data;
 };
 
-export const getAvailableSpecialties = async (): Promise<ApiResponse<string[]>> => {
-  const response = await publicClient.get('/public/trainers/specialties');
-  return response.data;
+export const getAvailableSpecialties = async (): Promise<ApiResponse<ServiceCategoryResponse[]>> => {
+  return await getPublicServiceCategories();
 };
 
-// Constants
-export const SPECIALTIES = [
-  { value: 'PERSONAL_TRAINER', label: 'Personal Trainer' },
-  { value: 'BOXING', label: 'Boxing' },
-  { value: 'YOGA', label: 'Yoga' },
-  { value: 'CARDIO', label: 'Cardio' },
-  { value: 'GYM', label: 'Gym' },
-  { value: 'OTHER', label: 'Other' }
-];
-
+// Constants - Keep for backward compatibility, but prefer dynamic loading
 export const LEVELS = [
   { value: 'BEGINNER', label: 'Beginner' },
   { value: 'INTERMEDIATE', label: 'Intermediate' },

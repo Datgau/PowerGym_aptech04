@@ -200,7 +200,7 @@ const MembersTable: React.FC = () => {
                   </Box>
                 </TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                  {member.phoneNumber || '-'}
+                  {member.phoneNumber || 'N/A'}
                 </TableCell>
                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
                   {member.createDate ? new Date(member.createDate).toLocaleDateString('vi-VN') : '-'}
