@@ -38,6 +38,8 @@ import {
   type CreateTrainerRequest,
   type TrainerSpecialtyRequest
 } from '../../../../services/trainerService';
+import { checkEmailExists } from '../../../../services/adminService';
+import { message } from '../../../../utils/message';
 
 // Import step components
 import BasicInfoStep from './components/BasicInfoStep';
@@ -148,9 +150,7 @@ const validationSchema = Yup.object({
     .min(1, 'At least one specialty is required')
     .of(
       Yup.object().shape({
-        specialty: Yup.object().shape({
-          id: Yup.number().min(1, 'Please select a specialty type').required('Specialty type is required')
-        }).required('Specialty is required'),
+        specialtyId: Yup.number().min(1, 'Please select a specialty type').required('Specialty type is required'),
         description: Yup.string().max(500).nullable(),
         experienceYears: Yup.number().min(0).max(50).nullable(),
         certifications: Yup.string().max(500).nullable(),
@@ -175,6 +175,8 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [emailCheckLoading, setEmailCheckLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   // File uploads
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -202,6 +204,39 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
       await handleSubmit(values);
     },
   });
+  React.useEffect(() => {
+    const checkEmail = async () => {
+      if (!formik.values.email || formik.values.email.length < 3) {
+        setEmailError('');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formik.values.email)) {
+        setEmailError('');
+        return;
+      }
+
+      setEmailCheckLoading(true);
+      setEmailError('');
+
+      try {
+        const response = await checkEmailExists(formik.values.email);
+        if (response.success && response.data) {
+          setEmailError('This email is already registered');
+        } else {
+          setEmailError('');
+        }
+      } catch (err) {
+        setEmailError('');
+      } finally {
+        setEmailCheckLoading(false);
+      }
+    };
+
+    // Debounce email check
+    const timeoutId = setTimeout(checkEmail, 800);
+    return () => clearTimeout(timeoutId);
+  }, [formik.values.email]);
 
   const handleSubmit = async (values: CreateTrainerRequest) => {
     console.log('handleSubmit called with values:', values);
@@ -232,11 +267,17 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
         await uploadTrainerDocument(trainerId, doc.file, doc.documentType, doc.description, doc.expiryDate);
       }
 
-      setSuccess('Trainer created successfully!');
-      setTimeout(() => { onSuccess(); handleClose(); }, 1500);
+      // Show success message and close modal
+      message.success('Trainer created successfully!', 3000);
+      
+      // Call onSuccess first to reload data, then close modal
+      onSuccess();
+      handleClose();
     } catch (err: any) {
       console.error('Error in handleSubmit:', err);
-      setError(err.message || 'An error occurred while creating the trainer');
+      const errorMessage = err.message || 'An error occurred while creating the trainer';
+      setError(errorMessage);
+      message.error(errorMessage, 3000);
     } finally {
       setLoading(false);
     }
@@ -249,6 +290,7 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
     setCoverFile(null); setCoverPreview('');
     setDocuments([]);
     setError(''); setSuccess('');
+    setEmailError('');
     onClose();
   };
 
@@ -261,13 +303,14 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
       const hasErrors = basicFields.some(f => formik.errors[f as keyof typeof formik.errors] && formik.touched[f as keyof typeof formik.touched]);
       const hasEmptyFields = !formik.values.email || !formik.values.fullName || !formik.values.phoneNumber;
       
-      if (hasErrors || hasEmptyFields) {
+      if (hasErrors || hasEmptyFields || emailError) {
         formik.setTouched({ email: true, fullName: true, phoneNumber: true });
         
         // Show specific error messages
         const errors = [];
         if (!formik.values.email) errors.push('Email is required');
         else if (formik.errors.email) errors.push(formik.errors.email);
+        else if (emailError) errors.push(emailError);
         
         if (!formik.values.fullName) errors.push('Full name is required');
         else if (formik.errors.fullName) errors.push(formik.errors.fullName);
@@ -288,19 +331,16 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
     }
     
     if (activeStep === 1) {
-      // Validate specialties
       if (formik.values.specialties.length === 0) {
         setError('Please add at least one specialty');
         return;
       }
       
-      const invalidSpecialties = formik.values.specialties.some(s => !s.specialty || s.specialty.id === 0);
+      const invalidSpecialties = formik.values.specialties.some(s => !s.specialtyId || s.specialtyId === 0);
       if (invalidSpecialties) {
         setError('Please select a category for all specialties');
         return;
       }
-      
-      // Validate specialty fields
       const specialtyErrors: string[] = [];
       formik.values.specialties.forEach((spec, index) => {
         if (!spec.level) {
@@ -325,11 +365,11 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
 
   const addSpecialty = () => {
     const s: TrainerSpecialtyRequest = { 
-      specialty: { id: 0 }, // Initialize with empty ID
+      specialtyId: 0,
       description: '', 
       experienceYears: 0, 
       certifications: '', 
-      level: 'BEGINNER' // Set default level
+      level: 'BEGINNER'
     };
     formik.setFieldValue('specialties', [...formik.values.specialties, s]);
   };
@@ -366,7 +406,7 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
   const getStepContent = (step: number) => {
     switch (step) {
       case 0: 
-        return <BasicInfoStep formik={formik} />;
+        return <BasicInfoStep formik={formik} emailCheckLoading={emailCheckLoading} emailError={emailError} />;
       case 1: 
         return (
           <SpecialtiesStep 
@@ -518,29 +558,18 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
             <GradientButton
               onClick={async (e) => {
                 e.preventDefault();
-                console.log('Create Trainer button clicked');
-                console.log('Current form values:', formik.values);
-                console.log('Form errors:', formik.errors);
-                console.log('Form isValid:', formik.isValid);
-                console.log('Form touched:', formik.touched);
-                
-                // Log specialties in detail
-                console.log('Specialties detail:', formik.values.specialties);
                 formik.values.specialties.forEach((spec, index) => {
-                  console.log(`Specialty ${index}:`, spec);
-                  console.log(`Specialty ${index} - specialty.id:`, spec.specialty?.id);
                 });
-                
-                // Validate form manually
+
                 const errors = await formik.validateForm();
-                console.log('Manual validation errors:', errors);
+                if (emailError) {
+                  setError(`Email validation failed: ${emailError}`);
+                  return;
+                }
                 
                 if (Object.keys(errors).length === 0) {
-                  console.log('Form is valid, calling handleSubmit directly');
                   await handleSubmit(formik.values);
                 } else {
-                  console.log('Form has errors, setting touched fields');
-                  console.log('Detailed errors:', JSON.stringify(errors, null, 2));
                   formik.setTouched({
                     email: true,
                     fullName: true,
@@ -548,8 +577,6 @@ const CreateTrainerModal: React.FC<CreateTrainerModalProps> = ({ open, onClose, 
                     specialties: formik.values.specialties.map(() => ({})) as any,
                     totalExperienceYears: true,
                   });
-                  
-                  // Show error message
                   if (errors.totalExperienceYears) {
                     setError(`Total Experience Years: ${errors.totalExperienceYears}`);
                   } else if (errors.specialties) {

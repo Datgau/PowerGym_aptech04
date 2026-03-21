@@ -21,7 +21,7 @@ import {
   Palette
 } from '@mui/icons-material';
 import membershipPackageService from '../../../../services/membershipPackageService';
-import type { MembershipPackageDTO, MembershipPackageResponse } from '../../../../services/membershipPackageService';
+import type { MembershipPackageDTO, MembershipPackageResponse, CreateMembershipPackageDTO } from '../../../../services/membershipPackageService';
 
 interface PackageFormModalProps {
   open: boolean;
@@ -83,7 +83,7 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
 
   const resetForm = () => {
     setFormData({
-      packageId: '',
+      packageId: '', // Sẽ được tạo tự động trong backend
       name: '',
       description: '',
       duration: 30,
@@ -99,13 +99,6 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.packageId.trim()) {
-      newErrors.packageId = 'Package ID is required';
-    } else if (formData.packageId.length > 50) {
-      newErrors.packageId = 'Package ID must not exceed 50 characters';
-    }
-
     if (!formData.name.trim()) {
       newErrors.name = 'Package name is required';
     } else if (formData.name.length > 100) {
@@ -146,17 +139,20 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
     setSubmitError('');
 
     try {
-      const submitData = {
-        ...formData,
-        features: formData.features.filter(f => f.trim())
-      };
-
       if (editPackage) {
+        const submitData: MembershipPackageDTO = {
+          ...formData,
+          features: formData.features.filter(f => f.trim())
+        };
         await membershipPackageService.updatePackage(editPackage.id, submitData);
       } else {
+        const { packageId, ...createData } = formData;
+        const submitData: CreateMembershipPackageDTO = {
+          ...createData,
+          features: createData.features.filter(f => f.trim())
+        };
         await membershipPackageService.createPackage(submitData);
       }
-
       onSubmit();
       onClose();
     } catch (error: any) {
@@ -192,7 +188,8 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
       PaperProps={{
         sx: {
           borderRadius: 3,
-          maxHeight: '90vh'
+          maxHeight: '90vh',
+
         }
       }}
     >
@@ -220,16 +217,23 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
         )}
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            fullWidth
-            label="Package ID"
-            value={formData.packageId}
-            onChange={(e) => setFormData({ ...formData, packageId: e.target.value })}
-            error={!!errors.packageId}
-            helperText={errors.packageId || 'Unique identifier (e.g., BASIC_MONTHLY)'}
-            required
-            disabled={!!editPackage}
-          />
+          {/* Chỉ hiển thị Package ID khi đang edit */}
+          {editPackage && (
+            <TextField
+              fullWidth
+              label="Package ID"
+              value={formData.packageId}
+              disabled
+              helperText="Package ID cannot be changed"
+            />
+          )}
+
+          {/* Thông báo cho user khi tạo mới */}
+          {!editPackage && (
+            <Alert severity="info" sx={{ mb: 1 }}>
+              Please provide engaging and detailed information.
+            </Alert>
+          )}
 
           <TextField
             fullWidth

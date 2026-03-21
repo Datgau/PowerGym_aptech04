@@ -21,9 +21,10 @@ export interface ServiceRegistrationResponse {
     category: string;
     price: number;
   };
-  status: 'ACTIVE' | 'CANCELLED' | 'COMPLETED';
+  status: 'ACTIVE' | 'CANCELLED' | 'COMPLETED' | 'EXPIRED';
   notes?: string;
   registrationDate: string;
+  expirationDate?: string;
   cancelledDate?: string;
   cancellationReason?: string;
 }

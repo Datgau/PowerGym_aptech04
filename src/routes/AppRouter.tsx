@@ -25,6 +25,7 @@ import News from "../pages/News/News.tsx";
 import Rewards from "../pages/Rewards/Rewards.tsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.tsx";
 import Promotions from "../pages/Promotions/Promotions.tsx";
+import PaymentResult from "../pages/Payment/PaymentResult.tsx";
 
 export const AppRouter = () => (
     <>
@@ -44,6 +45,7 @@ export const AppRouter = () => (
             <Route path="/equipment" element={<Equipments />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/news" element={<News />} />
+            <Route path="/payment/result" element={<PaymentResult />} />
             
             {/* Protected Routes - Require authentication */}
             <Route element={<ProtectedRoute />}>

@@ -184,7 +184,7 @@ const ServiceRegistrationsTable: React.FC = () => {
                       {registration.service.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {registration.service.category}
+                      {service.category?.displayName || service.category?.name || 'Unknown'}
                     </Typography>
                   </Box>
                 </TableCell>

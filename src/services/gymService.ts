@@ -2,24 +2,31 @@ import { publicClient, privateClient} from './api';
 import type { ApiResponse, PageResponse } from '../@type/apiResponse';
 
 export interface GymServiceDto {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  category: 'PERSONAL_TRAINER' | 'BOXING' | 'YOGA' | 'CARDIO' | 'OTHER';
+  category: {
+    id: number;
+    name: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    isActive: boolean;
+    sortOrder: number;
+  };
   images: string[];
   price: number;
   duration?: number;
   maxParticipants?: number;
   isActive: boolean;
   registrationCount?: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface GymServiceCreateRequest {
   name: string;
   description: string;
-  category: string;
+  categoryId: number;
   price: number;
   duration?: number;
   maxParticipants?: number;
@@ -119,7 +126,12 @@ export const gymServiceApi = {
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
-    formData.append('category', data.category);
+    
+    // Safety check for categoryId
+    if (data.categoryId === undefined || data.categoryId === null) {
+      throw new Error('Category ID is required');
+    }
+    formData.append('categoryId', data.categoryId.toString());
     formData.append('price', data.price.toString());
     
     if (data.duration) formData.append('duration', data.duration.toString());
@@ -139,16 +151,32 @@ export const gymServiceApi = {
   /**
    * Update service (Admin)
    */
-  updateService: async (id: number, data: Partial<GymServiceCreateRequest>): Promise<ApiResponse<GymServiceDto>> => {
+  updateService: async (id: number, data: Partial<GymServiceCreateRequest> & { deletedImages?: string[] }): Promise<ApiResponse<GymServiceDto>> => {
     const formData = new FormData();
     
     if (data.name) formData.append('name', data.name);
     if (data.description) formData.append('description', data.description);
-    if (data.category) formData.append('category', data.category);
+    if (data.categoryId !== undefined && data.categoryId !== null) {
+      formData.append('categoryId', data.categoryId.toString());
+    }
     if (data.price) formData.append('price', data.price.toString());
     if (data.duration) formData.append('duration', data.duration.toString());
     if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
     if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+
+    // Handle new images
+    if (data.images && data.images.length > 0) {
+      data.images.forEach(image => {
+        formData.append('images', image);
+      });
+    }
+
+    // Handle deleted images
+    if (data.deletedImages && data.deletedImages.length > 0) {
+      data.deletedImages.forEach(imageUrl => {
+        formData.append('deletedImages', imageUrl);
+      });
+    }
 
     const response = await privateClient.put<ApiResponse<GymServiceDto>>(`/gym/services/${id}`, formData);
     return response.data;

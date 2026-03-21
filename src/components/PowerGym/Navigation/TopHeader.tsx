@@ -114,7 +114,6 @@ const TopHeader: React.FC = () => {
                     </span>
                   </div>
                 </div>
-
                 <button className={styles.logoutButton} onClick={handleLogout}>
                   🚪
                 </button>

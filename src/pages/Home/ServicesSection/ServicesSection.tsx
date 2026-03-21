@@ -298,7 +298,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             {service.name}
                                         </Typography>
 
-                                        <Box sx={{ mb: 3 }}>
+                                        <Box sx={{ mb: 3, color: "#fff" }}>
                                             <RichTextDisplay content={service.description} />
                                         </Box>
 

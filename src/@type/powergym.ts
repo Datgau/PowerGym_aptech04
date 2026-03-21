@@ -9,7 +9,16 @@ export interface ServiceItem {
   id: string;
   name: string;
   description: string;
-  category: 'PERSONAL_TRAINER' | 'BOXING' | 'YOGA' | 'CARDIO' | 'OTHER';
+  category: {
+    id: number;
+    name: string;
+    displayName: string;
+    description?: string;
+    icon?: string;
+    color?: string;
+    isActive: boolean;
+    sortOrder: number;
+  };
   images: string[];
   price: number;
   duration?: number;

@@ -3,8 +3,10 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Snackbar
+  Snackbar,
+  Stack, Typography
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import TablePagination from '../../../../components/Common/TablePagination';
 import AdminStoryDetailModal from './AdminStoryDetailModal';
 import ShareStoryModal from '../../../Home/StoriesSection/ShareStoryModal';
@@ -13,6 +15,22 @@ import type { StoryItem } from '../../../../services/storyService';
 import { loadAuthSession } from '../../../../services/authStorage';
 import {useStoriesManagement} from "../../../../hooks/useStoriesManagement.ts";
 import type {StoryStatus} from "./types.ts";
+
+/* ─── Styled Components ─────────────────────────────────── */
+
+const PageWrapper = styled(Box)({
+  minHeight: '100%',
+  background: '#f8faff',
+  padding: '32px',
+});
+
+const ContentSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  padding: '24px',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
 
 const AdminStoriesManagement: React.FC = () => {
   const [selectedStory, setSelectedStory] = useState<StoryItem | null>(null);
@@ -71,14 +89,17 @@ const AdminStoriesManagement: React.FC = () => {
 
   if (loading && stories.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-        <CircularProgress />
-      </Box>
+      <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={40} thickness={3} sx={{ color: '#0066ff' }} />
+          <Typography color="text.secondary" fontSize={14}>Loading stories...</Typography>
+        </Stack>
+      </PageWrapper>
     );
   }
 
   return (
-    <Box>
+    <PageWrapper>
       <Box sx={{ mb: 4 }}>
         <Header
           loading={loading}
@@ -94,58 +115,64 @@ const AdminStoriesManagement: React.FC = () => {
       </Box>
 
       {error && !error.includes('No ') && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 3, fontSize: 13.5 }}>
           {error}
         </Alert>
       )}
 
-      {stories.length === 0 && !loading ? (
-        <EmptyState
-          statusFilter={statusFilter}
-          stats={stats}
-          onStatusFilterChange={handleStatusFilterChange}
-        />
-      ) : (
-        <>
-          <Box 
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-                lg: 'repeat(4, 1fr)'
-              },
-              gap: 3,
-              mb: 4
-            }}
-          >
-            {stories.map((story) => (
-              <StoryCard
-                key={story.id}
-                story={story}
-                actionLoading={actionLoading}
-                currentUserId={currentUserId}
-                onView={handleView}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onUpdateStatus={handleUpdateStatus}
-                onEdit={handleEdit}
-                showAlert={showAlert}
-              />
-            ))}
-          </Box>
-
-          <TablePagination
-            count={paginationState.totalElements}
-            page={paginationState.page}
-            rowsPerPage={paginationState.rowsPerPage}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[6, 12, 24, 48]}
+      <ContentSection>
+        {stories.length === 0 && !loading ? (
+          <EmptyState
+            statusFilter={statusFilter}
+            stats={stats}
+            onStatusFilterChange={handleStatusFilterChange}
           />
-        </>
-      )}
+        ) : (
+          <>
+            <Box 
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(3, 1fr)',
+                  lg: 'repeat(4, 1fr)'
+                },
+                gap: 3,
+                mb: 4
+              }}
+            >
+              {stories.map((story) => (
+                <StoryCard
+                  key={story.id}
+                  story={story}
+                  actionLoading={actionLoading}
+                  currentUserId={currentUserId}
+                  onView={handleView}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onUpdateStatus={handleUpdateStatus}
+                  onEdit={handleEdit}
+                  showAlert={showAlert}
+                />
+              ))}
+            </Box>
+
+            <TablePagination
+              count={paginationState.totalElements}
+              page={paginationState.page}
+              rowsPerPage={paginationState.rowsPerPage}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[6, 12, 24, 48]}
+              labelRowsPerPage="Stories per page:"
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from}–${to} of ${count !== -1 ? count : `more than ${to}`} stories`
+              }
+            />
+          </>
+        )}
+      </ContentSection>
 
       <AdminStoryDetailModal
         open={viewModalOpen}
@@ -182,7 +209,7 @@ const AdminStoriesManagement: React.FC = () => {
           {alert.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </PageWrapper>
   );
 };
 

@@ -13,7 +13,6 @@ import {
     Divider, Card,
     CardContent,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {
     ChevronLeft,
     ChevronRight,
@@ -24,7 +23,6 @@ import {
     AttachMoney,
     Edit,
     Visibility,
-    CalendarToday,
     CheckCircle,
     Cancel,
 } from '@mui/icons-material';
@@ -62,18 +60,15 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
         setCurrentImageIndex(index);
     }, []);
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const getCategoryColor = (category: string) => {
-        switch (category) {
+    const getCategoryColor = (category: any) => {
+        let categoryName = '';
+        if (typeof category === 'string') {
+            categoryName = category;
+        } else if (category && typeof category === 'object') {
+            categoryName = category.name;
+        }
+        
+        switch (categoryName) {
             case 'PERSONAL_TRAINER':
                 return 'primary';
             case 'BOXING':
@@ -85,12 +80,12 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
             case 'GYM':
                 return 'info';
             default:
-                return 'default';
+                return 'primary';
         }
     };
 
-    if (!service) return null;
 
+    if (!service) return null;
     const stats = [
         {
             label: "Price",
@@ -100,15 +95,15 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
         },
         {
             label: "Duration",
-            value: `${service.duration} min`,
+            value: `${service.duration} days`,
             icon: <Schedule />,
-            color: "#ff9800"
+            color: "#00b4ff"
         },
         {
             label: "Max Participants",
             value: service.maxParticipants,
             icon: <Group />,
-            color: "#9c27b0"
+            color: "#00b4ff"
         },
         {
             label: "Status",
@@ -125,12 +120,14 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
             maxWidth="lg" 
             fullWidth
             fullScreen={isMobile}
-            PaperProps={{
-                sx: {
-                    borderRadius: isMobile ? 0 : 3,
-                    maxHeight: '95vh',
-                    display: 'flex',
-                    flexDirection: 'column',
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: isMobile ? 0 : 3,
+                        maxHeight: '95vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }
                 }
             }}
         >
@@ -153,16 +150,7 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    {onEdit && (
-                        <IconButton 
-                            onClick={() => onEdit(service)} 
-                            sx={{ color: 'white' }}
-                            size="small"
-                            title="Edit Service"
-                        >
-                            <Edit />
-                        </IconButton>
-                    )}
+
                     <IconButton 
                         onClick={onClose} 
                         sx={{ color: 'white' }}
@@ -201,7 +189,7 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                     <Box
                         sx={{
                             position: 'relative',
-                            height: { xs: 250, sm: 300 },
+                            height: { xs: 350, sm: 450 },
                             overflow: 'hidden',
                             background: '#f5f5f5',
                         }}
@@ -327,7 +315,7 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                                     onClick={() => goToImage(index)}
                                     sx={{
                                         minWidth: 80,
-                                        height: 60,
+                                        height: 80,
                                         borderRadius: 2,
                                         overflow: 'hidden',
                                         cursor: 'pointer',
@@ -357,38 +345,26 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                 </Box>
 
                 {/* Content */}
-                <Box sx={{ p: 3 }}>
-                    {/* Basic Info */}
+                <Box sx={{ p: 3}}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                         <Chip 
-                            label={service.category} 
+                            label={service.category?.name}
                             color={getCategoryColor(service.category)}
                             sx={{ 
                                 fontWeight: 600,
                             }} 
                         />
-                        <Typography variant="body2" color="text.secondary">
-                            ID: {service.id}
-                        </Typography>
                     </Box>
-
-                    {/* Description */}
-                    <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
-                        Service Description
-                    </Typography>
-                    <Box sx={{ mb: 3 }}>
+                    <Box sx={{ mb: 2 }}>
                         <RichTextDisplay content={service.description} />
                     </Box>
-
                     <Divider sx={{ my: 3 }} />
-
-                    {/* Service Details Grid */}
                     <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: '#333' }}>
                         Service Information
                     </Typography>
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 2}}>
                         {stats.map((item, index) => (
-                            <Grid  xs={12} sm={6} md={3} key={index}>
+                            <Box key={index} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(25% - 18px)' } }}>
                                 <Card
                                     variant="outlined"
                                     sx={{
@@ -402,7 +378,6 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
                                     }}
                                 >
                                     <CardContent sx={{ textAlign: "center", py: 3 }}>
-
                                         <Box
                                             sx={{
                                                 width: 56,
@@ -440,58 +415,86 @@ const AdminServiceDetailModal = ({ open, service, onClose, onEdit }: Props) => {
 
                                     </CardContent>
                                 </Card>
-                            </Grid>
+                            </Box>
                         ))}
-                    </Grid>
+                    </Box>
 
                     <Divider sx={{ my: 3 }} />
 
+                    {/* Registration Stats */}
                     <Typography
                         variant="h6"
                         fontWeight={600}
-                        sx={{ mb: 2, color: "#333" }}
+                        sx={{ mb: 1, color: "#333" }}
                     >
-                        Timestamps
+                        Registration Information
                     </Typography>
 
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
-                        {[
-                            { label: "Created At", value: formatDate(service.createdAt) },
-                            { label: "Updated At", value: formatDate(service.updatedAt) }
-                        ].map((item, i) => (
-                            <Grid xs={12} md={6} key={i}>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 2,
-                                        p: 2,
-                                        borderRadius: 3,
-                                        bgcolor: "#f8f9fa",
-                                        transition: "all 0.2s",
-                                        "&:hover": {
-                                            bgcolor: "#f1f3f5"
-                                        }
-                                    }}
-                                >
-                                    <CalendarToday sx={{ color: "#6c757d" }} />
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
+                        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
+                                    p: 2,
+                                    borderRadius: 3,
+                                    bgcolor: "#f8f9fa",
+                                    transition: "all 0.2s",
+                                    "&:hover": {
+                                        bgcolor: "#f1f3f5"
+                                    }
+                                }}
+                            >
+                                <Group sx={{ color: "#6c757d" }} />
 
-                                    <Box>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {item.label}
-                                        </Typography>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                        Current Registrations
+                                    </Typography>
 
-                                        <Typography variant="body2" fontWeight={600}>
-                                            {item.value}
-                                        </Typography>
-                                    </Box>
+                                    <Typography variant="body2" fontWeight={600}>
+                                        {service.registrationCount || 0} people registered
+                                    </Typography>
                                 </Box>
-                            </Grid>
-                        ))}
-                    </Grid>
+                            </Box>
+                        </Box>
+                        
+                        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' } }}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 2,
+                                    p: 2,
+                                    borderRadius: 3,
+                                    bgcolor: "#f8f9fa",
+                                    transition: "all 0.2s",
+                                    "&:hover": {
+                                        bgcolor: "#f1f3f5"
+                                    }
+                                }}
+                            >
+                                <Visibility sx={{ color: "#6c757d" }} />
+
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                        Availability
+                                    </Typography>
+
+                                    <Typography variant="body2" fontWeight={600}>
+                                        {service.maxParticipants 
+                                            ? `${(service.maxParticipants - (service.registrationCount || 0))} slots available`
+                                            : 'Unlimited slots'
+                                        }
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Box>
 
                     {/* Action Buttons */}
-                    <Box sx={{ display: 'flex', gap: 2, mt: 4, mb: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 4, mb: 2, justifyContent:'flex-end' }}>
                         {onEdit && (
                             <Button
                                 variant="contained"

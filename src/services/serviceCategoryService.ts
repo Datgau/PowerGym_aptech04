@@ -6,7 +6,6 @@ export interface CreateServiceCategoryRequest {
   description?: string;
   icon?: string;
   color?: string;
-  sortOrder?: number;
 }
 
 export interface UpdateServiceCategoryRequest {
@@ -14,7 +13,6 @@ export interface UpdateServiceCategoryRequest {
   description?: string;
   icon?: string;
   color?: string;
-  sortOrder?: number;
 }
 
 export interface ServiceCategoryResponse {
@@ -25,7 +23,6 @@ export interface ServiceCategoryResponse {
   icon?: string;
   color?: string;
   isActive: boolean;
-  sortOrder: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -109,6 +106,6 @@ export const DEFAULT_COLORS = [
 ];
 
 export const DEFAULT_ICONS = [
-  'person', 'sports_mma', 'self_improvement', 'favorite', 'fitness_center', 
-  'more_horiz', 'sports_gymnastics', 'pool', 'directions_run', 'sports_kabaddi'
+  'P', 'B', 'S', 'Y', 'C',
+  'M', 'G', '', 'directions_run', 'sports_kabaddi'
 ];

@@ -82,8 +82,16 @@ const ServicesTable: React.FC = () => {
     setDetailModalOpen(true);
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
+  const getCategoryColor = (category: any) => {
+    // Handle both old string format and new object format
+    let categoryName = '';
+    if (typeof category === 'string') {
+      categoryName = category;
+    } else if (category && typeof category === 'object') {
+      categoryName = category.name || category.displayName || '';
+    }
+
+    switch (categoryName) {
       case 'PERSONAL_TRAINER':
         return 'primary';
       case 'BOXING':
@@ -170,7 +178,7 @@ const ServicesTable: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Chip 
-                    label={service.category} 
+                    label={service.category?.displayName || service.category?.name || 'Unknown'} 
                     color={getCategoryColor(service.category) as any}
                     size="small"
                   />

@@ -35,7 +35,7 @@ const StoriesTable: React.FC = () => {
     handleChangePage,
     handleChangeRowsPerPage,
     setPaginationData,
-  } = usePagination(10);
+  } = usePagination(6);
 
   useEffect(() => {
     loadData(paginationState.page, paginationState.rowsPerPage);

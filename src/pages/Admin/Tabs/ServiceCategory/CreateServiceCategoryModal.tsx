@@ -88,7 +88,6 @@ const validationSchema = Yup.object({
     .max(200, 'Display name must be less than 200 characters')
     .required('Display name is required'),
   description: Yup.string().max(500, 'Description must be less than 500 characters'),
-  sortOrder: Yup.number().min(0, 'Sort order must be 0 or greater'),
 });
 
 const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
@@ -108,7 +107,6 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
       description: '',
       icon: DEFAULT_ICONS[0],
       color: DEFAULT_COLORS[0],
-      sortOrder: 0,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -129,7 +127,11 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
           setError(response.message);
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to create service category');
+        const errorMessage =
+            err?.response?.data?.message ||
+            err?.message ||
+            'Failed to create service category';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -209,7 +211,7 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 3, pt: 3, pb: 1 }}>
+      <DialogContent sx={{ px: 3, pt: 3, pb: 1, mt:5 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
             {error}
@@ -217,8 +219,9 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
         )}
 
         <form onSubmit={formik.handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
+          <Box container spacing={3}>
+            <Grid item xs={12}
+            sx={{mt:2, mb:2}}>
               <StyledTextField
                 fullWidth
                 label="Display Name"
@@ -227,7 +230,6 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
                 helperText={formik.touched.displayName && formik.errors.displayName}
                 onChange={(e) => {
                   formik.handleChange(e);
-                  // Auto-generate name from display name
                   const generatedName = generateNameFromDisplayName(e.target.value);
                   formik.setFieldValue('name', generatedName);
                 }}
@@ -248,29 +250,18 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12}>
-              <StyledTextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Description"
-                {...formik.getFieldProps('description')}
-                error={formik.touched.description && Boolean(formik.errors.description)}
-                helperText={formik.touched.description && formik.errors.description}
-              />
-            </Grid>
 
-            <Grid item xs={12}>
-              <StyledTextField
-                fullWidth
-                type="number"
-                label="Sort Order"
-                {...formik.getFieldProps('sortOrder')}
-                error={formik.touched.sortOrder && Boolean(formik.errors.sortOrder)}
-                helperText={formik.touched.sortOrder && formik.errors.sortOrder}
-              />
-            </Grid>
-
+                <Grid item xs={12}>
+                  <StyledTextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    label="Description"
+                    {...formik.getFieldProps('description')}
+                    error={formik.touched.description && Boolean(formik.errors.description)}
+                    helperText={formik.touched.description && formik.errors.description}
+                  />
+                </Grid>
             {/* Color Selection */}
             <Grid item xs={12}>
               <Typography variant="subtitle2" gutterBottom>
@@ -337,7 +328,7 @@ const CreateServiceCategoryModal: React.FC<CreateServiceCategoryModalProps> = ({
                 </Stack>
               </Box>
             </Grid>
-          </Grid>
+          </Box>
         </form>
       </DialogContent>
 

@@ -13,16 +13,20 @@ import {
     Container,
     Chip,
     Stack,
-    Divider, Pagination,
+    Divider
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import {useGymServices, useGymServicesPaginated} from "../../hooks/useGymServices.ts";
+import PaymentIcon from '@mui/icons-material/Payment';
+import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
+import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
+import TablePagination from '../../components/Common/TablePagination.tsx';
 import { registerService } from '../../services/serviceRegistrationService';
 import { useAuth } from "../../hooks/useAuth.ts";
-
+import type { MoMoPaymentResponse } from '../../services/paymentService';
+import RichTextDisplay from "../../components/Common/RichTextDisplay.tsx";
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -32,36 +36,62 @@ const Service: React.FC = () => {
     loading, 
     error, 
     currentPage, 
-    totalPages, 
     totalElements,
-    goToPage 
+    rowsPerPage,
+    handleChangePage,
+    handleChangeRowsPerPage
   } = useGymServicesPaginated(6);
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [registering, setRegistering] = useState<string | null>(null);
+  const [registering, setRegistering] = useState<number | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedServiceForPayment, setSelectedServiceForPayment] = useState<any>(null);
   const { requireAuth } = useAuth();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success' as 'success' | 'error' | 'warning',
   });
-
   const getServiceImage = (service: any) =>
       service.images?.[0] || '/images/default-service.jpg';
+    const handleRegister = async (serviceId: number) => {
+        if (!requireAuth()) return;
+        try {
+            setRegistering(serviceId);
+            const response = await registerService({ serviceId });
 
-  const handleRegister = async (serviceId: string) => {
-    if (!requireAuth()) return;
-    try {
-      setRegistering(serviceId);
-      const response = await registerService({ serviceId: parseInt(serviceId) });
-      if (response.success) {
-        setSnackbar({ open: true, message: 'Đăng ký thành công! Admin sẽ nhận được thông báo.', severity: 'success' });
-      }
-    } catch (err: any) {
-      setSnackbar({ open: true, message: err.response?.data?.message || 'Đăng ký thất bại', severity: 'error' });
-    } finally {
-      setRegistering(null);
-    }
-  };
+            if (response.success) {
+                setSnackbar({
+                    open: true,
+                    message: 'Registration successful! The admin will be notified.',
+                    severity: 'success'
+                });
+            }
+        } catch (err: any) {
+            setSnackbar({
+                open: true,
+                message: err.response?.data?.message || 'Registration failed',
+                severity: 'error'
+            });
+        } finally {
+            setRegistering(null);
+        }
+    };
+
+    const handlePayNow = (service: any) => {
+        if (!requireAuth()) return;
+        setSelectedServiceForPayment(service);
+        setPaymentModalOpen(true);
+    };
+
+    const handlePaymentSuccess = (response: MoMoPaymentResponse) => {
+        setSnackbar({
+            open: true,
+            message: `Payment successful! Order ID: ${response.orderId}`,
+            severity: 'success'
+        });
+        setPaymentModalOpen(false);
+        setSelectedServiceForPayment(null);
+    };
 
   return (
       <PowerGymLayout>
@@ -239,7 +269,7 @@ const Service: React.FC = () => {
                         background: 'linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.45) 100%)',
                       }} />
                       <Chip
-                          label={service.category}
+                          label={typeof service.category === 'object' ? service.category.displayName || service.category.name : service.category}
                           size="small"
                           sx={{
                             position: 'absolute', top: 12, left: 12,
@@ -255,7 +285,7 @@ const Service: React.FC = () => {
                       />
                       {!service.isActive && (
                           <Chip
-                              label="Tạm ngưng"
+                              label="Disable"
                               size="small"
                               sx={{
                                 position: 'absolute', top: 12, right: 12,
@@ -272,15 +302,15 @@ const Service: React.FC = () => {
                         {service.name}
                       </Typography>
 
-                      <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ lineHeight: 1.75, flex: 1 }}
-                      >
-                        {service.description.length > 100
-                            ? service.description.slice(0, 100) + '…'
-                            : service.description}
-                      </Typography>
+                        <Typography variant="body2" component="div" color="text.secondary" sx={{ lineHeight: 1.75, flex: 1 }}>
+                            <RichTextDisplay
+                                content={
+                                    service.description.length > 100
+                                        ? service.description.slice(0, 100) + '…'
+                                        : service.description
+                                }
+                            />
+                        </Typography>
 
                       <Divider sx={{ my: 2 }} />
 
@@ -372,43 +402,74 @@ const Service: React.FC = () => {
                         </Stack>
 
                       {/* Buttons */}
-                      <Stack direction="row" spacing={1.5}>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => setSelectedService(service)}
-                            sx={{
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              fontSize: '0.82rem',
-                              borderColor: 'rgba(0,0,0,0.18)',
-                              color: 'text.primary',
-                              '&:hover': {
-                                borderColor: '#1366ba',
-                                color: '#1366ba',
-                                background: 'rgba(19,102,186,0.05)',
-                              },
-                            }}
-                        >
-                          Details
-                        </Button>
+                      <Stack direction="column" spacing={1.5}>
+                        <Stack direction="row" spacing={1.5}>
+                          <Button
+                              fullWidth
+                              variant="outlined"
+                              onClick={() => setSelectedService(service)}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '0.82rem',
+                                borderColor: 'rgba(0,0,0,0.18)',
+                                color: 'text.primary',
+                                '&:hover': {
+                                  borderColor: '#1366ba',
+                                  color: '#1366ba',
+                                  background: 'rgba(19,102,186,0.05)',
+                                },
+                              }}
+                          >
+                            Detail
+                          </Button>
+                          <Button
+                              fullWidth
+                              variant="contained"
+                              disabled={!service.isActive || registering === service.id}
+                              endIcon={registering !== service.id && <ArrowForwardIcon fontSize="small" />}
+                              onClick={() => handleRegister(service.id)}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                background: BRAND_GRADIENT,
+                                boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
+                                '&:hover': {
+                                  boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
+                                  background: BRAND_GRADIENT,
+                                },
+                                '&.Mui-disabled': {
+                                  background: '#ccc',
+                                  boxShadow: 'none',
+                                },
+                              }}
+                          >
+                            {registering === service.id
+                                ? <CircularProgress size={20} sx={{ color: '#fff' }} />
+                                : 'Sign up directly'}
+                          </Button>
+                        </Stack>
+                        
+                        {/* Payment Button */}
                         <Button
                             fullWidth
                             variant="contained"
-                            disabled={!service.isActive || registering === service.id}
-                            endIcon={registering !== service.id && <ArrowForwardIcon fontSize="small" />}
-                            onClick={() => handleRegister(service.id)}
+                            disabled={!service.isActive}
+                            startIcon={<PaymentIcon fontSize="small" />}
+                            onClick={() => handlePayNow(service)}
                             sx={{
                               borderRadius: 2,
                               textTransform: 'none',
                               fontWeight: 700,
                               fontSize: '0.82rem',
-                              background: BRAND_GRADIENT,
-                              boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
+                              background: 'linear-gradient(135deg, #d82d8b, #a4036f)',
+                              boxShadow: '0 4px 16px rgba(216,45,139,0.3)',
                               '&:hover': {
-                                boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                                background: BRAND_GRADIENT,
+                                boxShadow: '0 8px 24px rgba(216,45,139,0.45)',
+                                background: 'linear-gradient(135deg, #c02a7f, #8f0362)',
                               },
                               '&.Mui-disabled': {
                                 background: '#ccc',
@@ -416,9 +477,7 @@ const Service: React.FC = () => {
                               },
                             }}
                         >
-                          {registering === service.id
-                              ? <CircularProgress size={20} sx={{ color: '#fff' }} />
-                              : 'Register Now'}
+                          Payment Method Momo
                         </Button>
                       </Stack>
                     </CardContent>
@@ -427,27 +486,24 @@ const Service: React.FC = () => {
             </Box>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage + 1}
-                  onChange={(event, page) => goToPage(page - 1)}
-                  color="primary"
-                  size="large"
-                  sx={{
-                    '& .MuiPaginationItem-root': {
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      '&.Mui-selected': {
-                        background: BRAND_GRADIENT,
-                        color: '#fff',
-                        '&:hover': {
-                          background: BRAND_GRADIENT,
-                        },
-                      },
-                    },
-                  }}
+            {totalElements > rowsPerPage && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                mt: 6,
+
+              }}>
+                <TablePagination
+                  count={totalElements}
+                  page={currentPage}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  rowsPerPageOptions={[6, 12, 18, 24]}
+                  labelRowsPerPage="Services per page:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}–${to} of ${count !== -1 ? count : `more than ${to}`} services`
+                  }
                 />
               </Box>
             )}
@@ -460,6 +516,20 @@ const Service: React.FC = () => {
             open={Boolean(selectedService)}
             service={selectedService}
             onClose={() => setSelectedService(null)}
+        />
+
+        <MoMoPaymentModal
+            open={paymentModalOpen}
+            onClose={() => {
+              setPaymentModalOpen(false);
+              setSelectedServiceForPayment(null);
+            }}
+            onSuccess={handlePaymentSuccess}
+            defaultAmount={selectedServiceForPayment?.price || 0}
+            defaultOrderInfo={selectedServiceForPayment ? `Thanh toán PowerGym - Dịch vụ: ${selectedServiceForPayment.name}` : ''}
+            itemType="SERVICE"
+            itemId={selectedServiceForPayment?.id?.toString()}
+            itemName={selectedServiceForPayment?.name}
         />
 
         <Snackbar

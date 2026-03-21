@@ -15,6 +15,19 @@ export interface MembershipPackageDTO {
   color?: string;
 }
 
+export interface CreateMembershipPackageDTO {
+  name: string;
+  description?: string;
+  duration: number;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  features: string[];
+  isPopular: boolean;
+  isActive?: boolean;
+  color?: string;
+}
+
 export interface MembershipPackageResponse {
   id: number;
   packageId: string;
@@ -51,7 +64,7 @@ class MembershipPackageService {
     return response.data.data;
   }
 
-  async createPackage(data: MembershipPackageDTO): Promise<MembershipPackageResponse> {
+  async createPackage(data: CreateMembershipPackageDTO): Promise<MembershipPackageResponse> {
     const response = await privateClient.post<ApiResponse<MembershipPackageResponse>>(`${this.BASE_URL}/create`, data);
     return response.data.data;
   }

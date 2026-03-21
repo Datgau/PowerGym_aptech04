@@ -1,32 +1,83 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Container,
     Typography,
     Stack,
-    Zoom
+    Zoom,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
-import PackageCard from '../../components/PowerGym/MembershipPackagesSection/PackageCard.tsx';
-import { useMembership } from '../../hooks/useMembership.ts';
+import PaymentPackageCard from './PaymentPackageCard.tsx';
+import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
+import TablePagination from '../../components/Common/TablePagination.tsx';
+import { useMembershipPaginated } from '../../hooks/useMembershipPaginated.ts';
+import { useAuth } from '../../hooks/useAuth.ts';
+import type { MoMoPaymentResponse } from '../../services/paymentService';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const Pricing: React.FC = () => {
-    const { packages, loading, registerPackage } = useMembership();
+    const { 
+        packages, 
+        loading, 
+        registerPackage, 
+        paginationState,
+        handleChangePage,
+        handleChangeRowsPerPage
+    } = useMembershipPaginated(8);
+    const { requireAuth } = useAuth();
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState<any>(null);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success' as 'success' | 'error' | 'warning',
+    });
 
     const handlePackageSelect = async (packageId: string): Promise<void> => {
+        if (!requireAuth()) return;
+
         try {
             const success = await registerPackage(packageId, 'CARD');
+
             if (success) {
-                alert('Package registration successful!');
+                setSnackbar({
+                    open: true,
+                    message: 'Package registered successfully! Please confirm at the service desk.',
+                    severity: 'success'
+                });
             } else {
-                alert('Package registration failed. Please try again.');
+                setSnackbar({
+                    open: true,
+                    message: 'Package registration failed. Please try again.',
+                    severity: 'error'
+                });
             }
         } catch (error) {
             console.error('Package registration error:', error);
-            alert('An error occurred while registering the package.');
+            setSnackbar({
+                open: true,
+                message: 'An error occurred while registering the package.',
+                severity: 'error'
+            });
         }
+    };
+    const handlePayNow = (pkg: any) => {
+        if (!requireAuth()) return;
+        setSelectedPackage(pkg);
+        setPaymentModalOpen(true);
+    };
+
+    const handlePaymentSuccess = (response: MoMoPaymentResponse) => {
+        setSnackbar({
+            open: true,
+            message: `Payment successful! Order ID: ${response.orderId}`,
+            severity: 'success'
+        });
+        setPaymentModalOpen(false);
+        setSelectedPackage(null);
     };
 
     // Convert packages to format expected by PackageCard
@@ -34,8 +85,10 @@ const Pricing: React.FC = () => {
         id: pkg.packageId,
         name: pkg.name,
         duration: `${pkg.duration} days`,
-        price: `${pkg.price.toLocaleString('vi-VN')}đ`,
-        originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
+        price: `$${pkg.price.toLocaleString('en-US')}`,
+        originalPrice: pkg.originalPrice
+            ? `$${pkg.originalPrice.toLocaleString('en-US')}`
+            : undefined,
         features: pkg.features,
         isPopular: pkg.isPopular,
         color: pkg.color || (pkg.isPopular ? '#FF4444' : '#155e9a'),
@@ -134,7 +187,7 @@ const Pricing: React.FC = () => {
                                 Membership Package
                             </Typography>
                             <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
-                                {availablePackages.length} Package Available
+                                {paginationState.totalElements} Package{paginationState.totalElements !== 1 ? 's' : ''} Available
                             </Typography>
                         </Box>
                     </Stack>
@@ -187,9 +240,10 @@ const Pricing: React.FC = () => {
                                         '& > *': { position: 'relative', zIndex: 1, height: '100%' },
                                     }}
                                 >
-                                    <PackageCard
+                                    <PaymentPackageCard
                                         package={pkg}
                                         onSelect={() => handlePackageSelect(pkg.id)}
+                                        onPayNow={() => handlePayNow(pkg)}
                                         processing={false}
                                     />
                                 </Box>
@@ -200,12 +254,64 @@ const Pricing: React.FC = () => {
                     {availablePackages.length === 0 && !loading && (
                         <Box sx={{ textAlign: 'center', py: 8 }}>
                             <Typography variant="h6" color="text.secondary">
-                                Hiện tại chưa có gói thành viên nào
+                                No data
                             </Typography>
+                        </Box>
+                    )}
+
+                    {/* Pagination */}
+                    {paginationState.totalElements > paginationState.rowsPerPage && (
+                        <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'center', 
+                            mt: 6,
+
+                        }}>
+                            <TablePagination
+                                count={paginationState.totalElements}
+                                page={paginationState.page}
+                                rowsPerPage={paginationState.rowsPerPage}
+                                onPageChange={handleChangePage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                                rowsPerPageOptions={[8, 16, 24, 32]}
+                                labelRowsPerPage="Packages per page:"
+                                labelDisplayedRows={({ from, to, count }) =>
+                                    `${from}–${to} of ${count !== -1 ? count : `more than ${to}`} packages`
+                                }
+                            />
                         </Box>
                     )}
                 </Container>
             </Box>
+
+            <MoMoPaymentModal
+                open={paymentModalOpen}
+                onClose={() => {
+                    setPaymentModalOpen(false);
+                    setSelectedPackage(null);
+                }}
+                onSuccess={handlePaymentSuccess}
+                defaultAmount={selectedPackage ? parseInt(selectedPackage.price.replace(/[^\d]/g, '')) : 0}
+                defaultOrderInfo={selectedPackage ? `Thanh toán PowerGym - Gói thành viên: ${selectedPackage.name}` : ''}
+                itemType="MEMBERSHIP"
+                itemId={selectedPackage?.id}
+                itemName={selectedPackage?.name}
+            />
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    severity={snackbar.severity}
+                    variant="filled"
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </PowerGymLayout>
     );
 };

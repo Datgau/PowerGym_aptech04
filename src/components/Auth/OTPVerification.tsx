@@ -103,12 +103,7 @@ const OTPVerification = ({ email, onSubmit, submitting }: OTPVerificationProps) 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const result = await AuthService.verifyOtp({ email, otp: otp.trim() });
-      if (result.success) {
-        onSubmit(otp.trim());
-      } else {
-        showSnackbar(result.message || "Invalid OTP", "error");
-      }
+        onSubmit(otp.trim() );
     } catch (error) {
       showSnackbar(`Failed to verify OTP. Please try again.`, "error");
     }

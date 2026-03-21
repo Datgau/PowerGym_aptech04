@@ -49,7 +49,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [characterCount, setCharacterCount] = useState(0);
 
   const getTextContent = (html: string) => {
-    // Create a temporary div to extract text content from HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     return tempDiv.textContent || tempDiv.innerText || '';
@@ -77,15 +76,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     onUpdate: ({ editor }: { editor: any }) => {
       const html = editor.getHTML();
       onChange(html);
-      
-      // Count characters from text content (excluding HTML tags)
       const textContent = getTextContent(html);
       setCharacterCount(textContent.length);
     },
     editable: !disabled
   });
-
-  // Update character count when value changes externally
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value);
@@ -93,8 +88,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const textContent = getTextContent(value);
     setCharacterCount(textContent.length);
   }, [value, editor]);
-
-  // Initialize character count
   useEffect(() => {
     if (editor) {
       const html = editor.getHTML();
@@ -104,14 +97,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editor]);
 
   if (!editor) return null;
-
   const addLink = () => {
     const url = window.prompt('Enter URL:');
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
-
   const isActive = (name: string, attrs?: any) => {
     return editor.isActive(name, attrs);
   };

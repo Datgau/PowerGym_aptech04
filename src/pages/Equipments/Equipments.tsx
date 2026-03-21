@@ -23,18 +23,6 @@ const Equipments: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
   const { equipments, loading: equipmentsLoading, error: equipmentsError } = useEquipments(true, selectedCategoryId);
   const { categories, loading: categoriesLoading } = useEquipmentCategories(true);
-
-  // Debug logging
-  console.log('=== EQUIPMENT DEBUG ===');
-  console.log('Equipments count:', equipments.length);
-  console.log('Equipments data:', equipments);
-  console.log('Categories count:', categories.length);
-  console.log('Categories data:', categories);
-  console.log('Equipments loading:', equipmentsLoading);
-  console.log('Equipments error:', equipmentsError);
-  console.log('Selected category ID:', selectedCategoryId);
-  console.log('========================');  
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',

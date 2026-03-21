@@ -71,7 +71,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         '& h1, & h2, & h3': {
           fontWeight: 600,
           margin: '16px 0 8px 0',
-          '&:first-child': {
+          '&:first-of-type': {
             marginTop: 0
           }
         },

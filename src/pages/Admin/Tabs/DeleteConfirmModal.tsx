@@ -56,7 +56,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       
       <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
         <Button onClick={onClose} disabled={loading}>
-          Hủy
+          Cancle
         </Button>
         <Button 
           onClick={handleConfirm}
@@ -65,7 +65,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           disabled={loading}
           sx={{ minWidth: 100 }}
         >
-          {loading ? <CircularProgress size={24} /> : 'Xóa'}
+          {loading ? <CircularProgress size={24} /> : 'Delete'}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   gymServiceApi,
-  type GymServiceDto as GymServiceType,
   // type ClassSchedule,
   type GymServiceDto
 } from '../services/gymService';
@@ -10,7 +9,7 @@ import type {ServiceItem} from "../@type/powergym.ts";
 import type { PageResponse } from '../@type/apiResponse';
 
 interface UseGymServicesReturn {
-  services: GymServiceDto[];
+  services: ServiceItem[];
   // schedules: ClassSchedule[];
   // myBookings: ClassSchedule[];
   loading: boolean;
@@ -31,9 +30,12 @@ interface UseGymServicesPaginatedReturn {
   totalElements: number;
   hasNext: boolean;
   hasPrevious: boolean;
+  rowsPerPage: number;
   goToPage: (page: number) => void;
   nextPage: () => void;
   previousPage: () => void;
+  handleChangePage: (event: unknown, newPage: number) => void;
+  handleChangeRowsPerPage: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const useGymServices = (): UseGymServicesReturn => {
@@ -168,7 +170,7 @@ export const useGymServices = (): UseGymServicesReturn => {
     //   await fetchMyBookings();
     // };
 
-    const [services, setServices] = useState<GymServiceType[]>([]);
+    const [services, setServices] = useState<ServiceItem[]>([]);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,11 +213,12 @@ export const useGymServices = (): UseGymServicesReturn => {
   return { services, loading, error };
 };
 
-export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPaginatedReturn => {
+export const useGymServicesPaginated = (initialPageSize: number = 6): UseGymServicesPaginatedReturn => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(initialPageSize);
   const [pageInfo, setPageInfo] = useState<PageResponse<GymServiceDto> | null>(null);
 
   const fetchServices = useCallback(async (page: number) => {
@@ -224,8 +227,7 @@ export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPag
     
     try {
       const response = await gymServiceApi.getServicesActivePaginated(page, pageSize);
-      console.log('Paginated API Response:', response);
-      
+
       if (response.success && response.data) {
         setServices(response.data.content);
         setPageInfo(response.data);
@@ -245,6 +247,13 @@ export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPag
     fetchServices(0);
   }, [fetchServices]);
 
+  // Refetch when pageSize changes
+  useEffect(() => {
+    if (pageSize !== initialPageSize) {
+      fetchServices(0);
+    }
+  }, [pageSize, fetchServices, initialPageSize]);
+
   const goToPage = useCallback((page: number) => {
     if (pageInfo && page >= 0 && page < pageInfo.totalPages) {
       fetchServices(page);
@@ -263,6 +272,18 @@ export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPag
     }
   }, [fetchServices, currentPage, pageInfo]);
 
+  // TablePagination handlers
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
+    fetchServices(newPage);
+  }, [fetchServices]);
+
+  const handleChangeRowsPerPage = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const newPageSize = parseInt(event.target.value, 10);
+    setPageSize(newPageSize);
+    setCurrentPage(0);
+    // fetchServices will be called automatically due to useEffect dependency on pageSize
+  }, []);
+
   return {
     services,
     loading,
@@ -272,9 +293,12 @@ export const useGymServicesPaginated = (pageSize: number = 6): UseGymServicesPag
     totalElements: pageInfo?.totalElements || 0,
     hasNext: pageInfo ? !pageInfo.last : false,
     hasPrevious: pageInfo ? !pageInfo.first : false,
+    rowsPerPage: pageSize,
     goToPage,
     nextPage,
-    previousPage
+    previousPage,
+    handleChangePage,
+    handleChangeRowsPerPage
   };
 };
 

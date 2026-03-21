@@ -14,9 +14,11 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Avatar
+  Avatar,
+  Stack
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility, Info } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, Info, Build } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService.ts';
 import ServiceFormModal from './ServiceFormModal.tsx';
 import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
@@ -27,6 +29,73 @@ import { getAccessToken } from '../../../../services/authStorage.ts';
 import TablePagination from '../../../../components/Common/TablePagination.tsx';
 import { usePagination } from '../../../../hooks/usePagination.ts';
 import RichTextDisplay from '../../../../components/Common/RichTextDisplay.tsx';
+
+/* ─── Styled Components ─────────────────────────────────── */
+
+const PageWrapper = styled(Box)({
+  minHeight: '100%',
+  background: '#f8faff',
+  padding: '32px',
+});
+
+const HeaderSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  padding: '28px 32px',
+  marginBottom: 28,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
+
+const HeaderLeft = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+});
+
+const HeaderIconBox = styled(Box)({
+  width: 48,
+  height: 48,
+  borderRadius: 14,
+  background: 'linear-gradient(135deg, #00b4ff22, #0066ff22)',
+  border: '1px solid #0066ff33',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#0066ff',
+});
+
+const AddButton = styled(Button)({
+  background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+  borderRadius: 12,
+  textTransform: 'none',
+  fontWeight: 600,
+  fontSize: 14,
+  padding: '10px 22px',
+  color: '#fff',
+  boxShadow: '0 4px 16px rgba(0,102,255,0.28)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #00c6ff, #0077ff)',
+    boxShadow: '0 6px 24px rgba(0,102,255,0.38)',
+    transform: 'translateY(-1px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 2px 8px rgba(0,102,255,0.3)',
+  },
+});
+
+const ContentSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  padding: '24px',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
 
 const ServicesManagement: React.FC = () => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
@@ -44,7 +113,7 @@ const ServicesManagement: React.FC = () => {
     handleChangePage,
     handleChangeRowsPerPage,
     setPaginationData,
-  } = usePagination(10);
+  } = usePagination(5);
 
   // Listen to WebSocket for real-time updates
   const { lastMessage } = useWebSocket({
@@ -119,7 +188,7 @@ const ServicesManagement: React.FC = () => {
       if (formMode === 'create') {
         await gymServiceApi.createService(data);
       } else if (selectedService) {
-        await gymServiceApi.updateService(parseInt(selectedService.id), data);
+        await gymServiceApi.updateService(parseInt(String(selectedService.id)), data);
       }
 
       await loadData(paginationState.page, paginationState.rowsPerPage);
@@ -139,7 +208,7 @@ const ServicesManagement: React.FC = () => {
   const handleDelete = async () => {
     if (selectedService) {
       try {
-        await gymServiceApi.deleteService(parseInt(selectedService.id));
+        await gymServiceApi.deleteService(parseInt(String(selectedService.id)));
         await loadData(paginationState.page, paginationState.rowsPerPage);
       } catch (err: any) {
         console.error('Delete error:', err);
@@ -150,19 +219,14 @@ const ServicesManagement: React.FC = () => {
       }
     }
   };
-
-  const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      PERSONAL_TRAINER: 'Personal Trainer',
-      BOXING: 'Boxing',
-      YOGA: 'Yoga',
-      CARDIO: 'Cardio',
-      OTHER: 'Khác'
-    };
-    return labels[category] || category;
-  };
-
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: any) => {
+    let categoryName = '';
+    if (typeof category === 'string') {
+      categoryName = category;
+    } else if (category && typeof category === 'object') {
+      categoryName = category.name;
+    }
+    
     const colors: Record<string, any> = {
       PERSONAL_TRAINER: 'primary',
       BOXING: 'error',
@@ -170,151 +234,219 @@ const ServicesManagement: React.FC = () => {
       CARDIO: 'warning',
       OTHER: 'default'
     };
-    return colors[category] || 'default';
+    return colors[categoryName] || 'default';
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={40} thickness={3} sx={{ color: '#0066ff' }} />
+          <Typography color="text.secondary" fontSize={14}>Loading services...</Typography>
+        </Stack>
+      </PageWrapper>
     );
   }
 
   return (
-    <Box>
+    <PageWrapper>
+      {/* ── Header ── */}
+      <HeaderSection>
+        <HeaderLeft>
+          <HeaderIconBox>
+            <Build sx={{ fontSize: 22 }} />
+          </HeaderIconBox>
+          <Box>
+            <Typography fontWeight={700} fontSize={20} color="#0f172a" lineHeight={1.3}>
+              Service Management
+            </Typography>
+            <Typography fontSize={13.5} color="#64748b" mt={0.3}>
+              Manage gym services and registrations
+            </Typography>
+          </Box>
+        </HeaderLeft>
+        <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleOpenCreate}>
+          Add Service
+        </AddButton>
+      </HeaderSection>
+
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 3, fontSize: 13.5 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
-        <Typography variant="h5" fontWeight={700} sx={{ fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
-          Service Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleOpenCreate}
-          sx={{ 
-            background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-            fontSize: { xs: '0.875rem', md: '1rem' }
-          }}
-        >
-          Add Service
-        </Button>
-      </Box>
-      
-      <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
-        <Table sx={{ minWidth: { xs: 650, md: 750 } }}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Service</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Category</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'table-cell' } }}>Price</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', md: 'table-cell' } }}>Duration</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Registrations</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Status</TableCell>
-              <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {services.map((service) => (
-              <TableRow key={service.id}>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar 
-                      src={service.images?.[0]} 
-                      sx={{ width: { xs: 32, md: 40 }, height: { xs: 32, md: 40 } }}
-                      variant="rounded"
-                    >
-                      {service.name.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                        {service.name}
-                      </Typography>
-                      <Box sx={{ maxWidth: 300 }}>
-                        <RichTextDisplay 
-                          content={service.description || ''}
-                          maxLines={2}
-                          variant="body2"
-                        />
-                      </Box>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={getCategoryLabel(service.category)} 
-                    color={getCategoryColor(service.category)}
-                    size="small"
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
-                  />
-                </TableCell>
-                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                  {service.price?.toLocaleString('vi-VN')} VNĐ
-                </TableCell>
-                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                  {service.duration} phút
-                </TableCell>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Chip 
-                      label={service.registrationCount || 0}
-                      color="info"
-                      size="small"
-                      sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' }, fontWeight: 600 }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      người
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={service.isActive ? 'Active' : 'Inactive'} 
-                    color={service.isActive ? 'success' : 'default'}
-                    size="small"
-                    sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box display="flex" gap={0.5}>
-                    <IconButton size="small" onClick={() => handleOpenDetail(service)} title="View Service Details">
-                      <Info fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleOpenRegistrations(service)} title="View Registrations">
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleOpenEdit(service)}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleOpenDelete(service)}>
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Box>
-                </TableCell>
+      <ContentSection>
+        <TableContainer component={Paper} sx={{ 
+          overflowX: 'auto',
+          borderRadius: 3,
+          border: '1px solid #eaeef8',
+          boxShadow: 'none'
+        }}>
+          <Table sx={{ minWidth: { xs: 650, md: 750 } }}>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#f8faff' }}>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Service</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Category</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'table-cell' }, fontWeight: 600, color: '#0f172a' }}>Price</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', md: 'table-cell' }, fontWeight: 600, color: '#0f172a' }}>Duration</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Registrations</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Status</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {services.map((service) => (
+                  <TableRow key={service.id} hover sx={{ '&:hover': { backgroundColor: '#f8faff' } }}>
+                    <TableCell>
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar
+                            src={service.images?.[0]}
+                            sx={{ width: { xs: 32, md: 40 }, height: { xs: 32, md: 40 } }}
+                            variant="rounded"
+                        >
+                          {service.name.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                            {service.name}
+                          </Typography>
+                          <Box sx={{ maxWidth: 300 }}>
+                            <RichTextDisplay
+                                content={service.description || ''}
+                                maxLines={2}
+                                variant="body2"
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
+                    </TableCell>
 
-      <TablePagination
-        count={paginationState.totalElements}
-        page={paginationState.page}
-        rowsPerPage={paginationState.rowsPerPage}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+                    <TableCell>
+                      <Chip
+                          label={service.category?.name}
+                          color={getCategoryColor(service.category)}
+                          size="small"
+                          sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
+                      />
+                    </TableCell>
 
-      {services.length === 0 && (
-        <Box textAlign="center" py={4}>
-          <Typography color="text.secondary">Chưa có service nào</Typography>
+                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                      {service.price?.toLocaleString('en-US')} $
+                    </TableCell>
+
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                      {service.duration} days
+                    </TableCell>
+
+                    <TableCell>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Chip
+                            label={service.registrationCount || 0}
+                            color="info"
+                            size="small"
+                            sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' }, fontWeight: 600 }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          users
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                          label={service.isActive ? 'Active' : 'Inactive'}
+                          color={service.isActive ? 'success' : 'default'}
+                          size="small"
+                          sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Box display="flex" gap={0.5}>
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenDetail(service)}
+                            title="View Service Details"
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
+                          <Info fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenRegistrations(service)}
+                            title="View Registrations"
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenEdit(service)}
+                            title="Edit Service"
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenDelete(service)}
+                            title="Delete Service"
+                            sx={{
+                              color: '#ef4444',
+                              '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)' }
+                            }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Box mt={3}>
+          <TablePagination
+            count={paginationState.totalElements}
+            page={paginationState.page}
+            rowsPerPage={paginationState.rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Services per page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`} services`
+            }
+          />
         </Box>
-      )}
+
+        {services.length === 0 && (
+          <Box textAlign="center" py={8}>
+            <Typography variant="h6" color="text.secondary" mb={2}>
+              No services found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Create your first service to get started
+            </Typography>
+            <AddButton variant="contained" startIcon={<Add />} onClick={handleOpenCreate}>
+              Add Service
+            </AddButton>
+          </Box>
+        )}
+      </ContentSection>
 
       <ServiceFormModal
         open={openForm}
@@ -328,8 +460,8 @@ const ServicesManagement: React.FC = () => {
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         onConfirm={handleDelete}
-        title="Xóa Service"
-        message={`Bạn có chắc chắn muốn xóa service "${selectedService?.name}"? Service có người đăng ký sẽ không thể xóa.`}
+        title="Delete Service"
+        message={`Are you sure you want to delete "${selectedService?.name}"? This service cannot be deleted if it has active subscriptions.`}
       />
 
       <ServiceRegistrationsModal
@@ -350,7 +482,7 @@ const ServicesManagement: React.FC = () => {
           handleOpenEdit(service);
         }}
       />
-    </Box>
+    </PageWrapper>
   );
 };
 

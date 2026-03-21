@@ -19,11 +19,87 @@ import {
   Tabs,
   Tab
 } from '@mui/material';
-import { Add, Edit, Delete, Category } from '@mui/icons-material';
+import { Add, Edit, Delete, Category, Build } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { useEquipments } from '../../../../hooks/useEquipments';
 import {type Equipment, equipmentService} from '../../../../services/equipmentService';
 import EquipmentFormModal from './EquipmentFormModal';
 import EquipmentCategoriesPage from './EquipmentCategoriesPage';
+import TablePagination from '../../../../components/Common/TablePagination';
+import { usePagination } from '../../../../hooks/usePagination';
+
+const PageWrapper = styled(Box)({
+  minHeight: '100%',
+  background: '#f8faff',
+  padding: '32px',
+});
+
+const HeaderSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  padding: '28px 32px',
+  marginBottom: 28,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
+
+const HeaderLeft = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+});
+
+const HeaderIconBox = styled(Box)({
+  width: 48,
+  height: 48,
+  borderRadius: 14,
+  background: 'linear-gradient(135deg, #00b4ff22, #0066ff22)',
+  border: '1px solid #0066ff33',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#0066ff',
+});
+
+const AddButton = styled(Button)({
+  background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
+  borderRadius: 12,
+  textTransform: 'none',
+  fontWeight: 600,
+  fontSize: 14,
+  padding: '10px 22px',
+  color: '#fff',
+  boxShadow: '0 4px 16px rgba(0,102,255,0.28)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #00c6ff, #0077ff)',
+    boxShadow: '0 6px 24px rgba(0,102,255,0.38)',
+    transform: 'translateY(-1px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 2px 8px rgba(0,102,255,0.3)',
+  },
+});
+
+const ContentSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  padding: '24px',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
+
+const TabsSection = styled(Box)({
+  background: '#ffffff',
+  borderRadius: 20,
+  border: '1px solid #eaeef8',
+  marginBottom: 28,
+  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+});
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -39,12 +115,31 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
 
 const EquipmentManagementPage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
-  const { equipments, loading, error, refresh } = useEquipments(false); // Get all equipments
+  const { equipments: allEquipments, loading, error, refresh } = useEquipments(false); // Get all equipments
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const {
+    paginationState,
+    handleChangePage,
+    handleChangeRowsPerPage,
+    setPaginationData,
+  } = usePagination(5);
+
+  // Client-side pagination
+  const equipments = React.useMemo(() => {
+    const startIndex = paginationState.page * paginationState.rowsPerPage;
+    const endIndex = startIndex + paginationState.rowsPerPage;
+    return allEquipments.slice(startIndex, endIndex);
+  }, [allEquipments, paginationState.page, paginationState.rowsPerPage]);
+
+  React.useEffect(() => {
+    const totalPages = Math.ceil(allEquipments.length / paginationState.rowsPerPage);
+    setPaginationData(totalPages, allEquipments.length);
+  }, [allEquipments.length, paginationState.rowsPerPage, setPaginationData]);
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
@@ -93,51 +188,57 @@ const EquipmentManagementPage: React.FC = () => {
   const EquipmentTable = () => {
     if (loading) {
       return (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
+        <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
+          <Stack alignItems="center" spacing={2}>
+            <CircularProgress size={40} thickness={3} sx={{ color: '#0066ff' }} />
+            <Typography color="text.secondary" fontSize={14}>Loading equipment...</Typography>
+          </Stack>
+        </PageWrapper>
       );
     }
 
     return (
-      <Box>
+      <ContentSection>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h6" fontWeight={600}>
             Equipment List
           </Typography>
-          <Button
+          <AddButton
             variant="contained"
             startIcon={<Add />}
             onClick={handleCreate}
-            sx={{ borderRadius: 2 }}
           >
             Add Equipment
-          </Button>
+          </AddButton>
         </Stack>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3, fontSize: 13.5 }}>
             {error}
           </Alert>
         )}
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+        <TableContainer component={Paper} sx={{ 
+          borderRadius: 3,
+          border: '1px solid #eaeef8',
+          boxShadow: 'none'
+        }}>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Quantity</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Created Date</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+              <TableRow sx={{ backgroundColor: '#f8faff' }}>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Image</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Category</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Price</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Quantity</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Created Date</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {equipments.map((equipment) => (
-                <TableRow key={equipment.id} hover>
+                <TableRow key={equipment.id} hover sx={{ '&:hover': { backgroundColor: '#f8faff' } }}>
                   <TableCell>
                     <Avatar
                       src={equipment.image}
@@ -186,15 +287,21 @@ const EquipmentManagementPage: React.FC = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleEdit(equipment)}
-                        color="primary"
+                        sx={{
+                          color: '#0066ff',
+                          '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                        }}
                       >
                         <Edit fontSize="small" />
                       </IconButton>
                       <IconButton
                         size="small"
                         onClick={() => handleDelete(equipment.id)}
-                        color="error"
                         disabled={deleting === equipment.id}
+                        sx={{
+                          color: '#ef4444',
+                          '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)' }
+                        }}
                       >
                         {deleting === equipment.id ? (
                           <CircularProgress size={16} />
@@ -210,17 +317,37 @@ const EquipmentManagementPage: React.FC = () => {
           </Table>
         </TableContainer>
 
-        {equipments.length === 0 && !loading && (
+        <Box mt={3}>
+          <TablePagination
+            count={paginationState.totalElements}
+            page={paginationState.page}
+            rowsPerPage={paginationState.rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Equipment per page:"
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`} equipment`
+            }
+          />
+        </Box>
+
+        {equipments.length === 0 && !loading && allEquipments.length > 0 && (
+          <Box textAlign="center" py={4}>
+            <Typography color="text.secondary">No equipment on this page</Typography>
+          </Box>
+        )}
+
+        {allEquipments.length === 0 && !loading && (
           <Box textAlign="center" py={8}>
-            <Typography variant="h6" color="text.secondary">
+            <Typography variant="h6" color="text.secondary" mb={2}>
               No equipment found
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               Create your first equipment to get started
             </Typography>
-            <Button variant="contained" onClick={handleCreate}>
+            <AddButton variant="contained" onClick={handleCreate}>
               Add Equipment
-            </Button>
+            </AddButton>
           </Box>
         )}
 
@@ -230,31 +357,46 @@ const EquipmentManagementPage: React.FC = () => {
           onClose={handleModalClose}
           onSuccess={handleModalSuccess}
         />
-      </Box>
+      </ContentSection>
     );
   };
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={600} mb={3}>
-        Equipment Management
-      </Typography>
+    <PageWrapper>
+      {/* ── Header ── */}
+      <HeaderSection>
+        <HeaderLeft>
+          <HeaderIconBox>
+            <Build sx={{ fontSize: 22 }} />
+          </HeaderIconBox>
+          <Box>
+            <Typography fontWeight={700} fontSize={20} color="#0f172a" lineHeight={1.3}>
+              Equipment Management
+            </Typography>
+            <Typography fontSize={13.5} color="#64748b" mt={0.3}>
+              Manage gym equipment and categories
+            </Typography>
+          </Box>
+        </HeaderLeft>
+      </HeaderSection>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
+      <TabsSection sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleTabChange} sx={{ px: 3 }}>
           <Tab label="Equipment" />
           <Tab label="Categories" icon={<Category />} iconPosition="start" />
         </Tabs>
-      </Box>
+      </TabsSection>
 
       <TabPanel value={tabValue} index={0}>
         <EquipmentTable />
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <EquipmentCategoriesPage />
+        <ContentSection>
+          <EquipmentCategoriesPage />
+        </ContentSection>
       </TabPanel>
-    </Box>
+    </PageWrapper>
   );
 };
 

@@ -3,7 +3,7 @@ import { getPublicServiceCategories } from './serviceCategoryService';
 import type { ServiceCategoryResponse } from './serviceCategoryService';
 
 export interface TrainerSpecialtyRequest {
-  specialty: { id: number }; // Send only the ID to match backend expectations
+  specialtyId: number; // Send only the ID to match backend expectations
   description?: string;
   experienceYears?: number;
   certifications?: string;

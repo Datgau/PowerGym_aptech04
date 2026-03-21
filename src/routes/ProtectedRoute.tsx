@@ -1,7 +1,8 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { Button, CircularProgress, Dialog, DialogActions, DialogTitle} from "@mui/material";
+import {Navigate, Outlet, useNavigate} from "react-router-dom";
+import { CircularProgress} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useAuth} from "../hooks/useAuth.ts";
+import LoginRequiredModal from "../components/Auth/LoginRequiredModal.tsx";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];
@@ -13,11 +14,12 @@ const ProtectedRoute = ({
                           showLoginDialog = false,
                         }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user && showLoginDialog) {
-      setOpen(true);
+        setLoginModalOpen(true);
     }
   }, [loading, user, showLoginDialog]);
 
@@ -37,21 +39,19 @@ const ProtectedRoute = ({
     return <Navigate to="/home" replace />;
   }
 
+    const handleConfirmLogin = () => {
+        setLoginModalOpen(false);
+        navigate("/login");
+    };
+
   return (
       <>
         {user && <Outlet />}
-        <Dialog open={open}>
-          <DialogTitle>Login Required</DialogTitle>
-          <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button
-                onClick={() => (window.location.href = "/login")}
-                variant="contained"
-            >
-              Login
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <LoginRequiredModal
+            open={loginModalOpen}
+            onClose={() => setLoginModalOpen(false)}
+            onConfirm={handleConfirmLogin}
+        />
       </>
   );
 };

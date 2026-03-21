@@ -4,12 +4,12 @@ import { Add as AddIcon, AutoStories } from '@mui/icons-material';
 import StoryCard from './StoryCard.tsx';
 import ViewMoreCard from './ViewMoreCard.tsx';
 import CarouselNavigation from './CarouselNavigation.tsx';
-import DotsIndicator from './DotsIndicator.tsx';
 import ShareStoryModal from './ShareStoryModal.tsx';
 import { useCarousel } from '../../../hooks/useCarousel.ts';
 import type { StoryItem } from "../../../services/storyService.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { useNavigate } from "react-router-dom";
+import EmptyState from "../../../components/Notifications/EmptyState.tsx";
 
 interface StoriesSectionProps {
     readonly stories: readonly StoryItem[];
@@ -36,7 +36,6 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
         maxIndex,
         handlePrevious,
         handleNext,
-        setCurrentIndex
     } = useCarousel({ totalItems });
 
     const handleViewMore = () => navigate('/stories');
@@ -63,7 +62,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
     };
 
     return (
-        <Box
+            <Box
             component="section"
             sx={{
                 py: { xs: 8, md: 12 },
@@ -85,6 +84,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
             <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
 
                 {/* ── Header ── */}
+               
                 <Box sx={{ mb: { xs: 6, md: 10 }, position: 'relative' }}>
                     {/* Big decorative background text */}
                     <Typography sx={{
@@ -237,6 +237,10 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
 
                 {/* ── Carousel ── */}
                 <Box sx={{ position: 'relative' }}>
+                    {stories.length === 0 ? (
+                        <EmptyState onAction={handleShareClick} />
+                    ) : (
+                <>
                     <CarouselNavigation
                         currentIndex={currentIndex}
                         maxIndex={maxIndex}
@@ -314,13 +318,10 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
                             )}
                         </Box>
                     </Box>
+                </>
+                )}
                 </Box>
 
-                <DotsIndicator
-                    currentIndex={currentIndex}
-                    maxIndex={maxIndex}
-                    onDotClick={setCurrentIndex}
-                />
             </Container>
 
             {/* Share Story Modal */}

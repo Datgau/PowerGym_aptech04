@@ -249,12 +249,12 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     Specialty #{index + 1}
                                                 </Typography>
 
-                                                {specialty.specialty && (
+                                                {specialty.specialtyId && (
                                                     <Chip
                                                         size="small"
                                                         label={
                                                             categories.find(
-                                                                c => c.id === specialty.specialty?.id
+                                                                c => c.id === specialty.specialtyId
                                                             )?.displayName || 'Unknown'
                                                         }
                                                         sx={{
@@ -294,13 +294,13 @@ const SpecialtiesStep: React.FC<Props> = ({
                                                     select
                                                     fullWidth
                                                     label="Specialty Type"
-                                                    value={specialty.specialty?.id || ''}
+                                                    value={specialty.specialtyId || ''}
                                                     onChange={(e) => {
                                                         const selectedCategoryId = Number(e.target.value);
-                                                        updateSpecialty(index, 'specialty', { id: selectedCategoryId });
+                                                        updateSpecialty(index, 'specialtyId', selectedCategoryId);
                                                     }}
-                                                    error={!specialty.specialty || specialty.specialty.id === 0}
-                                                    helperText={!specialty.specialty || specialty.specialty.id === 0 ? 'Please select a specialty type' : ''}
+                                                    error={!specialty.specialtyId || specialty.specialtyId === 0}
+                                                    helperText={!specialty.specialtyId || specialty.specialtyId === 0 ? 'Please select a specialty type' : ''}
                                                 >
                                                     {categories.map(category => (
                                                         <MenuItem key={category.id} value={category.id}>

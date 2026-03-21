@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Typography,
@@ -14,11 +13,9 @@ import {
   Chip,
   Paper,
   Tooltip,
-  Avatar,
   Fade,
   Stack
 } from "@mui/material";
-
 import { styled, alpha } from "@mui/material/styles";
 
 import {
@@ -27,7 +24,6 @@ import {
   Delete,
   PhotoCamera,
   InsertDriveFile,
-  Verified
 } from "@mui/icons-material";
 
 import { DOCUMENT_TYPES } from "../../../../../services/trainerService";

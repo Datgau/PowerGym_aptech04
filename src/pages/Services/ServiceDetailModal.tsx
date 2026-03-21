@@ -22,7 +22,11 @@ import {
     CancelOutlined,
 } from '@mui/icons-material';
 import RichTextDisplay from '../../components/Common/RichTextDisplay';
+import TrainerSelectionModal from '../../components/Common/TrainerSelectionModal';
+import { registerService } from '../../services/serviceRegistrationService';
+import enhancedServiceRegistrationService from '../../services/enhancedServiceRegistrationService';
 import type { ServiceItem } from "../../@type/powergym.ts";
+import type { ServiceRegistrationWithTrainerSelectionResponse } from '../../services/enhancedServiceRegistrationService';
 
 interface Props {
     open: boolean;
@@ -38,6 +42,9 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [showTrainerSelection, setShowTrainerSelection] = useState(false);
+    const [trainerSelectionData, setTrainerSelectionData] = useState<ServiceRegistrationWithTrainerSelectionResponse | null>(null);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const images = useMemo(() =>
@@ -56,10 +63,69 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [images.length, hasMultipleImages, isHovered]);
 
-    // Reset index when modal opens
+    // Reset state when modal opens/closes
     useEffect(() => {
-        if (open) setCurrentImageIndex(0);
+        if (open) {
+            setCurrentImageIndex(0);
+            setIsRegistering(false);
+            setShowTrainerSelection(false);
+            setTrainerSelectionData(null);
+        }
     }, [open]);
+
+    const handleServiceRegistration = async () => {
+        if (!service?.id) return;
+
+        setIsRegistering(true);
+        try {
+            // Register service first
+            const registrationResponse = await registerService({
+                serviceId: parseInt(service.id),
+                notes: `Registered for ${service.name}`
+            });
+
+            if (registrationResponse.success) {
+                // Get trainer selection data
+                const trainerSelectionResponse = await enhancedServiceRegistrationService.getRegistrationForTrainerSelection(
+                    registrationResponse.data.id
+                );
+
+                if (trainerSelectionResponse.success) {
+                    setTrainerSelectionData(trainerSelectionResponse.data);
+                    
+                    // Show trainer selection modal if trainers are available
+                    if (trainerSelectionResponse.data.totalAvailableTrainers > 0) {
+                        setShowTrainerSelection(true);
+                    } else {
+                        // No trainers available, just show success
+                        alert('Đăng ký dịch vụ thành công! Hiện tại chưa có trainer phù hợp, chúng tôi sẽ liên hệ với bạn sớm.');
+                        onClose();
+                    }
+                } else {
+                    // Registration successful but couldn't get trainer data
+                    alert('Đăng ký dịch vụ thành công!');
+                    onClose();
+                }
+            }
+        } catch (error) {
+            console.error('Error registering service:', error);
+            alert('Có lỗi xảy ra khi đăng ký dịch vụ. Vui lòng thử lại.');
+        } finally {
+            setIsRegistering(false);
+        }
+    };
+
+    const handleTrainerSelected = (trainerId: number, trainerName: string) => {
+        setShowTrainerSelection(false);
+        alert(`Đã chọn trainer ${trainerName} thành công! Bạn có thể đặt lịch với trainer ngay bây giờ.`);
+        onClose();
+    };
+
+    const handleCloseTrainerSelection = () => {
+        setShowTrainerSelection(false);
+        // Still close the main modal since service registration was successful
+        onClose();
+    };
 
     const nextImage = useCallback(() => setCurrentImageIndex(p => (p + 1) % images.length), [images.length]);
     const prevImage = useCallback(() => setCurrentImageIndex(p => (p - 1 + images.length) % images.length), [images.length]);
@@ -167,7 +233,7 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
 
                     {/* Category chip */}
                     <Chip
-                        label={service.category}
+                        label={service.category?.displayName || service.category?.name || 'Unknown'}
                         size="small"
                         sx={{
                             position: 'absolute', top: 46, left: 14, zIndex: 4,
@@ -397,14 +463,8 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
                         <Button
                             fullWidth
                             variant="contained"
-                            disabled={!service.isActive || (service.registrationCount || 0) >= (service.maxParticipants || 0)}
-                            onClick={() => {
-                                if ((service.registrationCount || 0) >= (service.maxParticipants || 0)) {
-                                    alert('This service is fully booked. No more registrations available.');
-                                    return;
-                                }
-                                onRegister?.(service.id);
-                            }}
+                            disabled={!service.isActive || (service.registrationCount || 0) >= (service.maxParticipants || 0) || isRegistering}
+                            onClick={handleServiceRegistration}
                             sx={{
                                 py: 1.5,
                                 borderRadius: '12px',
@@ -422,11 +482,13 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
                                 '&.Mui-disabled': { background: '#ccc', boxShadow: 'none' },
                             }}
                         >
-                            {!service.isActive 
-                                ? 'Unavailable' 
-                                : (service.registrationCount || 0) >= (service.maxParticipants || 0) 
-                                    ? 'Fully Booked' 
-                                    : 'Register Now'}
+                            {isRegistering 
+                                ? 'Đang đăng ký...'
+                                : !service.isActive 
+                                    ? 'Unavailable' 
+                                    : (service.registrationCount || 0) >= (service.maxParticipants || 0) 
+                                        ? 'Fully Booked' 
+                                        : 'Register Now'}
                         </Button>
                         <Button
                             fullWidth
@@ -452,6 +514,16 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
                     </Box>
                 </Box>
             </DialogContent>
+
+            {/* Trainer Selection Modal */}
+            {showTrainerSelection && trainerSelectionData && (
+                <TrainerSelectionModal
+                    isOpen={showTrainerSelection}
+                    onClose={handleCloseTrainerSelection}
+                    registrationData={trainerSelectionData}
+                    onTrainerSelected={handleTrainerSelected}
+                />
+            )}
         </Dialog>
     );
 };

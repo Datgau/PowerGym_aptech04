@@ -5,7 +5,9 @@ import {
   TextField,
   Divider,
   Stack,
-  Fade
+  Fade,
+  InputAdornment,
+  CircularProgress
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Person } from '@mui/icons-material';
@@ -27,9 +29,11 @@ const StyledTextField = styled(TextField)(() => ({
 
 interface BasicInfoStepProps {
   formik: FormikProps<CreateTrainerRequest>;
+  emailCheckLoading?: boolean;
+  emailError?: string;
 }
 
-const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik, emailCheckLoading, emailError }) => {
   return (
     <Fade in timeout={300}>
       <Box
@@ -86,8 +90,19 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik }) => {
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            error={formik.touched.email && Boolean(formik.errors.email)}
-            helperText={formik.touched.email && formik.errors.email}
+            error={(formik.touched.email && Boolean(formik.errors.email)) || Boolean(emailError)}
+            helperText={
+              emailError || 
+              (formik.touched.email && formik.errors.email) || 
+              'This email can be registered.'
+            }
+            InputProps={{
+              endAdornment: emailCheckLoading ? (
+                <InputAdornment position="end">
+                  <CircularProgress size={20} />
+                </InputAdornment>
+              ) : null,
+            }}
           />
 
           <StyledTextField

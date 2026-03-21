@@ -17,19 +17,20 @@ import {
     useTheme,
     Tooltip,
 } from '@mui/material';
+
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import WebStoriesIcon from '@mui/icons-material/WebStories';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import {
     Menu as MenuIcon,
-    Dashboard,
     People,
     FitnessCenter,
     Build,
     Assignment,
     CardMembership,
-    AttachMoney,
     Settings,
     Logout,
     AccountCircle,
-    Article,
     Category,
     KeyboardArrowRight,
 } from '@mui/icons-material';
@@ -47,15 +48,15 @@ interface AdminLayoutProps {
 }
 
 const menuItems = [
-    { text: 'Overview',   icon: <Dashboard /> },
+    { text: 'Overview',   icon: <AnalyticsIcon  /> },
     { text: 'Members',    icon: <People /> },
     { text: 'Trainers',   icon: <FitnessCenter /> },
     { text: 'Categories', icon: <Category /> },
     { text: 'Services',   icon: <Assignment /> },
-    { text: 'Stories',    icon: <Article /> },
+    { text: 'Stories',    icon: <WebStoriesIcon/> },
     { text: 'Equipment',  icon: <Build /> },
     { text: 'Membership', icon: <CardMembership /> },
-    { text: 'Financial',  icon: <AttachMoney /> },
+    { text: 'Financial',  icon: <AccountBalanceWalletIcon  /> },
     { text: 'Settings',   icon: <Settings /> },
 ];
 
@@ -79,7 +80,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     const handleLogout = async () => {
         try {
             await logout();
-        } catch (_) {}
+        } catch (error:any) {
+            console.error('Logout failed:', error);
+        }
         navigate('/login', { replace: true });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -231,10 +234,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                         </Avatar>
                         <Box flex={1} minWidth={0}>
                             <Typography variant="body2" fontWeight={700} noWrap>
-                                Admin User
+                                Admin
                             </Typography>
                             <Typography variant="caption" color="text.secondary" noWrap>
-                                admin@powergym.com
+                                admin@gmail.com
                             </Typography>
                         </Box>
                         <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#22c55e', flexShrink: 0 }} />
