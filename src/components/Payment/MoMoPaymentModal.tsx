@@ -5,12 +5,12 @@ import {
 import { paymentService, type CreatePaymentRequest, type MoMoPaymentResponse, type PaymentOrder } from '../../services/paymentService';
 import PaymentSuccessWithTrainerModal from './PaymentSuccessWithTrainerModal';
 
-// Import step components
 import PaymentFormStep from './steps/PaymentFormStep';
 import QRCodeStep from './steps/QRCodeStep';
 import PaymentResultStep from './steps/PaymentResultStep';
 import PaymentStepper from './components/PaymentStepper';
 import PaymentHeader from './components/PaymentHeader';
+import {toast} from "react-toastify";
 
 interface MoMoPaymentModalProps {
   open: boolean;
@@ -33,7 +33,7 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
   itemId,
   itemName
 }) => {
-  const [currentStep, setCurrentStep] = useState(0); // 0: Form, 1: QR Code, 2: Result
+  const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [paymentResponse, setPaymentResponse] = useState<MoMoPaymentResponse | null>(null);
@@ -57,8 +57,6 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
     extraData: '',
     lang: 'vi'
   });
-
-  // Update form data when props change
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -66,8 +64,6 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
       orderInfo: generateOrderInfo()
     }));
   }, [defaultAmount, itemName, itemType]);
-
-  // Cleanup polling on unmount
   useEffect(() => {
     return () => {
       if (pollingInterval) {
@@ -91,7 +87,6 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
     setLoading(true);
 
     try {
-      // Validation
       if (formData.amount < 1000) {
         throw new Error('Minimum amount is 1,000 VND');
       }
@@ -116,15 +111,12 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
 
       if (response.success && response.data) {
         setPaymentResponse(response.data);
-        setCurrentStep(1); // Move to QR code step
+        setCurrentStep(1);
         startPaymentPolling(response.data.orderId);
       } else {
         throw new Error(response.message || 'Failed to create payment');
       }
     } catch (err: any) {
-      console.error('Payment creation error:', err);
-
-      // Handle specific error types
       if (err.response?.status === 401) {
         setError('Please log in to proceed with payment');
       } else if (err.response?.status === 403) {
@@ -148,7 +140,6 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
           setPaymentStatus(statusResponse.data);
           
           if (status === 'SUCCESS') {
-            // Check if payment has service registrations that need trainer selection
             try {
               const trainerSelectionResponse = await paymentService.getPaymentStatusWithTrainerSelection(orderId);
               if (trainerSelectionResponse.success && trainerSelectionResponse.data) {
@@ -162,7 +153,7 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
                 setCurrentStep(2);
               }
             } catch (error) {
-              console.warn('Could not get trainer selection data, showing regular success:', error);
+              toast.warn('Could not get trainer selection data, showing regular success:', error);
               setCurrentStep(2);
             }
             
@@ -175,10 +166,10 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
             clearInterval(interval);
           }
         } else {
-          console.warn('Payment status check failed:', statusResponse.message);
+          toast.warn('Payment status check failed:', statusResponse.message);
         }
       } catch (error: any) {
-        console.error('Error polling payment status:', error);
+        toast.error('Error polling payment status:', error);
         if (error.response?.status === 403 || error.response?.status === 401) {
           clearInterval(interval);
           setCurrentStep(2);
@@ -215,14 +206,10 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
 
   const handleClose = () => {
     if (loading) return;
-    
-    // Clear polling
     if (pollingInterval) {
       clearInterval(pollingInterval);
       setPollingInterval(null);
     }
-    
-    // Reset state
     setCurrentStep(0);
     setFormData({
       amount: defaultAmount,
@@ -240,7 +227,7 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
 
   const handleTrainerSelectionComplete = () => {
     setShowTrainerSelection(false);
-    setCurrentStep(2); // Show regular success screen
+    setCurrentStep(2);
   };
 
   const handleBack = () => {

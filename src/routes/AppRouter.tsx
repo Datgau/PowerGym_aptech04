@@ -39,6 +39,7 @@ export const AppRouter = () => (
             <Route path="/data-deletion" element={<DataDeletion />} />
             <Route path="/home" element={<Home />} />
             <Route path="/service" element={<Service />} />
+            <Route path="/service/:id" element={<Service />} />
             <Route path={"/promotions"} element={<Promotions />} />
             <Route path={"/rewards"} element={<Rewards />} />
             <Route path="/stories/:storyId" element={<StoryDetailPage />} />

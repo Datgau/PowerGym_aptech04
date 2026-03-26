@@ -34,7 +34,6 @@ export interface GymServiceCreateRequest {
   images?: File[];
 }
 
-// Keep this for future use if needed
 export interface GymServiceImage {
     id: string;
     serviceId: string;
@@ -76,10 +75,6 @@ export const gymServiceApi = {
     const response = await publicClient.get<ApiResponse<GymServiceDto[]>>('/gym/services/active');
     return response.data;
   },
-
-  /**
-   * Get active gym services with pagination
-   */
   getServicesActivePaginated: async (
     page: number = 0,
     size: number = 6
@@ -103,9 +98,6 @@ export const gymServiceApi = {
     return response.data;
   },
 
-  /**
-   * Get all services (Admin) - without pagination (legacy)
-   */
   getAllServicesLegacy: async (): Promise<ApiResponse<GymServiceDto[]>> => {
     const response = await privateClient.get<ApiResponse<GymServiceDto[]>>('/gym/services');
     return response.data;
@@ -119,9 +111,6 @@ export const gymServiceApi = {
     return response.data;
   },
 
-  /**
-   * Create service (Admin)
-   */
   createService: async (data: GymServiceCreateRequest): Promise<ApiResponse<GymServiceDto>> => {
     const formData = new FormData();
     formData.append('name', data.name);
@@ -133,17 +122,14 @@ export const gymServiceApi = {
     }
     formData.append('categoryId', data.categoryId.toString());
     formData.append('price', data.price.toString());
-    
     if (data.duration) formData.append('duration', data.duration.toString());
     if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
     if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
-    
     if (data.images && data.images.length > 0) {
       data.images.forEach(image => {
         formData.append('images', image);
       });
     }
-
     const response = await privateClient.post<ApiResponse<GymServiceDto>>('/gym/services', formData);
     return response.data;
   },
@@ -189,10 +175,6 @@ export const gymServiceApi = {
     const response = await privateClient.delete<ApiResponse<void>>(`/gym/services/${id}`);
     return response.data;
   },
-
-  /**
-   * Get service registration stats
-   */
   getServiceRegistrationStats: async (id: number): Promise<ApiResponse<{
     serviceId: number;
     serviceName: string;
@@ -204,4 +186,5 @@ export const gymServiceApi = {
     const response = await publicClient.get(`/gym/services/${id}/registration-stats`);
     return response.data;
   },
+
 };

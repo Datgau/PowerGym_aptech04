@@ -12,6 +12,29 @@ export interface CreatePaymentRequest {
   itemName?: string; // Service name or Package name
 }
 
+export interface CreateBankPaymentRequest {
+  userId: number;
+  serviceId: number;
+}
+
+export interface CreateBankPaymentResponse {
+  qrUrl: string;
+  amount: number;
+  content: string;
+  expiredAt: string;
+  orderId: string;
+}
+
+export interface BankPaymentStatusResponse {
+  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  orderId: string;
+  amount: number;
+  createdAt: string;
+  expiredAt: string;
+  itemType: string;
+  itemName: string;
+}
+
 export interface MoMoPaymentResponse {
   partnerCode: string;
   requestId: string;
@@ -81,6 +104,22 @@ export const paymentService = {
    */
   createMoMoPayment: async (request: CreatePaymentRequest): Promise<ApiResponse<MoMoPaymentResponse>> => {
     const response = await privateClient.post<ApiResponse<MoMoPaymentResponse>>('/payment/momo/create', request);
+    return response.data;
+  },
+
+  /**
+   * Create Bank payment
+   */
+  createBankPayment: async (request: CreateBankPaymentRequest): Promise<ApiResponse<CreateBankPaymentResponse>> => {
+    const response = await privateClient.post<ApiResponse<CreateBankPaymentResponse>>('/bank-payments/create', request);
+    return response.data;
+  },
+
+  /**
+   * Get Bank payment status by content
+   */
+  getBankPaymentStatus: async (content: string): Promise<ApiResponse<BankPaymentStatusResponse>> => {
+    const response = await privateClient.get<ApiResponse<BankPaymentStatusResponse>>(`/bank-payments/status/${content}`);
     return response.data;
   },
 

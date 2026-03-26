@@ -23,21 +23,22 @@ import {
 } from '@mui/icons-material';
 import RichTextDisplay from '../../components/Common/RichTextDisplay';
 import TrainerSelectionModal from '../../components/Common/TrainerSelectionModal';
-import { registerService } from '../../services/serviceRegistrationService';
-import enhancedServiceRegistrationService from '../../services/enhancedServiceRegistrationService';
 import type { ServiceItem } from "../../@type/powergym.ts";
 import type { ServiceRegistrationWithTrainerSelectionResponse } from '../../services/enhancedServiceRegistrationService';
+import {toast} from "react-toastify";
+import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal';
+import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal';
+import BankPaymentModal from '../../components/Payment/BankPaymentModal';
 
 interface Props {
     open: boolean;
     service: ServiceItem;
     onClose: () => void;
-    onRegister?: (serviceId: string) => void;
 }
 
 const BRAND = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
-const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
+const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -45,6 +46,9 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [showTrainerSelection, setShowTrainerSelection] = useState(false);
     const [trainerSelectionData, setTrainerSelectionData] = useState<ServiceRegistrationWithTrainerSelectionResponse | null>(null);
+    const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false);
+    const [showMoMoPayment, setShowMoMoPayment] = useState(false);
+    const [showBankPayment, setShowBankPayment] = useState(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const images = useMemo(() =>
@@ -53,8 +57,6 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
     );
 
     const hasMultipleImages = images.length > 1;
-
-    // Auto-slide
     useEffect(() => {
         if (!hasMultipleImages || isHovered) return;
         intervalRef.current = setInterval(() => {
@@ -63,67 +65,47 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
     }, [images.length, hasMultipleImages, isHovered]);
 
-    // Reset state when modal opens/closes
     useEffect(() => {
         if (open) {
             setCurrentImageIndex(0);
             setIsRegistering(false);
             setShowTrainerSelection(false);
             setTrainerSelectionData(null);
+            setShowPaymentMethodSelection(false);
+            setShowMoMoPayment(false);
+            setShowBankPayment(false);
         }
     }, [open]);
 
     const handleServiceRegistration = async () => {
         if (!service?.id) return;
-
-        setIsRegistering(true);
-        try {
-            // Register service first
-            const registrationResponse = await registerService({
-                serviceId: parseInt(service.id),
-                notes: `Registered for ${service.name}`
-            });
-
-            if (registrationResponse.success) {
-                // Get trainer selection data
-                const trainerSelectionResponse = await enhancedServiceRegistrationService.getRegistrationForTrainerSelection(
-                    registrationResponse.data.id
-                );
-
-                if (trainerSelectionResponse.success) {
-                    setTrainerSelectionData(trainerSelectionResponse.data);
-                    
-                    // Show trainer selection modal if trainers are available
-                    if (trainerSelectionResponse.data.totalAvailableTrainers > 0) {
-                        setShowTrainerSelection(true);
-                    } else {
-                        // No trainers available, just show success
-                        alert('Đăng ký dịch vụ thành công! Hiện tại chưa có trainer phù hợp, chúng tôi sẽ liên hệ với bạn sớm.');
-                        onClose();
-                    }
-                } else {
-                    // Registration successful but couldn't get trainer data
-                    alert('Đăng ký dịch vụ thành công!');
-                    onClose();
-                }
-            }
-        } catch (error) {
-            console.error('Error registering service:', error);
-            alert('Có lỗi xảy ra khi đăng ký dịch vụ. Vui lòng thử lại.');
-        } finally {
-            setIsRegistering(false);
-        }
+        // Show payment method selection instead of direct registration
+        setShowPaymentMethodSelection(true);
     };
 
-    const handleTrainerSelected = (trainerId: number, trainerName: string) => {
+    const handleSelectMoMo = () => {
+        setShowPaymentMethodSelection(false);
+        setShowMoMoPayment(true);
+    };
+
+    const handleSelectBankTransfer = () => {
+        setShowPaymentMethodSelection(false);
+        setShowBankPayment(true);
+    };
+
+    const handlePaymentSuccess = () => {
+        toast.success('Payment successful! Service registration completed.');
+        onClose();
+    };
+
+    const handleTrainerSelected = (_trainerId: number, trainerName: string) => {
         setShowTrainerSelection(false);
-        alert(`Đã chọn trainer ${trainerName} thành công! Bạn có thể đặt lịch với trainer ngay bây giờ.`);
+        toast.success(`Trainer ${trainerName} has been selected successfully! You can now book a session.`);
         onClose();
     };
 
     const handleCloseTrainerSelection = () => {
         setShowTrainerSelection(false);
-        // Still close the main modal since service registration was successful
         onClose();
     };
 
@@ -524,6 +506,38 @@ const ServiceDetailModal = ({ open, service, onClose, onRegister }: Props) => {
                     onTrainerSelected={handleTrainerSelected}
                 />
             )}
+
+            {/* Payment Method Selection Modal */}
+            <PaymentMethodSelectionModal
+                open={showPaymentMethodSelection}
+                onClose={() => setShowPaymentMethodSelection(false)}
+                onSelectMoMo={handleSelectMoMo}
+                onSelectBankTransfer={handleSelectBankTransfer}
+                serviceName={service?.name}
+                amount={service?.price}
+            />
+
+            {/* MoMo Payment Modal */}
+            <MoMoPaymentModal
+                open={showMoMoPayment}
+                onClose={() => setShowMoMoPayment(false)}
+                onSuccess={handlePaymentSuccess}
+                defaultAmount={service?.price || 0}
+                defaultOrderInfo={service ? `PowerGym Service - ${service.name}` : ''}
+                itemType="SERVICE"
+                itemId={service?.id?.toString()}
+                itemName={service?.name}
+            />
+
+            {/* Bank Payment Modal */}
+            <BankPaymentModal
+                open={showBankPayment}
+                onClose={() => setShowBankPayment(false)}
+                onSuccess={handlePaymentSuccess}
+                serviceName={service?.name}
+                amount={service?.price}
+                serviceId={service?.id}
+            />
         </Dialog>
     );
 };

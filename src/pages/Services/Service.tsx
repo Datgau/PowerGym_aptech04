@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
 import {
     Box,
@@ -13,20 +13,27 @@ import {
     Container,
     Chip,
     Stack,
-    Divider
+    Divider,
+    Tooltip,
+    IconButton
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import StoreIcon from '@mui/icons-material/Store';
 import PaymentIcon from '@mui/icons-material/Payment';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
 import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
+import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
+import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
 import { registerService } from '../../services/serviceRegistrationService';
 import { useAuth } from "../../hooks/useAuth.ts";
 import type { MoMoPaymentResponse } from '../../services/paymentService';
 import RichTextDisplay from "../../components/Common/RichTextDisplay.tsx";
+import {useParams} from "react-router-dom";
+import {gymServiceApi} from "../../services/gymService.ts";
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -45,7 +52,10 @@ const Service: React.FC = () => {
   const [registering, setRegistering] = useState<number | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedServiceForPayment, setSelectedServiceForPayment] = useState<any>(null);
+  const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false);
+  const [showBankPayment, setShowBankPayment] = useState(false);
   const { requireAuth } = useAuth();
+  const { id } = useParams();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -76,11 +86,37 @@ const Service: React.FC = () => {
             setRegistering(null);
         }
     };
+    useEffect(() => {
+        if (!id) return;
+
+        const fetchService = async () => {
+            try {
+                const res = await gymServiceApi.getServiceById(Number(id));
+                if (res.success) {
+                    setSelectedService(res.data);
+                }
+            } catch (err) {
+                console.error("Fetch service error:", err);
+            }
+        };
+
+        fetchService();
+    }, [id]);
 
     const handlePayNow = (service: any) => {
         if (!requireAuth()) return;
         setSelectedServiceForPayment(service);
+        setShowPaymentMethodSelection(true);
+    };
+
+    const handleSelectMoMo = () => {
+        setShowPaymentMethodSelection(false);
         setPaymentModalOpen(true);
+    };
+
+    const handleSelectBankTransfer = () => {
+        setShowPaymentMethodSelection(false);
+        setShowBankPayment(true);
     };
 
     const handlePaymentSuccess = (response: MoMoPaymentResponse) => {
@@ -90,6 +126,17 @@ const Service: React.FC = () => {
             severity: 'success'
         });
         setPaymentModalOpen(false);
+        setShowBankPayment(false);
+        setSelectedServiceForPayment(null);
+    };
+
+    const handleBankPaymentSuccess = () => {
+        setSnackbar({
+            open: true,
+            message: 'Bank transfer submitted successfully! Payment will be verified within 24 hours.',
+            severity: 'success'
+        });
+        setShowBankPayment(false);
         setSelectedServiceForPayment(null);
     };
 
@@ -402,74 +449,46 @@ const Service: React.FC = () => {
                         </Stack>
 
                       {/* Buttons */}
-                      <Stack direction="column" spacing={1.5}>
-                        <Stack direction="row" spacing={1.5}>
-                          <Button
-                              fullWidth
-                              variant="outlined"
-                              onClick={() => setSelectedService(service)}
-                              sx={{
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '0.82rem',
-                                borderColor: 'rgba(0,0,0,0.18)',
-                                color: 'text.primary',
-                                '&:hover': {
-                                  borderColor: '#1366ba',
-                                  color: '#1366ba',
-                                  background: 'rgba(19,102,186,0.05)',
-                                },
-                              }}
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        {/* Eye Icon for Detail */}
+                        <Tooltip title="View Details" arrow>
+                          <IconButton
+                            onClick={() => setSelectedService(service)}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 2,
+                              color: '#02cbf8',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                borderColor: '#1366ba',
+                                color: '#1366ba',
+                                background: 'rgba(19,102,186,0.05)',
+                                transform: 'scale(1.05)',
+                              },
+                            }}
                           >
-                            Detail
-                          </Button>
-                          <Button
-                              fullWidth
-                              variant="contained"
-                              disabled={!service.isActive || registering === service.id}
-                              endIcon={registering !== service.id && <ArrowForwardIcon fontSize="small" />}
-                              onClick={() => handleRegister(service.id)}
-                              sx={{
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontWeight: 700,
-                                fontSize: '0.82rem',
-                                background: BRAND_GRADIENT,
-                                boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
-                                '&:hover': {
-                                  boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                                  background: BRAND_GRADIENT,
-                                },
-                                '&.Mui-disabled': {
-                                  background: '#ccc',
-                                  boxShadow: 'none',
-                                },
-                              }}
-                          >
-                            {registering === service.id
-                                ? <CircularProgress size={20} sx={{ color: '#fff' }} />
-                                : 'Sign up directly'}
-                          </Button>
-                        </Stack>
-                        
-                        {/* Payment Button */}
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* Register Now Button */}
                         <Button
                             fullWidth
                             variant="contained"
-                            disabled={!service.isActive}
-                            startIcon={<PaymentIcon fontSize="small" />}
-                            onClick={() => handlePayNow(service)}
+                            disabled={!service.isActive || registering === service.id}
+                            startIcon={registering !== service.id && <StoreIcon fontSize="small" />}
+                            onClick={() => handleRegister(service.id)}
                             sx={{
                               borderRadius: 2,
                               textTransform: 'none',
                               fontWeight: 700,
                               fontSize: '0.82rem',
-                              background: 'linear-gradient(135deg, #d82d8b, #a4036f)',
-                              boxShadow: '0 4px 16px rgba(216,45,139,0.3)',
+                              background: BRAND_GRADIENT,
+                              boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
                               '&:hover': {
-                                boxShadow: '0 8px 24px rgba(216,45,139,0.45)',
-                                background: 'linear-gradient(135deg, #c02a7f, #8f0362)',
+                                boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
+                                background: BRAND_GRADIENT,
                               },
                               '&.Mui-disabled': {
                                 background: '#ccc',
@@ -477,7 +496,36 @@ const Service: React.FC = () => {
                               },
                             }}
                         >
-                          Payment Method Momo
+                          {registering === service.id
+                              ? <CircularProgress size={20} sx={{ color: '#fff' }} />
+                              : 'Front desk signup'}
+                        </Button>
+
+                        {/* Register at Counter Button */}
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            disabled={!service.isActive}
+                            startIcon={<PaymentIcon fontSize="small" />}
+                            onClick={() => handlePayNow(service)}
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                background: BRAND_GRADIENT,
+                                boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
+                                '&:hover': {
+                                    boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
+                                    background: BRAND_GRADIENT,
+                                },
+                                '&.Mui-disabled': {
+                                    background: '#ccc',
+                                    boxShadow: 'none',
+                                },
+                            }}
+                        >
+                            Register Now
                         </Button>
                       </Stack>
                     </CardContent>
@@ -518,6 +566,19 @@ const Service: React.FC = () => {
             onClose={() => setSelectedService(null)}
         />
 
+        {/* Payment Method Selection Modal */}
+        <PaymentMethodSelectionModal
+            open={showPaymentMethodSelection}
+            onClose={() => {
+                setShowPaymentMethodSelection(false);
+                setSelectedServiceForPayment(null);
+            }}
+            onSelectMoMo={handleSelectMoMo}
+            onSelectBankTransfer={handleSelectBankTransfer}
+            serviceName={selectedServiceForPayment?.name}
+            amount={selectedServiceForPayment?.price}
+        />
+
         <MoMoPaymentModal
             open={paymentModalOpen}
             onClose={() => {
@@ -530,6 +591,18 @@ const Service: React.FC = () => {
             itemType="SERVICE"
             itemId={selectedServiceForPayment?.id?.toString()}
             itemName={selectedServiceForPayment?.name}
+        />
+
+        <BankPaymentModal
+            open={showBankPayment}
+            onClose={() => {
+                setShowBankPayment(false);
+                setSelectedServiceForPayment(null);
+            }}
+            onSuccess={handleBankPaymentSuccess}
+            serviceName={selectedServiceForPayment?.name}
+            amount={selectedServiceForPayment?.price}
+            serviceId={selectedServiceForPayment?.id?.toString()}
         />
 
         <Snackbar

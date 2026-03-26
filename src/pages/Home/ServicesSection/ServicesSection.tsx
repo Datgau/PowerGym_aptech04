@@ -93,10 +93,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
     const getServiceImage = (service: ServiceItem): string => {
         return service.images?.[0] || '/images/default-service.jpg';
     };
-
-    // remaining services (after first 3) used as collage source
     const remainingServices = servicesData.slice(3);
-    // if fewer than 4 remaining, fallback to all services for collage
     const collageServices = remainingServices.length > 0 ? remainingServices : servicesData;
 
     return (

@@ -30,9 +30,7 @@ export interface PackageRegistration {
 }
 
 export const MembershipService = {
-  /**
-   * Get current user's membership information
-   */
+
   getCurrentMembership: async (): Promise<ApiResponse<MembershipInfo>> => {
     const response = await privateClient.get<ApiResponse<MembershipInfo>>('/membership/current');
     return response.data;

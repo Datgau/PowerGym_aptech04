@@ -17,18 +17,19 @@ import {
   Chip,
   Stack
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility, FitnessCenter } from '@mui/icons-material';
+import { Add, Edit, Visibility, FitnessCenter } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { 
   getAllTrainers, 
-  deactivateTrainer,
   type TrainerResponse 
 } from '../../../../services/trainerService';
+import { toggleUserStatus } from '../../../../services/adminService';
 import CreateTrainerModal from './CreateTrainerModal';
 import TrainerDetailModal from './TrainerDetailModal';
-import DeleteConfirmModal from '../DeleteConfirmModal';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import StatusFilterToggle from '../../../../components/Common/StatusFilterToggle.tsx';
+import LockButton from '../../../../components/Common/LockButton.tsx';
 const PageWrapper = styled(Box)({
   minHeight: '100%',
   background: '#f8faff',
@@ -100,8 +101,8 @@ const TrainersGrid: React.FC = () => {
   const [error, setError] = useState('');
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openDetailModal, setOpenDetailModal] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState<TrainerResponse | null>(null);
+  const [statusFilter, setStatusFilter] = useState<boolean | null>(null); // null = all, true = active, false = inactive
 
   const {
     paginationState,
@@ -112,7 +113,7 @@ const TrainersGrid: React.FC = () => {
 
   useEffect(() => {
     loadTrainers(paginationState.page, paginationState.rowsPerPage);
-  }, [paginationState.page, paginationState.rowsPerPage]);
+  }, [paginationState.page, paginationState.rowsPerPage, statusFilter]);
 
   const loadTrainers = async (page: number = 0, size: number = 10) => {
     try {
@@ -121,7 +122,16 @@ const TrainersGrid: React.FC = () => {
       
       if (response.success) {
         const pageData = response.data;
-        setTrainers(pageData.content);
+        let filteredContent = pageData.content;
+        
+        // Apply status filter on frontend
+        if (statusFilter !== null) {
+          filteredContent = pageData.content.filter(trainer => 
+            statusFilter ? trainer.isActive : !trainer.isActive
+          );
+        }
+        
+        setTrainers(filteredContent);
         setPaginationData(pageData.totalPages, pageData.totalElements);
       } else {
         setError(response.message);
@@ -142,24 +152,27 @@ const TrainersGrid: React.FC = () => {
     setOpenDetailModal(true);
   };
 
-  const handleOpenDelete = (trainer: TrainerResponse) => {
-    setSelectedTrainer(trainer);
-    setOpenDelete(true);
-  };
-
   const handleCreateSuccess = () => {
-    setOpenCreateModal(false); // Close modal first
-    loadTrainers(paginationState.page, paginationState.rowsPerPage); // Then reload data
+    setOpenCreateModal(false);
+    loadTrainers(paginationState.page, paginationState.rowsPerPage);
   };
 
-  const handleDelete = async () => {
-    if (selectedTrainer) {
-      try {
-        await deactivateTrainer(selectedTrainer.id);
-        await loadTrainers(paginationState.page, paginationState.rowsPerPage);
-      } catch (err: any) {
-        setError(err.message || 'Không thể xóa trainer');
+  const handleToggleStatus = async (trainerId: number) => {
+    try {
+      const response = await toggleUserStatus(trainerId);
+      if (response.success) {
+        setTrainers(prev =>
+          prev.map(trainer =>
+            trainer.id === trainerId
+              ? { ...trainer, isActive: !trainer.isActive }
+              : trainer
+          )
+        );
+      } else {
+        setError(response.message || 'Failed to toggle trainer status');
       }
+    } catch (error: any) {
+      setError(error.message || 'Failed to toggle trainer status');
     }
   };
 
@@ -192,7 +205,7 @@ const TrainersGrid: React.FC = () => {
           </Box>
         </HeaderLeft>
         <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleOpenCreate}>
-          Tạo Trainer Mới
+          Add Trainer
         </AddButton>
       </HeaderSection>
 
@@ -203,6 +216,14 @@ const TrainersGrid: React.FC = () => {
       )}
 
       <ContentSection>
+        {/* ── Status Filter ── */}
+        <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center">
+          <StatusFilterToggle
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+        </Box>
+
         <TableContainer component={Paper} sx={{ 
           overflowX: 'auto',
           borderRadius: 3,
@@ -309,17 +330,13 @@ const TrainersGrid: React.FC = () => {
                       >
                         <Edit fontSize="small" />
                       </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDelete(trainer)}
-                        title="Xóa"
-                        sx={{
-                          color: '#ef4444',
-                          '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)' }
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                      <LockButton
+                        isLocked={!trainer.isActive}
+                        onToggle={() => handleToggleStatus(trainer.id)}
+                        size="small"
+                        lockedTooltip="Activate trainer"
+                        unlockedTooltip="Deactivate trainer"
+                      />
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -351,7 +368,7 @@ const TrainersGrid: React.FC = () => {
               Create your first trainer to get started
             </Typography>
             <AddButton variant="contained" startIcon={<Add />} onClick={handleOpenCreate}>
-              Tạo Trainer Mới
+              Add Trainer
             </AddButton>
           </Box>
         )}
@@ -367,14 +384,6 @@ const TrainersGrid: React.FC = () => {
         open={openDetailModal}
         onClose={() => setOpenDetailModal(false)}
         trainerId={selectedTrainer?.id || null}
-      />
-
-      <DeleteConfirmModal
-        open={openDelete}
-        onClose={() => setOpenDelete(false)}
-        onConfirm={handleDelete}
-        title="Delete Trainer"
-        message={`Are you sure you want to delete trainer "${selectedTrainer?.fullName}"?`}
       />
     </PageWrapper>
   );

@@ -204,8 +204,12 @@ export const getUserServiceRegistrations = async (userId: number): Promise<ApiRe
   return response.data;
 };
 
-// Get trainer specialties (for trainer users)
 export const getTrainerSpecialties = async (userId: number): Promise<ApiResponse<TrainerSpecialty[]>> => {
   const response = await privateClient.get(`/admin/user/${userId}/trainer-specialties`);
+  return response.data;
+};
+
+export const toggleUserStatus = async (userId: number): Promise<ApiResponse<UserResponse>> => {
+  const response = await privateClient.put(`/admin/user/${userId}/toggle-status`);
   return response.data;
 };

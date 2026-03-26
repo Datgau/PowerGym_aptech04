@@ -10,6 +10,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { Warning } from '@mui/icons-material';
+import {toast} from "react-toastify";
 
 interface DeleteConfirmModalProps {
   open: boolean;
@@ -56,7 +57,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       
       <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
         <Button onClick={onClose} disabled={loading}>
-          Cancle
+          Cancel
         </Button>
         <Button 
           onClick={handleConfirm}
@@ -65,7 +66,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           disabled={loading}
           sx={{ minWidth: 100 }}
         >
-          {loading ? <CircularProgress size={24} /> : 'Delete'}
+          {loading ? <CircularProgress size={24} /> : 'Confirm'}
         </Button>
       </DialogActions>
     </Dialog>

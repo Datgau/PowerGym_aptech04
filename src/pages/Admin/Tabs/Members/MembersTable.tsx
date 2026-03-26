@@ -19,20 +19,18 @@ import {
   ToggleButton,
   Stack,
   TextField,
-  InputAdornment
+  InputAdornment, Tooltip
 } from '@mui/material';
-import { Add, Edit, Delete, People, Visibility, Search, Clear } from '@mui/icons-material';
+import { Add, Edit, Visibility, Search, Clear, People } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { getAllUsers, getUsersByRole, getUserCounts, searchUsers, createUser, updateUser, deleteUser, getAllRolesLegacy, type UserResponse, type Role } from '../../../../services/adminService.ts';
+import { getAllUsers, getUsersByRole, getUserCounts, searchUsers, createUser, updateUser, getAllRolesLegacy, toggleUserStatus, type UserResponse, type Role } from '../../../../services/adminService.ts';
 import UserFormModal from './UserFormModal.tsx';
-import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
+import StatusFilterToggle from '../../../../components/Common/StatusFilterToggle.tsx';
+import LockButton from '../../../../components/Common/LockButton.tsx';
 
-/* ─── Styled Components ─────────────────────────────────── */
-
-// Memoized Search Input Component để tránh re-render
 const SearchInput = memo(({ 
   searchTerm, 
   onSearchChange, 
@@ -160,11 +158,11 @@ const MembersTable: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openForm, setOpenForm] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<boolean | null>(null); // null = all, true = active, false = inactive
   const [userCounts, setUserCounts] = useState<{
     USER: number;
     STAFF: number;
@@ -189,7 +187,7 @@ const MembersTable: React.FC = () => {
       loadUserCounts();
       loadData(paginationState.page, paginationState.rowsPerPage);
     }
-  }, [paginationState.page, paginationState.rowsPerPage, roleFilter, isSearching]);
+  }, [paginationState.page, paginationState.rowsPerPage, roleFilter, statusFilter, isSearching]);
 
   // Handle search with useDeferredValue - optimized to prevent focus loss
   useEffect(() => {
@@ -252,7 +250,6 @@ const MembersTable: React.FC = () => {
     }
   }, [deferredSearch]);
 
-  // Handle pagination changes during search - separate effect
   useEffect(() => {
     if (isSearching && deferredSearch.length >= 2 && paginationState.page > 0) {
       const performPaginatedSearch = async () => {
@@ -292,7 +289,6 @@ const MembersTable: React.FC = () => {
   }, []);
 
   const loadData = useCallback(async (page: number = 0, size: number = 10) => {
-    // Chỉ load data khi không search
     if (isSearching) {
       return;
     }
@@ -309,7 +305,16 @@ const MembersTable: React.FC = () => {
 
       if (usersRes.success && rolesRes.success) {
         const pageData = usersRes.data;
-        setMembers(pageData.content);
+        let filteredContent = pageData.content;
+        
+        // Apply status filter on frontend
+        if (statusFilter !== null) {
+          filteredContent = pageData.content.filter(user => 
+            statusFilter ? (user.isActive !== false) : (user.isActive === false)
+          );
+        }
+        
+        setMembers(filteredContent);
         setRoles(rolesRes.data);
         setPaginationData(pageData.totalPages, pageData.totalElements);
       }
@@ -322,14 +327,13 @@ const MembersTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, isSearching, setPaginationData]);
+  }, [roleFilter, statusFilter, isSearching, setPaginationData]);
 
   const handleClearSearch = useCallback(() => {
     setSearchTerm('');
     setIsSearching(false);
   }, []);
-
-  // Memoize search change handler
+  
   const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
   }, []);
@@ -346,15 +350,31 @@ const MembersTable: React.FC = () => {
     setOpenForm(true);
   }, []);
 
-  const handleOpenDelete = useCallback((user: UserResponse) => {
-    setSelectedUser(user);
-    setOpenDelete(true);
-  }, []);
-
   const handleOpenDetail = useCallback((user: UserResponse) => {
     setSelectedUser(user);
     setOpenDetail(true);
   }, []);
+
+  const handleToggleStatus = useCallback(async (userId: number) => {
+    try {
+      const response = await toggleUserStatus(userId);
+      if (response.success) {
+        setMembers(prev =>
+            prev.map(user =>
+                user.id === userId
+                    ? { ...user, isActive: !user.isActive }
+                    : user
+            )
+        );
+        loadUserCounts();
+
+      } else {
+        setError(response.message || 'Failed to toggle user status');
+      }
+    } catch (err: unknown) {
+      setError('Failed to toggle user status');
+    }
+  }, [loadUserCounts]);
 
   const handleSubmit = useCallback(async (data: any) => {
     try {
@@ -369,40 +389,27 @@ const MembersTable: React.FC = () => {
           throw new Error(response.message);
         }
       }
-      
-      // Close modal and reload data
       setOpenForm(false);
-      await loadUserCounts(); // Reload counts
+      await loadUserCounts();
       await loadData(paginationState.page, paginationState.rowsPerPage);
       
     } catch (error: any) {
-      // Re-throw error so UserFormModal can handle it
       throw error;
     }
   }, [formMode, selectedUser, loadUserCounts, loadData, paginationState.page, paginationState.rowsPerPage]);
 
-  const handleDelete = useCallback(async () => {
-    if (selectedUser) {
-      await deleteUser(selectedUser.id);
-      await loadUserCounts(); // Reload counts
-      await loadData(paginationState.page, paginationState.rowsPerPage);
-    }
-  }, [selectedUser, loadUserCounts, loadData, paginationState.page, paginationState.rowsPerPage]);
 
   const handleFilterChange = useCallback((_event: React.MouseEvent<HTMLElement>, newFilter: string | null) => {
     if (newFilter !== null) {
       setRoleFilter(newFilter);
       handleChangePage(null, 0);
-      // Reset search state khi thay đổi filter
       if (isSearching) {
-        // Sẽ được handle bởi useEffect khi deferredSearch thay đổi
         setIsSearching(false);
         setTimeout(() => setIsSearching(true), 50);
       }
     }
   }, [handleChangePage, isSearching]);
-
-  // Không cần filteredMembers nữa vì backend đã filter
+  
   const filteredMembers = members;
 
   if (loading) {
@@ -455,14 +462,13 @@ const MembersTable: React.FC = () => {
         </Box>
 
         {/* ── Filter Bar ── */}
-        <Box mb={3}>
+        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
           <ToggleButtonGroup
             value={roleFilter}
             exclusive
             onChange={handleFilterChange}
             size="small"
             sx={{
-
               '& .MuiToggleButton-root': {
                 borderRadius: '8px',
                 border: '1px solid #e2e8f0',
@@ -492,6 +498,12 @@ const MembersTable: React.FC = () => {
               Staff ({userCounts.STAFF})
             </ToggleButton>
           </ToggleButtonGroup>
+
+          {/* Status Filter Toggle */}
+          <StatusFilterToggle
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
         </Box>
         
         <TableContainer component={Paper} sx={{ 
@@ -548,37 +560,44 @@ const MembersTable: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Box display="flex" gap={0.5}>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDetail(member)}
-                        title="View Details"
-                        sx={{
-                          color: '#0066ff',
-                          '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
-                        }}
-                      >
-                        <Visibility fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenEdit(member)}
-                        sx={{
-                          color: '#0066ff',
-                          '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
-                        }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDelete(member)}
-                        sx={{
-                          color: '#ef4444',
-                          '&:hover': { backgroundColor: 'rgba(239,68,68,0.1)' }
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+
+                      {/* View */}
+                      <Tooltip title="View Details">
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenDetail(member)}
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {/* Edit */}
+                      <Tooltip title="Edit Member">
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenEdit(member)}
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {/* Lock */}
+                      <LockButton
+                          isLocked={member.isActive === false}
+                          onToggle={() => handleToggleStatus(member.id)}
+                          size="small"
+                          lockedTooltip="Activate member"
+                          unlockedTooltip="Deactivate member"
+                      />
+
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -651,13 +670,6 @@ const MembersTable: React.FC = () => {
         userId={selectedUser?.id || null}
       />
 
-      <DeleteConfirmModal
-        open={openDelete}
-        onClose={() => setOpenDelete(false)}
-        onConfirm={handleDelete}
-        title="Delete Member"
-        message={`Are you sure you want to delete member "${selectedUser?.fullName}"?`}
-      />
     </PageWrapper>
   );
 };

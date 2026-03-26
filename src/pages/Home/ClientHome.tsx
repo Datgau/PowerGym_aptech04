@@ -10,7 +10,7 @@ import ServicesSection from "./ServicesSection/ServicesSection.tsx";
 import StoriesSection from "./StoriesSection/StoriesSection.tsx";
 import {useGymServices} from "../../hooks/useGymServices.ts";
 import {useGymStory} from "../../hooks/useGymStory.ts";
-import BMISection from "../BMISection/BMISection.tsx";
+import BMISection from "./BMISection/BMISection.tsx";
 import HeroBanner from "./HeroBanner/HeroBanner.tsx";
 import {MembershipPackagesSection} from "../../components/PowerGym";
 // Import test for debugging
@@ -54,17 +54,32 @@ const ClientHome: React.FC = () => {
 
 
   // Use real membership data if available, otherwise use mock data
-  const availablePackages = packages.length > 0 ? packages.map(pkg => ({
-    id: pkg.packageId, // Use packageId as string ID for compatibility
-    name: pkg.name,
-    duration: `${pkg.duration} days`,
-    price: `${pkg.price.toLocaleString('vi-VN')}đ`,
-    originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
-    features: pkg.features,
-    isPopular: pkg.isPopular,
-    color: pkg.color || (pkg.isPopular ? '#FF4444' : '#155e9a'),
-    description: pkg.description
-  })) : membershipPackagesData;
+  const availablePackages = packages.length > 0 ? (() => {
+    // Filter and sort packages to show only 6 newest elements (3 popular + 3 normal)
+    const popular = packages
+      .filter(pkg => pkg.isPopular)
+      .sort((a, b) => new Date(b.createDate).getTime() - new Date(a.createDate).getTime())
+      .slice(0, 3);
+    
+    const normal = packages
+      .filter(pkg => !pkg.isPopular)
+      .sort((a, b) => new Date(b.createDate).getTime() - new Date(a.createDate).getTime())
+      .slice(0, 3);
+    
+    const finalPackages = [...popular, ...normal];
+    
+    return finalPackages.map(pkg => ({
+      id: pkg.packageId, // Use packageId as string ID for compatibility
+      name: pkg.name,
+      duration: `${pkg.duration} days`,
+      price: `${pkg.price.toLocaleString('vi-VN')}đ`,
+      originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
+      features: pkg.features,
+      isPopular: pkg.isPopular,
+      color: pkg.color || (pkg.isPopular ? '#FF4444' : '#155e9a'),
+      description: pkg.description
+    }));
+  })() : membershipPackagesData;
 
   return (
     <div >
