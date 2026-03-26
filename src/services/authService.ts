@@ -51,6 +51,14 @@ export interface VerifyOtpRequest {
   otp: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
 export interface ResendOtpRequest {
   email: string;
 }
@@ -88,6 +96,20 @@ export const AuthService = {
     const response = await publicClient.post<ApiResponse<any>>(
         "/auth/resend-otp", 
         data
+    );
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await publicClient.post<ApiResponse<string>>(
+        `/auth/forgot-password?email=${encodeURIComponent(email)}`
+    );
+    return response.data;
+  },
+
+  resetPassword: async (data: ResetPasswordRequest) => {
+    const response = await publicClient.post<ApiResponse<string>>(
+        `/auth/reset-password?token=${encodeURIComponent(data.token)}&newPassword=${encodeURIComponent(data.newPassword)}`
     );
     return response.data;
   },

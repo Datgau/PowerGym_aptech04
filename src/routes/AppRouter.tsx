@@ -26,6 +26,8 @@ import Rewards from "../pages/Rewards/Rewards.tsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.tsx";
 import Promotions from "../pages/Promotions/Promotions.tsx";
 import PaymentResult from "../pages/Payment/PaymentResult.tsx";
+import ForgotPassword from "../components/Auth/ForgotPassword.tsx";
+import ResetPassword from "../components/Auth/ResetPassword.tsx";
 
 export const AppRouter = () => (
     <>
@@ -34,6 +36,9 @@ export const AppRouter = () => (
             <Route path="/" element={<AuthRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword/>}/>
+            <Route path="/reset-password" element={<ResetPassword/>}/>
+
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/data-deletion" element={<DataDeletion />} />

@@ -135,7 +135,7 @@ const LoginForm = ({ onSubmit, submitting }: LoginFormProps) => {
                     />
                     Remember me
                 </label>
-                <a className={styles.link} href="#">
+                <a className={styles.link} href="/forgot-password">
                     Forgot password?
                 </a>
             </div>

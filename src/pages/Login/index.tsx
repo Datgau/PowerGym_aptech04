@@ -6,14 +6,14 @@ import { AuthService } from "../../services/authService";
 import type { AuthUser } from "../../@type/login";
 
 import styles from "../../styles/Auth/Login.module.css";
-import AuthPanel from "../../components/Auth/AuthPanel";
+import AuthLayout from "../../components/Auth/AuthLayout";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth.ts";
 import { useFacebookAuth } from "../../hooks/useFacebookAuth.ts";
 import LoginForm from "../../components/Auth/LoginForm";
 import SocialLogin from "../../components/Auth/SocialLogin";
-import AuthTabs from "../../components/Auth/AuthTabs";
 import {getApiErrorMessage} from "../../until/errorHandler.ts";
 import {useAuth} from "../../hooks/useAuth.ts";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -92,50 +92,43 @@ const Login = () => {
   };
 
   return (
-      <main className={styles.authPage}>
-        <AuthPanel />
+    <AuthLayout
+      activeTab="login"
+      title="Welcome Back"
+      subtitle="Continue chatting with your favorite community."
+    >
+      <LoginForm onSubmit={handleFormSubmit} submitting={submitting} />
 
-        <section className={`${styles.authPanel} ${styles.authPanelCard}`}>
-          <AuthTabs activeTab="login" />
+      <SocialLogin
+        onGoogleLogin={handleGoogleLoginClick}
+        onFacebookLogin={handleFacebookLogin}
+      />
 
-          <div>
-            <h2 className={styles.authCardTitle}>Welcome Back</h2>
-            <p className={styles.authCardSubtitle}>
-              Continue chatting with your favorite community.
-            </p>
-          </div>
+      <p className={styles.authFooter}>
+        Don't have an account?{" "}
+        <Link className={styles.link} to="/register">
+          Create now - it's free!
+        </Link>
+      </p>
 
-          <LoginForm onSubmit={handleFormSubmit} submitting={submitting} />
-
-          <SocialLogin
-              onGoogleLogin={handleGoogleLoginClick}
-              onFacebookLogin={handleFacebookLogin}
-          />
-
-          <Snackbar
-              open={feedback !== null}
-              autoHideDuration={6000}
-              onClose={() => setFeedback(null)}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          >
-            <Alert
-                onClose={() => setFeedback(null)}
-                severity={feedback?.type || "info"}
-                variant="filled"
-                sx={{ width: "100%" }}
-            >
-              {feedback?.message}
-            </Alert>
-          </Snackbar>
-          <p className={styles.authFooter}>
-            Don't have an account?{" "}
-            <Link className={styles.link} to="/register">
-              Create now - it's free!
-            </Link>
-          </p>
-        </section>
-      </main>
+      <Snackbar
+        open={feedback !== null}
+        autoHideDuration={6000}
+        onClose={() => setFeedback(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setFeedback(null)}
+          severity={feedback?.type || "info"}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {feedback?.message}
+        </Alert>
+      </Snackbar>
+    </AuthLayout>
   );
 };
+
 
 export default Login;

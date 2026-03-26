@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import styles from "../../styles/Auth/Login.module.css";
 import { AuthService } from "../../services/authService";
-import AuthPanel from "../../components/Auth/AuthPanel";
-import AuthTabs from "../../components/Auth/AuthTabs";
+import AuthLayout from "../../components/Auth/AuthLayout";
 import RegisterForm from "../../components/Auth/RegisterForm";
 import OTPVerification from "../../components/Auth/OTPVerification";
 import SocialLogin from "../../components/Auth/SocialLogin";
+
 import { useGoogleAuth } from "../../hooks/useGoogleAuth.ts";
 import { useFacebookAuth } from "../../hooks/useFacebookAuth.ts";
 import {getApiErrorMessage} from "../../until/errorHandler.ts";
@@ -106,61 +106,53 @@ const Register = () => {
   };
 
   return (
-    <main className={styles.authPage}>
-      <AuthPanel />
+    <AuthLayout
+      activeTab="register"
+      title={!showOTP ? "Create New Account" : undefined}
+      subtitle={!showOTP ? "Join the PowerGym community today" : undefined}
+    >
+      {!showOTP ? (
+        <>
+          <RegisterForm onSubmit={handleRegisterSubmit} submitting={submitting} />
 
-      <section className={`${styles.authPanel} ${styles.authPanelCard}`}>
-        <AuthTabs activeTab="register" />
-
-        {!showOTP ? (
-          <>
-            <div>
-              <h2 className={styles.authCardTitle}>Create New Account</h2>
-              <p className={styles.authCardSubtitle}>
-                Join the PowerGym community today
-              </p>
-            </div>
-
-            <RegisterForm onSubmit={handleRegisterSubmit} submitting={submitting} />
-
-            <SocialLogin
-              onGoogleLogin={handleGoogleLoginClick}
-              onFacebookLogin={handleFacebookLogin}
-            />
-
-            <p className={styles.authFooter}>
-              Already have an account?{" "}
-              <Link className={styles.link} to="/login">
-                Login now
-              </Link>
-            </p>
-          </>
-        ) : (
-          <OTPVerification
-            email={registeredEmail}
-            onSubmit={handleOTPSubmit}
-            submitting={submitting}
+          <SocialLogin
+            onGoogleLogin={handleGoogleLoginClick}
+            onFacebookLogin={handleFacebookLogin}
           />
-        )}
 
-        <Snackbar
-          open={feedback !== null}
-          autoHideDuration={6000}
+          <p className={styles.authFooter}>
+            Already have an account?{" "}
+            <Link className={styles.link} to="/login">
+              Login now
+            </Link>
+          </p>
+        </>
+      ) : (
+        <OTPVerification
+          email={registeredEmail}
+          onSubmit={handleOTPSubmit}
+          submitting={submitting}
+        />
+      )}
+
+      <Snackbar
+        open={feedback !== null}
+        autoHideDuration={6000}
+        onClose={() => setFeedback(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
           onClose={() => setFeedback(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          severity={feedback?.type || "info"}
+          variant="filled"
+          sx={{ width: "100%" }}
         >
-          <Alert
-            onClose={() => setFeedback(null)}
-            severity={feedback?.type || "info"}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {feedback?.message}
-          </Alert>
-        </Snackbar>
-      </section>
-    </main>
+          {feedback?.message}
+        </Alert>
+      </Snackbar>
+    </AuthLayout>
   );
 };
+
 
 export default Register;
