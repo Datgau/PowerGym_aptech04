@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
-import styles from "../../styles/Auth/ForgotPassword.module.css";
 import AuthLayout from "./AuthLayout";
+import styles from "../../styles/Auth/Forgotpassword.module.css"
 import { AuthService } from "../../services/authService";
 import { getApiErrorMessage } from "../../until/errorHandler";
 
