@@ -2,7 +2,7 @@ import { useState, type FormEvent, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Snackbar, Alert, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import styles from "../../styles/Auth/ResetPassword.module.css";
+import styles from "../../styles/Auth/Resetpassword.module.css";
 import AuthLayout from "./AuthLayout";
 import { AuthService } from "../../services/authService";
 import { getApiErrorMessage } from "../../until/errorHandler";
