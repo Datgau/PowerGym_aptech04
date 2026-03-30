@@ -106,6 +106,6 @@ export const DEFAULT_COLORS = [
 ];
 
 export const DEFAULT_ICONS = [
-  'P', 'B', 'S', 'Y', 'C',
-  'M', 'G', '', 'directions_run', 'sports_kabaddi'
+  'P', 'B', 'F', 'Y', 'C',
+  'M', 'G', 'S', 'K', 'D'
 ];
