@@ -32,7 +32,7 @@ import {
   SESSION_TYPES
 } from '../../../services/trainerBookingService';
 import { useAuth } from '../../../hooks/useAuth';
-import { message } from '../../../utils/message';
+import { message } from '../../../until/message.ts';
 
 interface BookTrainerModalProps {
   open: boolean;

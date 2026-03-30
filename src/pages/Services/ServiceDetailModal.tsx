@@ -25,10 +25,13 @@ import RichTextDisplay from '../../components/Common/RichTextDisplay';
 import TrainerSelectionModal from '../../components/Common/TrainerSelectionModal';
 import type { ServiceItem } from "../../@type/powergym.ts";
 import type { ServiceRegistrationWithTrainerSelectionResponse } from '../../services/enhancedServiceRegistrationService';
-import {toast} from "react-toastify";
+import { loadAuthSession } from '../../services/authStorage';
+import { toast } from "react-toastify";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal';
 import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal';
+import TrainerBookingSetupModalVersion from '../../components/Booking/TrainerBookingSetupModal.tsx';
+import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFlow';
 
 interface Props {
     open: boolean;
@@ -43,13 +46,28 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
-    const [isRegistering, setIsRegistering] = useState(false);
     const [showTrainerSelection, setShowTrainerSelection] = useState(false);
     const [trainerSelectionData, setTrainerSelectionData] = useState<ServiceRegistrationWithTrainerSelectionResponse | null>(null);
-    const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false);
-    const [showMoMoPayment, setShowMoMoPayment] = useState(false);
-    const [showBankPayment, setShowBankPayment] = useState(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const {
+        isRegistering,
+        showBookingSetup,
+        pendingBookingData,
+        showPaymentMethodSelection,
+        showMoMoPayment,
+        showBankPayment,
+        handleRegisterNow,
+        handleBookingSetupComplete,
+        handleSelectMoMo,
+        handleSelectBankTransfer,
+        handlePaymentSuccess,
+        reset,
+        setShowBookingSetup,
+        setShowPaymentMethodSelection,
+        setShowMoMoPayment,
+        setShowBankPayment,
+    } = useServiceRegistrationFlow(service?.id);
 
     const images = useMemo(() =>
             service?.images?.length ? service.images : ['/images/default-service.jpg'],
@@ -68,39 +86,15 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     useEffect(() => {
         if (open) {
             setCurrentImageIndex(0);
-            setIsRegistering(false);
             setShowTrainerSelection(false);
             setTrainerSelectionData(null);
-            setShowPaymentMethodSelection(false);
-            setShowMoMoPayment(false);
-            setShowBankPayment(false);
+            reset();
         }
     }, [open]);
 
-    const handleServiceRegistration = async () => {
-        if (!service?.id) return;
-        // Show payment method selection instead of direct registration
-        setShowPaymentMethodSelection(true);
-    };
-
-    const handleSelectMoMo = () => {
-        setShowPaymentMethodSelection(false);
-        setShowMoMoPayment(true);
-    };
-
-    const handleSelectBankTransfer = () => {
-        setShowPaymentMethodSelection(false);
-        setShowBankPayment(true);
-    };
-
-    const handlePaymentSuccess = () => {
-        toast.success('Payment successful! Service registration completed.');
-        onClose();
-    };
-
     const handleTrainerSelected = (_trainerId: number, trainerName: string) => {
         setShowTrainerSelection(false);
-        toast.success(`Trainer ${trainerName} has been selected successfully! You can now book a session.`);
+        toast.success(`Trainer ${trainerName} has been selected successfully!`);
         onClose();
     };
 
@@ -446,7 +440,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                             fullWidth
                             variant="contained"
                             disabled={!service.isActive || (service.registrationCount || 0) >= (service.maxParticipants || 0) || isRegistering}
-                            onClick={handleServiceRegistration}
+                            onClick={handleRegisterNow}
                             sx={{
                                 py: 1.5,
                                 borderRadius: '12px',
@@ -464,12 +458,12 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                                 '&.Mui-disabled': { background: '#ccc', boxShadow: 'none' },
                             }}
                         >
-                            {isRegistering 
+                            {isRegistering
                                 ? 'Đang đăng ký...'
-                                : !service.isActive 
-                                    ? 'Unavailable' 
-                                    : (service.registrationCount || 0) >= (service.maxParticipants || 0) 
-                                        ? 'Fully Booked' 
+                                : !service.isActive
+                                    ? 'Unavailable'
+                                    : (service.registrationCount || 0) >= (service.maxParticipants || 0)
+                                        ? 'Fully Booked'
                                         : 'Register Now'}
                         </Button>
                         <Button
@@ -497,13 +491,24 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 </Box>
             </DialogContent>
 
-            {/* Trainer Selection Modal */}
+            {/* Trainer Selection Modal (legacy) */}
             {showTrainerSelection && trainerSelectionData && (
                 <TrainerSelectionModal
                     isOpen={showTrainerSelection}
                     onClose={handleCloseTrainerSelection}
                     registrationData={trainerSelectionData}
                     onTrainerSelected={handleTrainerSelected}
+                />
+            )}
+
+            {/* NEW: Trainer Booking Setup Modal */}
+            {showBookingSetup && (
+                <TrainerBookingSetupModalVersion
+                    open={showBookingSetup}
+                    service={service}
+                    userId={loadAuthSession()?.user?.id ?? 0}
+                    onClose={() => setShowBookingSetup(false)}
+                    onReadyToPay={handleBookingSetupComplete}
                 />
             )}
 
@@ -521,7 +526,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
             <MoMoPaymentModal
                 open={showMoMoPayment}
                 onClose={() => setShowMoMoPayment(false)}
-                onSuccess={handlePaymentSuccess}
+                onSuccess={() => handlePaymentSuccess(onClose)}
                 defaultAmount={service?.price || 0}
                 defaultOrderInfo={service ? `PowerGym Service - ${service.name}` : ''}
                 itemType="SERVICE"
@@ -533,7 +538,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
             <BankPaymentModal
                 open={showBankPayment}
                 onClose={() => setShowBankPayment(false)}
-                onSuccess={handlePaymentSuccess}
+                onSuccess={() => handlePaymentSuccess(onClose)}
                 serviceName={service?.name}
                 amount={service?.price}
                 serviceId={service?.id}

@@ -16,7 +16,7 @@ import { Email } from '@mui/icons-material';
 import type {Role, UserRequest, UserResponse} from '../../../../services/adminService.ts';
 import { checkEmailExists } from '../../../../services/adminService.ts';
 import type {ApiResponse} from "../../../../@type/apiResponse.ts";
-import { message } from '../../../../utils/message.ts';
+import { message } from '../../../../until/message.ts';
 
 // Custom Date of Birth Icon Component
 const DateOfBirthIcon = () => (

@@ -34,6 +34,7 @@ export interface TrainerBookingInfo {
   clientPhone?: string;
   serviceName: string;
   serviceCategory: string;
+  bookingDate: string;
   startTime: string;
   endTime: string;
   status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
@@ -42,6 +43,7 @@ export interface TrainerBookingInfo {
   sessionNumber?: number;
   createdAt: string;
   confirmedAt?: string;
+  paymentStatus?: 'PAID' | 'UNPAID' | 'PENDING' | 'REFUNDED';
 }
 
 export interface TimeSlot {

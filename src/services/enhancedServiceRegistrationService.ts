@@ -12,11 +12,14 @@ export interface ServiceRegistrationWithTrainerRequest {
 }
 
 export interface TrainerAvailabilityDTO {
-  trainerId: number;
-  trainerName: string;
-  trainerEmail: string;
-  trainerPhone?: string;
-  trainerAvatar?: string;
+  trainer: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+    avatar?: string;
+    bio?: string;
+  };
   specialties: Array<{
     id: number;
     specialty: {
@@ -27,14 +30,11 @@ export interface TrainerAvailabilityDTO {
     experienceYears?: number;
     level?: string;
   }>;
-  totalExperienceYears?: number;
-  rating: number;
-  totalRatings: number;
-  isAvailable: boolean;
-  nextAvailableSlot?: string;
-  workloadLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'OVERLOADED';
+  totalExperience?: number;
+  averageRating?: number;
   completedSessions: number;
-  averageSessionRating: number;
+  isAvailable: boolean;
+  unavailabilityReason?: string;
 }
 
 export interface ServiceRegistrationWithTrainerResponse {
@@ -99,9 +99,6 @@ export interface ServiceRegistrationWithTrainerSelectionResponse {
 }
 
 export const enhancedServiceRegistrationService = {
-  /**
-   * Register service with trainer selection
-   */
   registerServiceWithTrainer: async (
     data: ServiceRegistrationWithTrainerRequest
   ): Promise<ApiResponse<ServiceRegistrationWithTrainerResponse>> => {
@@ -238,6 +235,14 @@ export const enhancedServiceRegistrationService = {
     );
     
     return { registration, trainerSelection };
+  },
+
+  /**
+   * Debug endpoint to check trainers and specialties
+   */
+  debugTrainersSpecialties: async (): Promise<ApiResponse<any>> => {
+    const response = await privateClient.get('/service-registrations/debug/trainers-specialties');
+    return response.data;
   }
 };
 

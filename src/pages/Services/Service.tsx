@@ -20,7 +20,7 @@ import {
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StoreIcon from '@mui/icons-material/Store';
-import PaymentIcon from '@mui/icons-material/Payment';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
@@ -28,12 +28,16 @@ import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
-import { registerService } from '../../services/serviceRegistrationService';
 import { useAuth } from "../../hooks/useAuth.ts";
-import type { MoMoPaymentResponse } from '../../services/paymentService';
 import RichTextDisplay from "../../components/Common/RichTextDisplay.tsx";
 import {useParams} from "react-router-dom";
 import {gymServiceApi} from "../../services/gymService.ts";
+import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFlow';
+import TrainerBookingSetupModal from '../../components/Booking/TrainerBookingSetupModal.tsx';
+import { loadAuthSession } from '../../services/authStorage';
+import { registerService } from '../../services/serviceRegistrationService';
+import { createBooking, type NewCreateBookingRequest } from '../../services/newBookingService';
+import type { BookingSetupData } from '../../hooks/useServiceRegistrationFlow';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -49,11 +53,11 @@ const Service: React.FC = () => {
     handleChangeRowsPerPage
   } = useGymServicesPaginated(6);
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [registering, setRegistering] = useState<number | null>(null);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedServiceForPayment, setSelectedServiceForPayment] = useState<any>(null);
-  const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false);
-  const [showBankPayment, setShowBankPayment] = useState(false);
+  const [selectedServiceForFlow, setSelectedServiceForFlow] = useState<any>(null);
+  // ── Counter registration state ──
+  const [counterService, setCounterService] = useState<any>(null);
+  const [showCounterBooking, setShowCounterBooking] = useState(false);
+  const [counterRegistering, setCounterRegistering] = useState(false);
   const { requireAuth } = useAuth();
   const { id } = useParams();
   const [snackbar, setSnackbar] = useState({
@@ -61,31 +65,77 @@ const Service: React.FC = () => {
     message: '',
     severity: 'success' as 'success' | 'error' | 'warning',
   });
+
+  const flow = useServiceRegistrationFlow(selectedServiceForFlow?.id);
+
   const getServiceImage = (service: any) =>
       service.images?.[0] || '/images/default-service.jpg';
-    const handleRegister = async (serviceId: number) => {
-        if (!requireAuth()) return;
-        try {
-            setRegistering(serviceId);
-            const response = await registerService({ serviceId });
 
-            if (response.success) {
-                setSnackbar({
-                    open: true,
-                    message: 'Registration successful! The admin will be notified.',
-                    severity: 'success'
-                });
-            }
-        } catch (err: any) {
-            setSnackbar({
-                open: true,
-                message: err.response?.data?.message || 'Registration failed',
-                severity: 'error'
-            });
-        } finally {
-            setRegistering(null);
-        }
-    };
+  // Khi selectedServiceForFlow được set, tự động trigger flow
+  useEffect(() => {
+    if (selectedServiceForFlow) {
+      flow.handleRegisterNow();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedServiceForFlow?.id]);
+
+  const handleRegisterNow = (service: any) => {
+    if (!requireAuth()) return;
+    setSelectedServiceForFlow(service);
+  };
+
+  /** Register at Counter: chọn trainer + lịch → tạo booking PENDING (chờ thanh toán tại quầy) */
+  const handleRegisterAtCounter = (service: any) => {
+    if (!requireAuth()) return;
+    setCounterService(service);
+    setShowCounterBooking(true);
+  };
+
+  const handleCounterBookingConfirm = async (bookingData: BookingSetupData) => {
+    if (!counterService) return;
+    setShowCounterBooking(false);
+    setCounterRegistering(true);
+    try {
+      const session = loadAuthSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      // 1. Tạo ServiceRegistration
+      const regRes = await registerService({ serviceId: Number(counterService.id) });
+      if (!regRes.success) {
+        setSnackbar({ open: true, message: regRes.message || 'Đăng ký thất bại', severity: 'error' });
+        return;
+      }
+
+      const registrationId = regRes.data?.id;
+      if (!registrationId) return;
+
+      // 2. Tạo TrainerBooking với status PENDING
+      const bookingReq: NewCreateBookingRequest = {
+        trainerId: bookingData.trainerId ?? undefined,
+        serviceRegistrationId: registrationId,
+        bookingDate: bookingData.bookingDate,
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+      };
+      await createBooking(userId, bookingReq);
+
+      setSnackbar({
+        open: true,
+        message: `Đăng ký thành công! Vui lòng đến quầy để thanh toán dịch vụ "${counterService.name}".`,
+        severity: 'success',
+      });
+    } catch (err: any) {
+      setSnackbar({
+        open: true,
+        message: err?.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.',
+        severity: 'error',
+      });
+    } finally {
+      setCounterRegistering(false);
+      setCounterService(null);
+    }
+  };
     useEffect(() => {
         if (!id) return;
 
@@ -103,41 +153,8 @@ const Service: React.FC = () => {
         fetchService();
     }, [id]);
 
-    const handlePayNow = (service: any) => {
-        if (!requireAuth()) return;
-        setSelectedServiceForPayment(service);
-        setShowPaymentMethodSelection(true);
-    };
-
-    const handleSelectMoMo = () => {
-        setShowPaymentMethodSelection(false);
-        setPaymentModalOpen(true);
-    };
-
-    const handleSelectBankTransfer = () => {
-        setShowPaymentMethodSelection(false);
-        setShowBankPayment(true);
-    };
-
-    const handlePaymentSuccess = (response: MoMoPaymentResponse) => {
-        setSnackbar({
-            open: true,
-            message: `Payment successful! Order ID: ${response.orderId}`,
-            severity: 'success'
-        });
-        setPaymentModalOpen(false);
-        setShowBankPayment(false);
-        setSelectedServiceForPayment(null);
-    };
-
-    const handleBankPaymentSuccess = () => {
-        setSnackbar({
-            open: true,
-            message: 'Bank transfer submitted successfully! Payment will be verified within 24 hours.',
-            severity: 'success'
-        });
-        setShowBankPayment(false);
-        setSelectedServiceForPayment(null);
+    const handlePaymentSuccess = () => {
+        setSnackbar({ open: true, message: 'Thanh toán thành công! Lịch đặt trainer đang được xử lý.', severity: 'success' });
     };
 
   return (
@@ -471,14 +488,37 @@ const Service: React.FC = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-
+                          {/* Register at Counter Button */}
+                          <Button
+                              fullWidth
+                              variant="outlined"
+                              disabled={!service.isActive || counterRegistering}
+                              startIcon={<StorefrontIcon fontSize="small" />}
+                              onClick={() => handleRegisterAtCounter(service)}
+                              sx={{
+                                  borderRadius: 2,
+                                  textTransform: 'none',
+                                  fontWeight: 700,
+                                  fontSize: '0.82rem',
+                                  borderColor: '#045668',
+                                  color: '#045668',
+                                  '&:hover': {
+                                      borderColor: '#00b4ff',
+                                      color: '#00b4ff',
+                                      background: 'rgba(0,180,255,0.05)',
+                                  },
+                                  '&.Mui-disabled': { borderColor: '#ccc', color: '#ccc' },
+                              }}
+                          >
+                              Register at Counter
+                          </Button>
                         {/* Register Now Button */}
                         <Button
                             fullWidth
                             variant="contained"
-                            disabled={!service.isActive || registering === service.id}
-                            startIcon={registering !== service.id && <StoreIcon fontSize="small" />}
-                            onClick={() => handleRegister(service.id)}
+                            disabled={!service.isActive || flow.isRegistering}
+                            startIcon={!flow.isRegistering && <StoreIcon fontSize="small" />}
+                            onClick={() => handleRegisterNow(service)}
                             sx={{
                               borderRadius: 2,
                               textTransform: 'none',
@@ -496,37 +536,12 @@ const Service: React.FC = () => {
                               },
                             }}
                         >
-                          {registering === service.id
+                          {flow.isRegistering
                               ? <CircularProgress size={20} sx={{ color: '#fff' }} />
-                              : 'Front desk signup'}
+                              : 'Register Now'}
                         </Button>
 
-                        {/* Register at Counter Button */}
-                        <Button
-                            fullWidth
-                            variant="contained"
-                            disabled={!service.isActive}
-                            startIcon={<PaymentIcon fontSize="small" />}
-                            onClick={() => handlePayNow(service)}
-                            sx={{
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontWeight: 700,
-                                fontSize: '0.82rem',
-                                background: BRAND_GRADIENT,
-                                boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
-                                '&:hover': {
-                                    boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                                    background: BRAND_GRADIENT,
-                                },
-                                '&.Mui-disabled': {
-                                    background: '#ccc',
-                                    boxShadow: 'none',
-                                },
-                            }}
-                        >
-                            Register Now
-                        </Button>
+
                       </Stack>
                     </CardContent>
                   </Card>
@@ -566,43 +581,56 @@ const Service: React.FC = () => {
             onClose={() => setSelectedService(null)}
         />
 
+        {/* Trainer Booking Setup Modal — Register Now flow */}
+        {flow.showBookingSetup && selectedServiceForFlow && (
+            <TrainerBookingSetupModal
+                open={flow.showBookingSetup}
+                service={selectedServiceForFlow}
+                userId={loadAuthSession()?.user?.id ?? 0}
+                onClose={() => flow.setShowBookingSetup(false)}
+                onReadyToPay={flow.handleBookingSetupComplete}
+            />
+        )}
+
+        {/* Trainer Booking Setup Modal — Register at Counter flow */}
+        {showCounterBooking && counterService && (
+            <TrainerBookingSetupModal
+                open={showCounterBooking}
+                service={counterService}
+                userId={loadAuthSession()?.user?.id ?? 0}
+                onClose={() => { setShowCounterBooking(false); setCounterService(null); }}
+                onReadyToPay={handleCounterBookingConfirm}
+            />
+        )}
+
         {/* Payment Method Selection Modal */}
         <PaymentMethodSelectionModal
-            open={showPaymentMethodSelection}
-            onClose={() => {
-                setShowPaymentMethodSelection(false);
-                setSelectedServiceForPayment(null);
-            }}
-            onSelectMoMo={handleSelectMoMo}
-            onSelectBankTransfer={handleSelectBankTransfer}
-            serviceName={selectedServiceForPayment?.name}
-            amount={selectedServiceForPayment?.price}
+            open={flow.showPaymentMethodSelection}
+            onClose={() => flow.setShowPaymentMethodSelection(false)}
+            onSelectMoMo={flow.handleSelectMoMo}
+            onSelectBankTransfer={flow.handleSelectBankTransfer}
+            serviceName={selectedServiceForFlow?.name}
+            amount={selectedServiceForFlow?.price}
         />
 
         <MoMoPaymentModal
-            open={paymentModalOpen}
-            onClose={() => {
-              setPaymentModalOpen(false);
-              setSelectedServiceForPayment(null);
-            }}
-            onSuccess={handlePaymentSuccess}
-            defaultAmount={selectedServiceForPayment?.price || 0}
-            defaultOrderInfo={selectedServiceForPayment ? `Thanh toán PowerGym - Dịch vụ: ${selectedServiceForPayment.name}` : ''}
+            open={flow.showMoMoPayment}
+            onClose={() => flow.setShowMoMoPayment(false)}
+            onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+            defaultAmount={selectedServiceForFlow?.price || 0}
+            defaultOrderInfo={selectedServiceForFlow ? `PowerGym Service - ${selectedServiceForFlow.name}` : ''}
             itemType="SERVICE"
-            itemId={selectedServiceForPayment?.id?.toString()}
-            itemName={selectedServiceForPayment?.name}
+            itemId={selectedServiceForFlow?.id?.toString()}
+            itemName={selectedServiceForFlow?.name}
         />
 
         <BankPaymentModal
-            open={showBankPayment}
-            onClose={() => {
-                setShowBankPayment(false);
-                setSelectedServiceForPayment(null);
-            }}
-            onSuccess={handleBankPaymentSuccess}
-            serviceName={selectedServiceForPayment?.name}
-            amount={selectedServiceForPayment?.price}
-            serviceId={selectedServiceForPayment?.id?.toString()}
+            open={flow.showBankPayment}
+            onClose={() => flow.setShowBankPayment(false)}
+            onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+            serviceName={selectedServiceForFlow?.name}
+            amount={selectedServiceForFlow?.price}
+            serviceId={selectedServiceForFlow?.id?.toString()}
         />
 
         <Snackbar

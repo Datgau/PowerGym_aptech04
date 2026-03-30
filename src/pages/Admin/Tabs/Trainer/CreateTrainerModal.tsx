@@ -39,7 +39,7 @@ import {
   type TrainerSpecialtyRequest
 } from '../../../../services/trainerService';
 import { checkEmailExists } from '../../../../services/adminService';
-import { message } from '../../../../utils/message';
+import { message } from '../../../../until/message.ts';
 
 // Import step components
 import BasicInfoStep from './components/BasicInfoStep';

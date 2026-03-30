@@ -27,12 +27,11 @@ const PaymentResult: React.FC = () => {
 
   // Get parameters from URL
   const orderId = searchParams.get('orderId');
-  const resultCode = searchParams.get('resultCode');
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!orderId) {
-        setError('Không tìm thấy thông tin đơn hàng');
+        setError('Order information not found');
         setLoading(false);
         return;
       }
@@ -42,10 +41,10 @@ const PaymentResult: React.FC = () => {
         if (response.success && response.data) {
           setPaymentOrder(response.data);
         } else {
-          setError(response.message || 'Không thể lấy thông tin thanh toán');
+          setError(response.message || 'Unable to retrieve payment information');
         }
       } catch (err: any) {
-        setError(err.message || 'Có lỗi xảy ra khi kiểm tra trạng thái thanh toán');
+        setError(err.message || 'An error occurred while checking payment status');
       } finally {
         setLoading(false);
       }
@@ -61,34 +60,33 @@ const PaymentResult: React.FC = () => {
       case 'SUCCESS':
         return {
           icon: <SuccessIcon sx={{ fontSize: 64, color: 'success.main' }} />,
-          title: 'Thanh toán thành công!',
-          message: 'Giao dịch của bạn đã được xử lý thành công.',
+          title: 'Payment Successful!',
+          message: 'Your transaction has been processed successfully.',
           color: 'success.main'
         };
       case 'FAILED':
         return {
           icon: <ErrorIcon sx={{ fontSize: 64, color: 'error.main' }} />,
-          title: 'Thanh toán thất bại',
-          message: 'Giao dịch không thể hoàn tất. Vui lòng thử lại.',
+          title: 'Payment Failed',
+          message: 'The transaction could not be completed. Please try again.',
           color: 'error.main'
         };
       case 'EXPIRED':
         return {
           icon: <ErrorIcon sx={{ fontSize: 64, color: 'warning.main' }} />,
-          title: 'Thanh toán đã hết hạn',
-          message: 'Giao dịch đã hết thời gian xử lý.',
+          title: 'Payment Expired',
+          message: 'The transaction has exceeded the processing time.',
           color: 'warning.main'
         };
       default:
         return {
           icon: <PendingIcon sx={{ fontSize: 64, color: 'info.main' }} />,
-          title: 'Đang xử lý thanh toán',
-          message: 'Giao dịch đang được xử lý. Vui lòng đợi trong giây lát.',
+          title: 'Processing Payment',
+          message: 'Your transaction is being processed. Please wait a moment.',
           color: 'info.main'
         };
     }
   };
-
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -144,91 +142,91 @@ const PaymentResult: React.FC = () => {
   const statusInfo = getStatusInfo();
 
   return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Paper sx={{ p: 4 }}>
-        <Box textAlign="center" mb={4}>
-          {statusInfo?.icon}
-          <Typography variant="h4" gutterBottom sx={{ color: statusInfo?.color, mt: 2 }}>
-            {statusInfo?.title}
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {statusInfo?.message}
-          </Typography>
-        </Box>
+      <Container maxWidth="sm" sx={{ py: 8 }}>
+        <Paper sx={{ p: 4 }}>
+          <Box textAlign="center" mb={4}>
+            {statusInfo?.icon}
+            <Typography variant="h4" gutterBottom sx={{ color: statusInfo?.color, mt: 2 }}>
+              {statusInfo?.title}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {statusInfo?.message}
+            </Typography>
+          </Box>
 
-        {paymentOrder && (
-          <>
-            <Divider sx={{ my: 3 }} />
-            
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Thông tin giao dịch
-              </Typography>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="text.secondary">Mã đơn hàng:</Typography>
-                  <Typography fontWeight={600}>{paymentOrder.id}</Typography>
-                </Box>
-                
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="text.secondary">Số tiền:</Typography>
-                  <Typography fontWeight={600} color="primary.main">
-                    {formatAmount(paymentOrder.amount)}
+          {paymentOrder && (
+              <>
+                <Divider sx={{ my: 3 }} />
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Transaction Information
                   </Typography>
-                </Box>
-                
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="text.secondary">Nội dung:</Typography>
-                  <Typography fontWeight={600}>{paymentOrder.content}</Typography>
-                </Box>
-                
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="text.secondary">Thời gian tạo:</Typography>
-                  <Typography>{formatDateTime(paymentOrder.createdAt)}</Typography>
-                </Box>
-                
-                {paymentOrder.transactionRef && (
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography color="text.secondary">Mã giao dịch:</Typography>
-                    <Typography fontWeight={600}>{paymentOrder.transactionRef}</Typography>
-                  </Box>
-                )}
-                
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="text.secondary">Phương thức:</Typography>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Box
-                      component="img"
-                      src="https://developers.momo.vn/v3/assets/images/square-logo.svg"
-                      alt="MoMo"
-                      sx={{ width: 20, height: 20 }}
-                    />
-                    <Typography>MoMo</Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
-          </>
-        )}
 
-        <Box display="flex" gap={2} justifyContent="center" mt={4}>
-          <Button
-            variant="outlined"
-            onClick={() => navigate('/services')}
-          >
-            Tiếp tục mua sắm
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<HomeIcon />}
-            onClick={() => navigate('/')}
-          >
-            Về trang chủ
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography color="text.secondary">Order ID:</Typography>
+                      <Typography fontWeight={600}>{paymentOrder.id}</Typography>
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography color="text.secondary">Amount:</Typography>
+                      <Typography fontWeight={600} color="primary.main">
+                        {formatAmount(paymentOrder.amount)}
+                      </Typography>
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography color="text.secondary">Description:</Typography>
+                      <Typography fontWeight={600}>{paymentOrder.content}</Typography>
+                    </Box>
+
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography color="text.secondary">Created At:</Typography>
+                      <Typography>{formatDateTime(paymentOrder.createdAt)}</Typography>
+                    </Box>
+
+                    {paymentOrder.transactionRef && (
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography color="text.secondary">Transaction Ref:</Typography>
+                          <Typography fontWeight={600}>{paymentOrder.transactionRef}</Typography>
+                        </Box>
+                    )}
+
+                    <Box display="flex" justifyContent="space-between">
+                      <Typography color="text.secondary">Payment Method:</Typography>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Box
+                            component="img"
+                            src="https://developers.momo.vn/v3/assets/images/square-logo.svg"
+                            alt="MoMo"
+                            sx={{ width: 20, height: 20 }}
+                        />
+                        <Typography>MoMo</Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </>
+          )}
+
+          <Box display="flex" gap={2} justifyContent="center" mt={4}>
+            <Button
+                variant="outlined"
+                onClick={() => navigate('/services')}
+            >
+              Continue Shopping
+            </Button>
+            <Button
+                variant="contained"
+                startIcon={<HomeIcon />}
+                onClick={() => navigate('/')}
+            >
+              Back to Home
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
   );
 };
 

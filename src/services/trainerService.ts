@@ -200,7 +200,6 @@ export const getAvailableSpecialties = async (): Promise<ApiResponse<ServiceCate
   return await getPublicServiceCategories();
 };
 
-// Constants - Keep for backward compatibility, but prefer dynamic loading
 export const LEVELS = [
   { value: 'BEGINNER', label: 'Beginner' },
   { value: 'INTERMEDIATE', label: 'Intermediate' },
@@ -209,13 +208,13 @@ export const LEVELS = [
 ];
 
 export const DOCUMENT_TYPES = [
-  { value: 'ID_CARD', label: 'CMND/CCCD' },
-  { value: 'PASSPORT', label: 'Hộ chiếu' },
-  { value: 'CERTIFICATE', label: 'Chứng chỉ' },
-  { value: 'LICENSE', label: 'Giấy phép hành nghề' },
-  { value: 'DIPLOMA', label: 'Bằng cấp' },
-  { value: 'HEALTH_CERTIFICATE', label: 'Giấy khám sức khỏe' },
-  { value: 'CRIMINAL_RECORD', label: 'Lý lịch tư pháp' },
-  { value: 'CV', label: 'Sơ yếu lý lịch' },
-  { value: 'OTHER', label: 'Khác' }
+  { value: 'ID_CARD', label: 'ID Card' },
+  { value: 'PASSPORT', label: 'Passport' },
+  { value: 'CERTIFICATE', label: 'Certificate' },
+  { value: 'LICENSE', label: 'Professional License' },
+  { value: 'DIPLOMA', label: 'Diploma' },
+  { value: 'HEALTH_CERTIFICATE', label: 'Health Certificate' },
+  { value: 'CRIMINAL_RECORD', label: 'Criminal Record' },
+  { value: 'CV', label: 'Curriculum Vitae (CV)' },
+  { value: 'OTHER', label: 'Other' }
 ];

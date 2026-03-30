@@ -85,8 +85,7 @@ const OTPVerification = ({ email, onSubmit, submitting }: OTPVerificationProps) 
       const result = await AuthService.resendOtp({ email });
       if (result.success) {
         setOtp("");
-        showSnackbar("🚀 OTP mới đang được gửi đến email của bạn! Vui lòng kiểm tra hộp thư.", "success");
-        setOtpStatus((prev) =>
+        showSnackbar("A new OTP is being sent to your email. Please check your inbox.", "success");        setOtpStatus((prev) =>
             prev ? { ...prev, secondsUntilResend: 60, canResend: false, message: "Please wait before resending" } : null
         );
       } else {
