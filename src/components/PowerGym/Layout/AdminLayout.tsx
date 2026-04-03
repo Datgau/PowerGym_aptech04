@@ -33,8 +33,10 @@ import {
     AccountCircle,
     Category,
     KeyboardArrowRight,
+    ListAlt,
+    SupervisorAccount,
 } from '@mui/icons-material';
-import GlobalNotification from '../../Notifications/GlobalNotification.tsx';
+import GlobalNotification from '../../Notification/GlobalNotification.tsx';
 import { useTokenRefresh } from '../../../hooks/useTokenRefresh.ts';
 import { useAuth } from '../../../hooks/useAuth.ts';
 import { useNavigate } from 'react-router-dom';
@@ -50,11 +52,12 @@ interface AdminLayoutProps {
 const menuItems = [
     { text: 'Overview',   icon: <AnalyticsIcon  /> },
     { text: 'Members',    icon: <People /> },
+    { text: 'Staff',      icon: <SupervisorAccount /> },
     { text: 'Trainers',   icon: <FitnessCenter /> },
     { text: 'Categories', icon: <Category /> },
     { text: 'Services',   icon: <Assignment /> },
+    { text: 'Service Registrations', icon: <ListAlt /> },
     { text: 'Stories',    icon: <WebStoriesIcon/> },
-    { text: 'Equipment',  icon: <Build /> },
     { text: 'Membership', icon: <CardMembership /> },
     { text: 'Financial',  icon: <AccountBalanceWalletIcon  /> },
     { text: 'Settings',   icon: <Settings /> },
@@ -65,7 +68,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
 
     useTokenRefresh();
@@ -329,7 +332,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                     </Box>
 
                     {/* Right: notifications */}
-                    <GlobalNotification />
+                    <GlobalNotification 
+                        userId={user?.id}
+                    />
                 </Box>
 
                 {/* Page content */}

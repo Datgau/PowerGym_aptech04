@@ -231,10 +231,10 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ open, onClose, userId
 
   const getServiceStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      ACTIVE: 'Đang hoạt động',
-      CANCELLED: 'Đã hủy',
-      COMPLETED: 'Hoàn thành',
-      EXPIRED: 'Đã hết hạn'
+      ACTIVE: 'Active',
+      CANCELLED: 'Cancelled',
+      COMPLETED: 'Completed',
+      EXPIRED: 'Expired'
     };
     return labels[status] || status;
   };
@@ -442,75 +442,116 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ open, onClose, userId
         <TabPanel value={tabValue} index={1}>
           <Box p={3}>
             {memberships && memberships.length > 0 ? (
-              <Stack spacing={3}>
-                {memberships.map((membership) => {
-                  const remainingDays = getRemainingDays(membership.endDate);
-                  return (
-                    <InfoCard key={membership.id}>
-                      <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="start" mb={2}>
-                          <Box>
-                            <Typography variant="h6" fontWeight={600} gutterBottom>
-                              {membership.membershipPackage.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              Duration: {membership.membershipPackage.duration} days
-                            </Typography>
-                          </Box>
-                          <Chip
-                            label={membership.isActive ? 'Active' : 'Expired'}
-                            color={membership.isActive ? 'success' : 'error'}
-                            size="small"
-                          />
-                        </Stack>
-                        
-                        <Divider sx={{ my: 2 }} />
-                        
-                        <Box display="grid" gridTemplateColumns={{ xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }} gap={2}>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">Start Date</Typography>
-                            <Typography variant="body1" fontWeight={500}>
-                              {formatDate(membership.startDate)}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">End Date</Typography>
-                            <Typography variant="body1" fontWeight={500}>
-                              {formatDate(membership.endDate)}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">Price</Typography>
-                            <Typography variant="body1" fontWeight={500}>
-                              {formatPrice(membership.membershipPackage.price)}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">Days Remaining</Typography>
-                            <Typography 
-                              variant="body1" 
-                              fontWeight={500}
-                              color={remainingDays > 30 ? 'success.main' : remainingDays > 0 ? 'warning.main' : 'error.main'}
-                            >
-                              {remainingDays > 0 ? `${remainingDays} days` : 'Expired'}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </InfoCard>
-                  );
-                })}
-              </Stack>
+                <Stack spacing={3}>
+                  {memberships.map((membership) => {
+                    const remainingDays = getRemainingDays(membership.endDate);
+
+                    const getPaymentMethodLabel = (method: string) => {
+                      const labels: Record<string, string> = {
+                        CASH: 'Cash',
+                        CARD: 'Card',
+                        TRANSFER: 'Bank Transfer'
+                      };
+                      return labels[method] || method;
+                    };
+
+                    const getStatusLabel = (status: string) => {
+                      const labels: Record<string, string> = {
+                        ACTIVE: 'Active',
+                        EXPIRED: 'Expired',
+                        SUSPENDED: 'Suspended',
+                        CANCELLED: 'Cancelled'
+                      };
+                      return labels[status] || status;
+                    };
+
+                    return (
+                        <InfoCard key={membership.id}>
+                          <CardContent>
+                            <Stack direction="row" justifyContent="space-between" alignItems="start" mb={2}>
+                              <Box>
+                                <Typography variant="h6" fontWeight={600} gutterBottom>
+                                  {membership.membershipPackage.name}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Duration: {membership.membershipPackage.duration} days
+                                </Typography>
+                              </Box>
+                              <Chip
+                                  label={getStatusLabel(membership.status)}
+                                  color={
+                                    membership.status === 'ACTIVE' ? 'success' :
+                                        membership.status === 'EXPIRED' ? 'warning' :
+                                            membership.status === 'SUSPENDED' ? 'error' :
+                                                'default'
+                                  }
+                                  size="small"
+                              />
+                            </Stack>
+
+                            <Divider sx={{ my: 2 }} />
+
+                            <Box display="grid" gridTemplateColumns={{ xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }} gap={2}>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">Registration Date</Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                  {membership.registrationDate ? formatDate(membership.registrationDate) : 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">Start Date</Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                  {formatDate(membership.startDate)}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">End Date</Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                  {formatDate(membership.endDate)}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">Payment Method</Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                  {membership.paymentMethod ? getPaymentMethodLabel(membership.paymentMethod) : 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">Amount Paid</Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                  {membership.paidAmount ? formatPrice(membership.paidAmount) : 'N/A'}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">Days Remaining</Typography>
+                                <Typography
+                                    variant="body1"
+                                    fontWeight={500}
+                                    color={
+                                      remainingDays > 30 ? 'success.main' :
+                                          remainingDays > 0 ? 'warning.main' :
+                                              'error.main'
+                                    }
+                                >
+                                  {remainingDays > 0 ? `${remainingDays} days` : 'Expired'}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </InfoCard>
+                    );
+                  })}
+                </Stack>
             ) : (
-              <Box textAlign="center" py={8}>
-                <FitnessCenter sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No Memberships
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  This user hasn't registered for any membership packages yet.
-                </Typography>
-              </Box>
+                <Box textAlign="center" py={8}>
+                  <FitnessCenter sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    No Memberships
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    This user has not registered for any membership packages yet.
+                  </Typography>
+                </Box>
             )}
           </Box>
         </TabPanel>

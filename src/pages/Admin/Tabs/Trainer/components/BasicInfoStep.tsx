@@ -31,9 +31,13 @@ interface BasicInfoStepProps {
   formik: FormikProps<CreateTrainerRequest>;
   emailCheckLoading?: boolean;
   emailError?: string;
+  isUpdate?: boolean;
 }
 
-const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik, emailCheckLoading, emailError }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik, emailCheckLoading, emailError, isUpdate = false }) => {
+  // Allow email editing if it's null/empty (social login users)
+  const canEditEmail = !isUpdate || !formik.values.email;
+  
   return (
     <Fade in timeout={300}>
       <Box
@@ -94,8 +98,9 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik, emailCheckLoading
             helperText={
               emailError || 
               (formik.touched.email && formik.errors.email) || 
-              'This email can be registered.'
+              (isUpdate && !canEditEmail ? 'Email cannot be changed' : 'This email can be registered.')
             }
+            disabled={isUpdate && !canEditEmail}
             InputProps={{
               endAdornment: emailCheckLoading ? (
                 <InputAdornment position="end">

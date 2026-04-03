@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMembership } from '../../hooks/useMembership';
+import { useMembershipRegistrationFlow } from '../../hooks/useMembershipRegistrationFlow';
+import membershipPackageService from '../../services/membershipPackageService';
+import { useAuth } from '../../hooks/useAuth';
 
 import {
   bannerPromotionData,
@@ -13,20 +16,41 @@ import {useGymStory} from "../../hooks/useGymStory.ts";
 import BMISection from "./BMISection/BMISection.tsx";
 import HeroBanner from "./HeroBanner/HeroBanner.tsx";
 import {MembershipPackagesSection} from "../../components/PowerGym";
-// Import test for debugging
+import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
+import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
+import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
+import { toast } from 'react-toastify';
 
 const ClientHome: React.FC = () => {
   const navigate = useNavigate();
-  const { packages, registerPackage, loading: membershipLoading  } = useMembership();
+  const { user } = useAuth();
+  const { packages, loading: membershipLoading  } = useMembership();
   const { services,  } = useGymServices();
   const { storiesData, refetchStories } = useGymStory();
+  const [selectedPackage, setSelectedPackage] = React.useState<any>(null);
+  const [activePackageIds, setActivePackageIds] = React.useState<number[]>([]);
+  
+  const flow = useMembershipRegistrationFlow(selectedPackage?.packageId);
 
+  useEffect(() => {
+    if (user?.id) {
+      loadActivePackages();
+    }
+  }, [user?.id]);
 
-  // Event Handlers
+  const loadActivePackages = async () => {
+    if (!user?.id) return;
+    try {
+      const activeIds = await membershipPackageService.getMyActivePackages();
+      setActivePackageIds(activeIds);
+    } catch (error) {
+      console.error('Failed to load active packages:', error);
+    }
+  };
+
   const handleRegisterClick = (): void => {
     navigate('/pricing');
   };
-
 
   const handleServiceClick = (serviceId: string): void => {
     navigate('/service/' + serviceId);
@@ -36,26 +60,35 @@ const ClientHome: React.FC = () => {
     navigate(`/stories/${storyId}`);
   };
 
-  const handlePackageSelect = async (packageId: string): Promise<void> => {
-    try {
-      const success = await registerPackage(packageId, 'CARD');
-
-      if (success) {
-        alert('Package registration successful!');
-        navigate('/membership');
-      } else {
-        alert('Package registration failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Package registration error:', error);
-      alert('An error occurred while registering the package.');
+  const handlePackageSelect = async (numericId: number): Promise<void> => {
+    const pkg = packages.find(p => p.id === numericId);
+    console.log('Package selected:', { 
+      numericId, 
+      pkg, 
+      pkgId: pkg?.id,
+      pkgPackageId: pkg?.packageId,
+      allPackages: packages 
+    });
+    if (pkg) {
+      setSelectedPackage(pkg);
+    } else {
+      console.error('Package not found for id:', numericId);
     }
   };
 
+  useEffect(() => {
+    if (selectedPackage) {
+      console.log('Selected package changed, triggering payment flow:', selectedPackage);
+      flow.handleRegisterNow();
+    }
+  }, [selectedPackage?.id]);
 
-  // Use real membership data if available, otherwise use mock data
+  const handlePaymentSuccess = () => {
+    toast.success('Payment successful! Your membership has been activated.');
+    navigate('/membership');
+  };
+
   const availablePackages = packages.length > 0 ? (() => {
-    // Filter and sort packages to show only 6 newest elements (3 popular + 3 normal)
     const popular = packages
       .filter(pkg => pkg.isPopular)
       .sort((a, b) => new Date(b.createDate).getTime() - new Date(a.createDate).getTime())
@@ -69,10 +102,12 @@ const ClientHome: React.FC = () => {
     const finalPackages = [...popular, ...normal];
     
     return finalPackages.map(pkg => ({
-      id: pkg.packageId, // Use packageId as string ID for compatibility
+      id: pkg.id,
+      packageId: pkg.packageId,
       name: pkg.name,
       duration: `${pkg.duration} days`,
       price: `${pkg.price.toLocaleString('vi-VN')}đ`,
+      numericPrice: pkg.price,
       originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
       features: pkg.features,
       isPopular: pkg.isPopular,
@@ -83,33 +118,59 @@ const ClientHome: React.FC = () => {
 
   return (
     <div >
-      {/* Debug Auth Info - Remove after fixing */}
-
       <HeroBanner
         promotion={bannerPromotionData}
         onRegisterClick={handleRegisterClick}
       />
-      {/* Equipments Section */}
+
       <ServicesSection
         servicesData={services}
         onServiceClick={handleServiceClick}
       />
 
-      {/* Stories Section */}
       <StoriesSection
         stories={storiesData}
         onStoryClick={handleStoryClick}
         onStoriesUpdate={refetchStories}
       />
 
-      {/* BMI Section */}
       <BMISection />
 
-      {/* Membership Packages Section */}
       <MembershipPackagesSection
         packages={availablePackages}
         onSelectPackage={handlePackageSelect}
         loading={membershipLoading}
+        activePackageIds={activePackageIds}
+      />
+
+      <PaymentMethodSelectionModal
+        open={flow.showPaymentMethodSelection}
+        onClose={() => flow.setShowPaymentMethodSelection(false)}
+        onSelectMoMo={flow.handleSelectMoMo}
+        onSelectBankTransfer={flow.handleSelectBankTransfer}
+        serviceName={selectedPackage?.name}
+        amount={selectedPackage?.price}
+      />
+
+      <MoMoPaymentModal
+        open={flow.showMoMoPayment && !!selectedPackage}
+        onClose={() => flow.setShowMoMoPayment(false)}
+        onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+        defaultAmount={selectedPackage?.numericPrice || 0}
+        defaultOrderInfo={selectedPackage ? `PowerGym Membership - ${selectedPackage.name}` : ''}
+        itemType="MEMBERSHIP"
+        itemId={selectedPackage?.id?.toString()}
+        itemName={selectedPackage?.name}
+      />
+
+      <BankPaymentModal
+        open={flow.showBankPayment && !!selectedPackage}
+        onClose={() => flow.setShowBankPayment(false)}
+        onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+        serviceName={selectedPackage?.name}
+        amount={selectedPackage?.numericPrice}
+        serviceId={selectedPackage?.id?.toString()}
+        itemType="MEMBERSHIP"
       />
     </div>
   );

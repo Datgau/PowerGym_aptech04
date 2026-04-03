@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import paymentService, {type CreateBankPaymentResponse} from "../../services/paymentService.ts";
+import {toast} from "react-toastify";
 
 interface BankPaymentModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ interface BankPaymentModalProps {
   serviceName?: string;
   amount?: number;
   serviceId?: string;
+  itemType?: 'SERVICE' | 'MEMBERSHIP';
 }
 
 const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
@@ -37,8 +39,8 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   onClose,
   onSuccess,
   serviceName,
-  amount,
-  serviceId
+  serviceId,
+  itemType = 'SERVICE'
 }) => {
   const { user } = useAuth();
   const [paymentInfo, setPaymentInfo] = useState<CreateBankPaymentResponse | null>(null);
@@ -66,18 +68,26 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   };
 
   useEffect(() => {
-    if (open && serviceId && user?.id) {
-      // Create Bank Payment on open
+    if (open && (serviceId || itemType === 'MEMBERSHIP') && user?.id) {
       const initPayment = async () => {
         try {
           setLoading(true);
           setError(null);
           setPaymentSuccess(false);
-          const response = await paymentService.createBankPayment({
-            userId: user.id,
-            serviceId: Number(serviceId)
-          });
           
+          const request: any = {
+            userId: user.id,
+            itemType: itemType
+          };
+          
+          if (itemType === 'MEMBERSHIP') {
+            request.packageId = Number(serviceId);
+          } else {
+            request.serviceId = Number(serviceId);
+          }
+          
+          const response = await paymentService.createBankPayment(request);
+
           if (response.success && response.data) {
             setPaymentInfo(response.data);
           } else {
@@ -101,7 +111,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
         intervalRef.current = null;
       }
     }
-  }, [open, serviceId, user]);
+  }, [open, serviceId, user, itemType]);
 
   useEffect(() => {
     // Polling mechanism
@@ -119,16 +129,16 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
                setTimeout(() => {
                  onSuccess?.();
                  onClose();
-               }, 2000); // 2 second delay to show success icon/message
+               }, 2000);
             } else if (statusRes.data.status === 'FAILED' || statusRes.data.status === 'EXPIRED') {
                setError('Payment transaction expired or failed.');
                if (intervalRef.current) clearInterval(intervalRef.current);
             }
           }
         } catch (e) {
-          // Keep polling silently on minor failures
+            toast.error('Error checking payment status', e);
         }
-      }, 3000); // Check every 3 seconds
+      }, 3000);
     }
 
     return () => {

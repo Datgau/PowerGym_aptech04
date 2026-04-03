@@ -9,7 +9,7 @@ import { useCarousel } from '../../../hooks/useCarousel.ts';
 import type { StoryItem } from "../../../services/storyService.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { useNavigate } from "react-router-dom";
-import EmptyState from "../../../components/Notifications/EmptyState.tsx";
+import EmptyState from "./EmptyState.tsx";
 
 interface StoriesSectionProps {
     readonly stories: readonly StoryItem[];

@@ -53,7 +53,6 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     const {
         isRegistering,
         showBookingSetup,
-        pendingBookingData,
         showPaymentMethodSelection,
         showMoMoPayment,
         showBankPayment,
@@ -501,7 +500,6 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 />
             )}
 
-            {/* NEW: Trainer Booking Setup Modal */}
             {showBookingSetup && (
                 <TrainerBookingSetupModalVersion
                     open={showBookingSetup}

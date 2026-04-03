@@ -14,6 +14,7 @@ import {
     calcEndDate,
     getTrainerDailySchedule,
     getTrainersByServiceId,
+    validateBooking,
     type TrainerSpecialtyItem,
     type TimeSlotOption,
 } from '../../services/newBookingService';
@@ -41,7 +42,7 @@ interface Props {
     onReadyToPay: (bookingData: BookingData) => void;
 }
 export default function TrainerBookingSetupModal({
-                                                     open, service, onClose, onReadyToPay,
+                                                     open, service, userId, onClose, onReadyToPay,
                                                  }: Props) {
     const [step, setStep] = useState(0);
 
@@ -132,6 +133,33 @@ export default function TrainerBookingSetupModal({
     }, [startDate, service.duration]);
 
     const minDate = dayjs().add(1, 'day');
+
+    /* ── Validate time slot selection ──────────────────────────────────────── */
+    const handleSlotSelect = async (slot: TimeSlotOption | null) => {
+        if (!slot || !startDate) {
+            setSelectedSlot(slot);
+            return;
+        }
+
+        // Validate booking before selecting
+        try {
+            await validateBooking(userId, {
+                trainerId: selectedTrainer?.id,
+                serviceRegistrationId: 0, // Dummy value for validation (not used in backend)
+                bookingDate: startDate.format('YYYY-MM-DD'),
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+            });
+            
+            // If validation passes, select the slot
+            setSelectedSlot(slot);
+        } catch (error: any) {
+            // Show error message from API
+            const errorMsg = error?.response?.data?.message || 'This time slot is not available';
+            toast.error(errorMsg, { autoClose: 4000 });
+            setSelectedSlot(null);
+        }
+    };
 
     /* ── Navigation ──────────────────────────────────────────────────────── */
     const handleNext = () => {
@@ -261,7 +289,7 @@ export default function TrainerBookingSetupModal({
                         endDate={endDate}
                         minDate={minDate}
                         selectedSlot={selectedSlot}
-                        onSlotSelect={setSelectedSlot}
+                        onSlotSelect={handleSlotSelect}
                         bookedTimes={bookedTimes}
                         loading={loadingSlots}
                     />

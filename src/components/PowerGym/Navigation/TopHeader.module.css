@@ -139,9 +139,15 @@
 .userSection {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   padding-left: 1rem;
   border-left: 1px solid #e0e0e0;
+}
+
+.notificationIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timeDisplay {
@@ -158,6 +164,87 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.userInfo:hover .userAvatar {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(0, 180, 255, 0.2);
+}
+
+/* Avatar Dropdown Menu */
+.avatarDropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  padding: 0.5rem;
+  z-index: 1001;
+  animation: dropdownFadeIn 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+/* Add a pseudo-element to bridge the gap between avatar and dropdown */
+.avatarDropdown::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: transparent;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background: #f8f9fa;
+  color: #00b4ff;
+  transform: translateX(4px);
+}
+
+.dropdownIcon {
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 0.5rem 0;
 }
 
 .userAvatar {
@@ -171,6 +258,8 @@
   color: white;
   font-weight: 600;
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .userAvatar img {

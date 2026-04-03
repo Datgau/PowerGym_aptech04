@@ -1,113 +1,154 @@
-import { Client, type IMessage } from '@stomp/stompjs';
+
+import { Client, type StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import type { ChatMessage } from '../@type/chat';
+
+export interface NotificationMessage {
+  entityName: string;
+  action: string;
+  message: string;
+  data: any;
+  entityId: number | null;
+  timestamp: string;
+}
+
+type MessageCallback = (message: NotificationMessage) => void;
 
 class WebSocketService {
   private client: Client | null = null;
-  private connected: boolean = false;
-  private messageCallbacks: Map<number, (message: ChatMessage) => void> = new Map();
-  private subscriptions: Map<number, any> = new Map();
+  private subscriptions: Map<string, StompSubscription> = new Map();
+  private messageCallbacks: Map<string, Set<MessageCallback>> = new Map();
+  private isConnecting = false;
+  private isConnectedState = false;
+  private connectionPromise: Promise<void> | null = null;
 
-  connect(onConnected?: () => void, onError?: (error: any) => void) {
-    if (this.connected) {
-      onConnected?.();
-      return;
+  connect(): Promise<void> {
+    if (this.isConnectedState) {
+      return Promise.resolve();
     }
 
-    const wsUrl = `${import.meta.env.VITE_API_URL}/ws`;
-    const socket = new SockJS(wsUrl);
-    
-    this.client = new Client({
-      webSocketFactory: () => socket as any,
-      debug: (str) => {
-      },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
+    if (this.isConnecting) {
+      return new Promise((resolve) => {
+        const checkConnection = setInterval(() => {
+          if (this.isConnectedState) {
+            clearInterval(checkConnection);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    this.isConnecting = true;
+
+    this.connectionPromise = new Promise((resolve, reject) => {
+      this.client = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        debug: (str) => {
+          console.log('STOMP Debug:', str);
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000,
+        onConnect: () => {
+          console.log('✅ WebSocket connected (Singleton)');
+          this.isConnectedState = true;
+          this.isConnecting = false;
+          resolve();
+        },
+        onDisconnect: () => {
+          console.log('❌ WebSocket disconnected (Singleton)');
+          this.isConnectedState = false;
+          this.subscriptions.clear();
+        },
+        onStompError: (frame) => {
+          console.error('❌ WebSocket error:', frame.headers['message']);
+          this.isConnecting = false;
+          reject(new Error(frame.headers['message']));
+        },
+      });
+
+      this.client.activate();
     });
 
-    this.client.onConnect = () => {
-      this.connected = true;
-      onConnected?.();
-    };
+    return this.connectionPromise;
+  }
 
-    this.client.onStompError = (frame) => {
-      this.connected = false;
-      onError?.(frame);
-    };
+  async subscribe(topic: string, callback: MessageCallback): Promise<() => void> {
+    await this.connect();
 
-    this.client.onWebSocketClose = () => {
-      this.connected = false;
-    };
+    if (!this.client) {
+      throw new Error('WebSocket client not initialized');
+    }
 
-    this.client.activate();
+    // Add callback to the set for this topic
+    if (!this.messageCallbacks.has(topic)) {
+      this.messageCallbacks.set(topic, new Set());
+    }
+    this.messageCallbacks.get(topic)!.add(callback);
+
+    // Subscribe to topic if not already subscribed
+    if (!this.subscriptions.has(topic)) {
+      console.log('📡 Subscribing to topic:', topic);
+      const subscription = this.client.subscribe(topic, (message) => {
+        try {
+          const notification: NotificationMessage = JSON.parse(message.body);
+          console.log('📩 Message received on topic:', topic, notification);
+          
+          // Notify all callbacks for this topic
+          const callbacks = this.messageCallbacks.get(topic);
+          if (callbacks) {
+            callbacks.forEach(cb => cb(notification));
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      });
+      this.subscriptions.set(topic, subscription);
+      console.log('✅ Subscribed to:', topic);
+    } else {
+      console.log('ℹ️ Already subscribed to:', topic, '- adding callback');
+    }
+
+    // Return unsubscribe function
+    return () => {
+      const callbacks = this.messageCallbacks.get(topic);
+      if (callbacks) {
+        callbacks.delete(callback);
+        
+        // If no more callbacks for this topic, unsubscribe
+        if (callbacks.size === 0) {
+          this.messageCallbacks.delete(topic);
+          const subscription = this.subscriptions.get(topic);
+          if (subscription) {
+            console.log('🔌 Unsubscribing from:', topic);
+            subscription.unsubscribe();
+            this.subscriptions.delete(topic);
+          }
+        }
+      }
+    };
   }
 
   disconnect() {
     if (this.client) {
-      this.client.deactivate();
-      this.connected = false;
-      this.messageCallbacks.clear();
+      console.log('🔌 Disconnecting WebSocket');
+      this.subscriptions.forEach(sub => sub.unsubscribe());
       this.subscriptions.clear();
+      this.messageCallbacks.clear();
+      this.client.deactivate();
+      this.client = null;
+      this.isConnectedState = false;
+      this.connectionPromise = null;
     }
   }
-
-  subscribeToRoom(roomId: number, callback: (message: ChatMessage) => void) {
-    if (!this.client || !this.connected) {
-      console.error('WebSocket not connected');
-      return;
-    }
-
-    if (this.subscriptions.has(roomId)) {
-      this.unsubscribeFromRoom(roomId);
-    }
-
-    const topic = `/topic/rooms/${roomId}`;
-    
-    const subscription = this.client.subscribe(topic, (message: IMessage) => {
-      try {
-        const chatMessage: ChatMessage = JSON.parse(message.body);
-        console.log(`📨 Message received in room ${roomId}:`, chatMessage);
-        callback(chatMessage);
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
-    });
-
-    this.subscriptions.set(roomId, subscription);
-    this.messageCallbacks.set(roomId, callback);
-  }
-
-  unsubscribeFromRoom(roomId: number) {
-    const subscription = this.subscriptions.get(roomId);
-    if (subscription) {
-      subscription.unsubscribe();
-      this.subscriptions.delete(roomId);
-    }
-    this.messageCallbacks.delete(roomId);
-  }
-
-  sendMessage(roomId: number, senderId: number, message: string) {
-    if (!this.client || !this.connected) {
-      console.error('WebSocket not connected');
-      return;
-    }
-    const payload = {
-      roomId,
-      senderId,
-      message,
-    };
-
-    this.client.publish({
-      destination: '/app/chat.send',
-      body: JSON.stringify(payload),
-    });
-  }
-
 
   isConnected(): boolean {
-    return this.connected;
+    return this.isConnectedState;
   }
 }
 
+// Singleton instance
 export const websocketService = new WebSocketService();

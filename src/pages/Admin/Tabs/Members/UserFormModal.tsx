@@ -100,7 +100,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
   useEffect(() => {
     const checkEmail = async () => {
-      if (!formData.email || formData.email.length < 3 || mode === 'edit') {
+      // Allow email check in edit mode if email is empty (social login users)
+      const isEditingEmptyEmail = mode === 'edit' && !user?.email;
+      
+      if (!formData.email || formData.email.length < 3) {
+        setEmailError('');
+        return;
+      }
+      
+      // Skip check in edit mode if user already has email
+      if (mode === 'edit' && user?.email && !isEditingEmptyEmail) {
         setEmailError('');
         return;
       }
@@ -124,7 +133,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         }
       } catch (err) {
         console.error('Email check error:', err);
-        // Don't show error for network issues, just clear the error
         setEmailError('');
       } finally {
         setEmailCheckLoading(false);
@@ -134,7 +142,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     // Debounce email check
     const timeoutId = setTimeout(checkEmail, 800);
     return () => clearTimeout(timeoutId);
-  }, [formData.email, mode]);
+  }, [formData.email, mode, user?.email]);
 
   const calculateAge = (dateOfBirth: string) => {
     if (!dateOfBirth) return null;
@@ -269,9 +277,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
               onChange={handleChange}
               required
               fullWidth
-              disabled={mode === 'edit' || !!success}
+              disabled={(mode === 'edit' && !!user?.email) || !!success}
               error={!!emailError}
-              helperText={emailError || (mode === 'create' ? 'This email can be registered.' : '')}
+              helperText={
+                emailError || 
+                (mode === 'edit' && !!user?.email 
+                  ? 'Email cannot be changed' 
+                  : mode === 'edit' && !user?.email
+                  ? 'Please add an email for this social login account'
+                  : 'This email can be registered.')
+              }
               InputProps={{
                 endAdornment: emailCheckLoading ? (
                   <InputAdornment position="end">

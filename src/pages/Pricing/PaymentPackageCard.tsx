@@ -17,23 +17,22 @@ import {
   CheckCircle,
   Star,
   LocalOffer,
-  Payment as PaymentIcon,
-  AppRegistration as RegisterIcon
+  Payment as PaymentIcon
 } from '@mui/icons-material';
 import type { PackageOption } from '../../@type/powergym.ts';
 
 interface PaymentPackageCardProps {
   readonly package: PackageOption;
   readonly onSelect: () => void;
-  readonly onPayNow: () => void;
   readonly processing: boolean;
+  readonly isActive?: boolean;
 }
 
 const PaymentPackageCard: React.FC<PaymentPackageCardProps> = ({ 
   package: pkg, 
   onSelect, 
-  onPayNow, 
-  processing 
+  processing,
+  isActive = false
 }) => {
   const IconComponent = pkg.icon || Star;
   const cardColor = pkg.color || '#1976d2';
@@ -315,43 +314,19 @@ const PaymentPackageCard: React.FC<PaymentPackageCardProps> = ({
 
       <CardActions sx={{ p: { xs: 2, md: 2.5 }, pt: 0 }}>
         <Stack spacing={1.5} sx={{ width: '100%' }}>
-          {/* Register Button */}
-          <Button
-            variant="outlined"
-            fullWidth
-            size="medium"
-            onClick={onSelect}
-            disabled={processing}
-            startIcon={<RegisterIcon />}
-            sx={{
-              fontWeight: 600,
-              fontSize: { xs: '0.8rem', md: '0.85rem' },
-              py: { xs: 1, md: 1.2 },
-              borderRadius: 2,
-              textTransform: 'none',
-              borderColor: pkg.color || '#1976d2',
-              color: pkg.color || '#1976d2',
-              '&:hover': {
-                borderColor: pkg.color || '#1976d2',
-                backgroundColor: `${pkg.color || '#1976d2'}08`,
-                transform: 'translateY(-2px)',
-              }
-            }}
-          >
-              {processing ? 'Processing...' : 'Register Directly'}
-          </Button>
-
           {/* Payment Button */}
           <Button
             variant="contained"
             fullWidth
             size="medium"
-            onClick={onPayNow}
-            disabled={processing}
-            startIcon={<PaymentIcon />}
+            onClick={onSelect}
+            disabled={processing || isActive}
+            startIcon={isActive ? <CheckCircle /> : <PaymentIcon />}
             sx={{
               position: 'relative',
-              background: 'linear-gradient(135deg, #d82d8b, #a4036f)',
+              background: isActive 
+                ? 'linear-gradient(135deg, #4caf50, #388e3c)'
+                : 'linear-gradient(135deg, #00b4ff 0%, #0066ff 100%)',
               color: 'white',
               fontWeight: 700,
               fontSize: { xs: '0.8rem', md: '0.85rem' },
@@ -359,24 +334,36 @@ const PaymentPackageCard: React.FC<PaymentPackageCardProps> = ({
               borderRadius: 2,
               textTransform: 'none',
               overflow: 'hidden',
-              boxShadow: '0 6px 16px rgba(216,45,139,0.4)',
+              boxShadow: isActive 
+                ? '0 6px 16px rgba(76,175,80,0.4)'
+                : '0 6px 16px rgba(0,180,255,0.4)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #c02a7f, #8f0362)',
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 28px rgba(216,45,139,0.6)',
+                background: isActive
+                  ? 'linear-gradient(135deg, #4caf50, #388e3c)'
+                  : 'linear-gradient(135deg, #0099e6, #0052cc)',
+                transform: isActive ? 'none' : 'translateY(-4px)',
+                boxShadow: isActive
+                  ? '0 6px 16px rgba(76,175,80,0.4)'
+                  : '0 12px 28px rgba(0,180,255,0.6)',
               },
               '&:active': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(216,45,139,0.5)'
+                transform: isActive ? 'none' : 'translateY(-2px)',
+                boxShadow: isActive
+                  ? '0 6px 16px rgba(76,175,80,0.4)'
+                  : '0 6px 16px rgba(0,180,255,0.5)'
               },
               '&:disabled': {
-                background: 'linear-gradient(135deg, #ccc, #bbb)',
-                color: '#666',
-                boxShadow: 'none'
+                background: isActive
+                  ? 'linear-gradient(135deg, #4caf50, #388e3c)'
+                  : 'linear-gradient(135deg, #ccc, #bbb)',
+                color: '#fff',
+                boxShadow: isActive
+                  ? '0 6px 16px rgba(76,175,80,0.4)'
+                  : 'none'
               }
             }}
           >
-              {processing ? 'Processing...' : 'Payment Method MoMo'}
+            {isActive ? 'ALREADY REGISTERED' : (processing ? 'Processing...' : 'Register Now')}
           </Button>
         </Stack>
       </CardActions>

@@ -17,18 +17,19 @@ import {
   Avatar,
   Stack
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility, Info, Build } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility , Build } from '@mui/icons-material';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { styled } from '@mui/material/styles';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService.ts';
-import ServiceFormModal from './ServiceFormModal.tsx';
 import DeleteConfirmModal from '../DeleteConfirmModal.tsx';
-import ServiceRegistrationsModal from './ServiceRegistrationsModal.tsx';
+import ServiceRegistrationsModal from './Registrations/ServiceRegistrationsModal.tsx';
 import AdminServiceDetailModal from './AdminServiceDetailModal.tsx';
 import { useWebSocket } from '../../../../hooks/useWebSocket.ts';
 import { getAccessToken } from '../../../../services/authStorage.ts';
 import TablePagination from '../../../../components/Common/TablePagination.tsx';
 import { usePagination } from '../../../../hooks/usePagination.ts';
 import RichTextDisplay from '../../../../components/Common/RichTextDisplay.tsx';
+import ServiceFormModal from "./ServiceFormModal/ServiceFormModal.tsx";
 
 /* ─── Styled Components ─────────────────────────────────── */
 
@@ -115,14 +116,13 @@ const ServicesManagement: React.FC = () => {
     setPaginationData,
   } = usePagination(5);
 
-  // Listen to WebSocket for real-time updates
   const { lastMessage } = useWebSocket({
-    topics: ['/topic/service_registration'],
+    topics: ['/topic/admin'],
     autoConnect: true,
   });
 
   useEffect(() => {
-    if (lastMessage?.action === 'REGISTERED') {
+    if (lastMessage?.entityName === 'SERVICE_REGISTRATION' && lastMessage?.action === 'REGISTERED') {
       loadData(paginationState.page, paginationState.rowsPerPage);
     }
   }, [lastMessage, paginationState.page, paginationState.rowsPerPage]);
@@ -366,18 +366,6 @@ const ServicesManagement: React.FC = () => {
                       <Box display="flex" gap={0.5}>
                         <IconButton
                             size="small"
-                            onClick={() => handleOpenDetail(service)}
-                            title="View Service Details"
-                            sx={{
-                              color: '#0066ff',
-                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
-                            }}
-                        >
-                          <Info fontSize="small" />
-                        </IconButton>
-
-                        <IconButton
-                            size="small"
                             onClick={() => handleOpenRegistrations(service)}
                             title="View Registrations"
                             sx={{
@@ -385,8 +373,21 @@ const ServicesManagement: React.FC = () => {
                               '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
                             }}
                         >
+                          <HowToRegIcon  fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                            size="small"
+                            onClick={() => handleOpenDetail(service)}
+                            title="View Service Details"
+                            sx={{
+                              color: '#0066ff',
+                              '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
+                            }}
+                        >
                           <Visibility fontSize="small" />
                         </IconButton>
+
+
 
                         <IconButton
                             size="small"

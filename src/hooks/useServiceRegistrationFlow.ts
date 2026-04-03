@@ -10,6 +10,7 @@ export interface BookingSetupData {
   startTime: string;
   endTime: string;
   endDate: string;
+  bookingId?: number; // Store booking ID after creation
 }
 
 export interface ServiceRegistrationFlowState {
@@ -59,6 +60,8 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
   };
 
   const handleBookingSetupComplete = (bookingData: BookingSetupData) => {
+    // Just store booking data and show payment modal
+    // Booking will be created AFTER payment succeeds
     setPendingBookingData(bookingData);
     setShowBookingSetup(false);
     setShowPaymentMethodSelection(true);
@@ -75,41 +78,75 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
   };
 
   const handlePaymentSuccess = async (onDone?: () => void) => {
-    if (pendingBookingData) {
-      try {
-        const session = loadAuthSession();
-        const userId = session?.user?.id;
-        if (userId) {
-          const { getMyRegistrations } = await import('../services/serviceRegistrationService');
-          let registrationId: number | null = null;
-          for (let attempt = 0; attempt < 3; attempt++) {
-            if (attempt > 0) await new Promise(r => setTimeout(r, 1500));
-            const existing = await getMyRegistrations();
-            const found = existing.data?.find(
-                r => r.service.id === Number(serviceId) && r.status === 'ACTIVE'
-            );
-            if (found) { registrationId = found.id; break; }
-          }
-
-          if (registrationId) {
-            await createBooking(userId, {
-              trainerId: pendingBookingData.trainerId ?? undefined,
-              serviceRegistrationId: registrationId,
-              bookingDate: pendingBookingData.bookingDate,
-              startTime: pendingBookingData.startTime,
-              endTime: pendingBookingData.endTime,
-            });
-          } else {
-            console.warn('ServiceRegistration not found after payment — booking skipped');
-          }
-        }
-      } catch (e) {
-        console.error('Could not create booking after payment:', e);
-      }
+    // Payment successful - webhook has already activated ServiceRegistration
+    // Now just create the TrainerBooking
+    console.log('[handlePaymentSuccess] Starting...', { pendingBookingData, serviceId });
+    
+    if (!pendingBookingData || !serviceId) {
+      console.error('[handlePaymentSuccess] Missing data:', { pendingBookingData, serviceId });
+      toast.error('Booking data not found');
+      return;
     }
-    toast.success('Payment successful! Your trainer booking is being processed.');
-    reset();
-    onDone?.();
+
+    try {
+      const session = loadAuthSession();
+      const userId = session?.user?.id;
+      if (!userId) {
+        console.error('[handlePaymentSuccess] No user session');
+        toast.error('User session not found');
+        return;
+      }
+
+      console.log('[handlePaymentSuccess] Fetching registrations for user:', userId);
+      
+      // Find the ACTIVE ServiceRegistration (activated by webhook)
+      const { getMyRegistrations } = await import('../services/serviceRegistrationService');
+      const registrationsRes = await getMyRegistrations();
+      
+      console.log('[handlePaymentSuccess] Registrations response:', registrationsRes);
+      
+      const activeRegistration = registrationsRes.data?.find(
+        r => r.service.id === Number(serviceId) && r.status === 'ACTIVE'
+      );
+      
+      console.log('[handlePaymentSuccess] Active registration found:', activeRegistration);
+      
+      if (!activeRegistration) {
+        console.error('[handlePaymentSuccess] No ACTIVE registration found for serviceId:', serviceId);
+        toast.error('Service registration not found. Please contact support.');
+        return;
+      }
+
+      // Create booking with the activated registration
+      const bookingReq = {
+        trainerId: pendingBookingData.trainerId ?? undefined,
+        serviceRegistrationId: activeRegistration.id,
+        bookingDate: pendingBookingData.bookingDate,
+        startTime: pendingBookingData.startTime,
+        endTime: pendingBookingData.endTime,
+      };
+      
+      console.log('[handlePaymentSuccess] Creating booking with request:', bookingReq);
+      
+      const bookingRes = await createBooking(userId, bookingReq);
+      
+      console.log('[handlePaymentSuccess] Booking response:', bookingRes);
+      
+      if (!bookingRes.success) {
+        console.error('[handlePaymentSuccess] Booking creation failed:', bookingRes.message);
+        toast.error(bookingRes.message || 'Failed to create booking');
+        return;
+      }
+
+      console.log('[handlePaymentSuccess] Booking created successfully!');
+      toast.success('Payment successful! Your booking is pending trainer confirmation.');
+      reset();
+      onDone?.();
+      
+    } catch (error: any) {
+      console.error('[handlePaymentSuccess] Error:', error);
+      toast.error(error?.response?.data?.message || 'Failed to complete booking');
+    }
   };
 
   return {

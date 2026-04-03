@@ -98,6 +98,17 @@ export const getAllTrainers = async (page: number = 0, size: number = 10): Promi
   return response.data;
 };
 
+export const searchTrainers = async (
+  searchTerm: string,
+  page: number = 0,
+  size: number = 10
+): Promise<ApiResponse<PageResponse<TrainerResponse>>> => {
+  const response = await privateClient.get('/admin/trainers/search', {
+    params: { searchTerm, page, size }
+  });
+  return response.data;
+};
+
 export const getTrainerById = async (id: number): Promise<ApiResponse<TrainerResponse>> => {
   const response = await privateClient.get(`/admin/trainers/${id}`);
   return response.data;

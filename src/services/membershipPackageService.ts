@@ -77,6 +77,16 @@ class MembershipPackageService {
   async deletePackage(id: number): Promise<void> {
     await privateClient.delete<ApiResponse<void>>(`${this.BASE_URL}/${id}`);
   }
+  
+  async getPackageMembers(packageId: number): Promise<any[]> {
+    const response = await privateClient.get<ApiResponse<any[]>>(`${this.BASE_URL}/${packageId}/members`);
+    return response.data.data;
+  }
+  
+  async getMyActivePackages(): Promise<number[]> {
+    const response = await privateClient.get<ApiResponse<number[]>>('/user/memberships/active-packages');
+    return response.data.data;
+  }
 }
 
 export default new MembershipPackageService();

@@ -14,7 +14,10 @@ export interface CreatePaymentRequest {
 
 export interface CreateBankPaymentRequest {
   userId: number;
-  serviceId: number;
+  serviceId?: number;
+  packageId?: number;
+  itemType?: string;
+  bookingId?: number;
 }
 
 export interface CreateBankPaymentResponse {

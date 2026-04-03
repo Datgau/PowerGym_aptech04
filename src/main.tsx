@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
@@ -6,10 +5,11 @@ import "./styles/tiptap.css";
 import App from "./App.tsx";
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {AuthProvider} from "./routes/AuthContext.tsx";
+import ScrollToTop from "./until/ScrollToTop.tsx";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
-console.log("App mounted");
+
 const theme = createTheme({
     typography: {
         fontFamily: `'Inter', 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
@@ -21,23 +21,13 @@ const theme = createTheme({
 });
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <BrowserRouter>
-        <AuthProvider>
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <App />
-        </ThemeProvider>
-        </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>
+  <BrowserRouter>
+      <ScrollToTop />
+      <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </AuthProvider>
+  </BrowserRouter>
 );
-
-
-// createRoot(rootElement).render(
-//     <StrictMode>
-//         <BrowserRouter>
-//             <App />
-//         </BrowserRouter>
-//     </StrictMode>
-// );

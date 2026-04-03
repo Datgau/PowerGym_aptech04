@@ -3,7 +3,7 @@ import type { PackageOption, NotificationMessage } from '../../../@type/powergym
 import {useAuth} from "../../../hooks/useAuth.ts";
 
 interface UsePackageSelectionProps {
-  onSelectPackage: (packageId: string) => Promise<void>;
+  onSelectPackage: (packageId: number) => Promise<void>;
 }
 
 interface UsePackageSelectionReturn {
@@ -36,8 +36,8 @@ export const usePackageSelection = ({
     if (!selectedPackage) return;
 
     try {
-      setProcessingPackage(selectedPackage.id);
-      await onSelectPackage(selectedPackage.id);
+      setProcessingPackage(String(selectedPackage.id));
+      await onSelectPackage(Number(selectedPackage.id));
       
       setNotification({
         id: 'package-success',

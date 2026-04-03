@@ -46,6 +46,10 @@ export interface UserMembership {
   startDate: string;
   endDate: string;
   isActive: boolean;
+  paidAmount?: number;
+  status: string;
+  paymentMethod?: string;
+  registrationDate?: string;
 }
 
 export interface UserServiceRegistration {

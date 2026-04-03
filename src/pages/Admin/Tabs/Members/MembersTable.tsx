@@ -15,15 +15,13 @@ import {
   IconButton,
   CircularProgress,
   Alert,
-  ToggleButtonGroup,
-  ToggleButton,
   Stack,
   TextField,
   InputAdornment, Tooltip
 } from '@mui/material';
 import { Add, Edit, Visibility, Search, Clear, People } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { getAllUsers, getUsersByRole, getUserCounts, searchUsers, createUser, updateUser, getAllRolesLegacy, toggleUserStatus, type UserResponse, type Role } from '../../../../services/adminService.ts';
+import { getUsersByRole, searchUsers, createUser, updateUser, getAllRolesLegacy, toggleUserStatus, type UserResponse, type Role } from '../../../../services/adminService.ts';
 import UserFormModal from './UserFormModal.tsx';
 import UserDetailModal from './UserDetailModal.tsx';
 import TablePagination from '../../../../components/Common/TablePagination';
@@ -161,13 +159,7 @@ const MembersTable: React.FC = () => {
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<boolean | null>(null); // null = all, true = active, false = inactive
-  const [userCounts, setUserCounts] = useState<{
-    USER: number;
-    STAFF: number;
-    TOTAL: number;
-  }>({ USER: 0, STAFF: 0, TOTAL: 0 });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
   
@@ -181,36 +173,30 @@ const MembersTable: React.FC = () => {
     setPaginationData,
   } = usePagination(5);
 
-  // Load initial data and user counts - tách biệt để tránh conflict với search
+  // Load initial data - tách biệt để tránh conflict với search
   useEffect(() => {
     if (!isSearching) {
-      loadUserCounts();
       loadData(paginationState.page, paginationState.rowsPerPage);
     }
-  }, [paginationState.page, paginationState.rowsPerPage, roleFilter, statusFilter, isSearching]);
-
-  // Handle search with useDeferredValue - optimized to prevent focus loss
+  }, [paginationState.page, paginationState.rowsPerPage, statusFilter, isSearching]);
   useEffect(() => {
     if (deferredSearch.length >= 2) {
       // Chỉ set isSearching nếu chưa search
       if (!isSearching) {
         setIsSearching(true);
       }
-      
-      // Tạo function riêng để tránh dependencies
       const performSearch = async () => {
         try {
           const response = await searchUsers(
             deferredSearch, 
-            roleFilter, 
-            0, // Always start from page 0 for new search
+            'USER', 
+            0,
             paginationState.rowsPerPage
           );
           if (response.success) {
             const pageData = response.data;
             setMembers(pageData.content);
             setPaginationData(pageData.totalPages, pageData.totalElements);
-            // Không reset page để tránh re-render
           }
         } catch (err: unknown) {
           if (err instanceof Error) {
@@ -227,9 +213,7 @@ const MembersTable: React.FC = () => {
       const reloadData = async () => {
         try {
           const [usersRes, rolesRes] = await Promise.all([
-            roleFilter === 'ALL' 
-              ? getAllUsers(0, paginationState.rowsPerPage)
-              : getUsersByRole(roleFilter, 0, paginationState.rowsPerPage),
+            getUsersByRole('USER', 0, paginationState.rowsPerPage),
             getAllRolesLegacy()
           ]);
           if (usersRes.success && rolesRes.success) {
@@ -256,7 +240,7 @@ const MembersTable: React.FC = () => {
         try {
           const response = await searchUsers(
             deferredSearch, 
-            roleFilter, 
+            'USER', 
             paginationState.page,
             paginationState.rowsPerPage
           );
@@ -277,17 +261,6 @@ const MembersTable: React.FC = () => {
     }
   }, [paginationState.page, paginationState.rowsPerPage]);
 
-  const loadUserCounts = useCallback(async () => {
-    try {
-      const countsRes = await getUserCounts();
-      if (countsRes.success) {
-        setUserCounts(countsRes.data);
-      }
-    } catch (err: unknown) {
-      console.error('Failed to load user counts:', err);
-    }
-  }, []);
-
   const loadData = useCallback(async (page: number = 0, size: number = 10) => {
     if (isSearching) {
       return;
@@ -297,9 +270,7 @@ const MembersTable: React.FC = () => {
       setLoading(true);
 
       const [usersRes, rolesRes] = await Promise.all([
-        roleFilter === 'ALL' 
-          ? getAllUsers(page, size)
-          : getUsersByRole(roleFilter, page, size),
+        getUsersByRole('USER', page, size),
         getAllRolesLegacy()
       ]);
 
@@ -327,7 +298,7 @@ const MembersTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, statusFilter, isSearching, setPaginationData]);
+  }, [statusFilter, isSearching, setPaginationData]);
 
   const handleClearSearch = useCallback(() => {
     setSearchTerm('');
@@ -366,7 +337,6 @@ const MembersTable: React.FC = () => {
                     : user
             )
         );
-        loadUserCounts();
 
       } else {
         setError(response.message || 'Failed to toggle user status');
@@ -374,7 +344,7 @@ const MembersTable: React.FC = () => {
     } catch (err: unknown) {
       setError('Failed to toggle user status');
     }
-  }, [loadUserCounts]);
+  }, []);
 
   const handleSubmit = useCallback(async (data: any) => {
     try {
@@ -390,25 +360,12 @@ const MembersTable: React.FC = () => {
         }
       }
       setOpenForm(false);
-      await loadUserCounts();
       await loadData(paginationState.page, paginationState.rowsPerPage);
       
     } catch (error: any) {
       throw error;
     }
-  }, [formMode, selectedUser, loadUserCounts, loadData, paginationState.page, paginationState.rowsPerPage]);
-
-
-  const handleFilterChange = useCallback((_event: React.MouseEvent<HTMLElement>, newFilter: string | null) => {
-    if (newFilter !== null) {
-      setRoleFilter(newFilter);
-      handleChangePage(null, 0);
-      if (isSearching) {
-        setIsSearching(false);
-        setTimeout(() => setIsSearching(true), 50);
-      }
-    }
-  }, [handleChangePage, isSearching]);
+  }, [formMode, selectedUser, loadData, paginationState.page, paginationState.rowsPerPage]);
   
   const filteredMembers = members;
 
@@ -436,7 +393,7 @@ const MembersTable: React.FC = () => {
               Member Management
             </Typography>
             <Typography fontSize={13.5} color="#64748b" mt={0.3}>
-              Manage gym members and staff accounts
+              Manage gym member accounts
             </Typography>
           </Box>
         </HeaderLeft>
@@ -462,43 +419,7 @@ const MembersTable: React.FC = () => {
         </Box>
 
         {/* ── Filter Bar ── */}
-        <Box mb={3} display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-          <ToggleButtonGroup
-            value={roleFilter}
-            exclusive
-            onChange={handleFilterChange}
-            size="small"
-            sx={{
-              '& .MuiToggleButton-root': {
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-                color: '#64748b',
-                fontWeight: 500,
-                fontSize: '0.875rem',
-                px: 2,
-                py: 1,
-                '&:hover': {
-                  backgroundColor: '#f8fafc',
-                },
-                '&.Mui-selected': {
-                  backgroundColor: '#0066ff',
-                  color: '#fff',
-                  '&:hover': {
-                    backgroundColor: '#0052cc',
-                  },
-                },
-              },
-            }}
-          >
-            <ToggleButton sx={{mr:2}} value="ALL">All ({userCounts.TOTAL})</ToggleButton>
-            <ToggleButton sx={{mr:2}} value="USER">
-              User ({userCounts.USER})
-            </ToggleButton>
-            <ToggleButton sx={{mr:2}} value="STAFF">
-              Staff ({userCounts.STAFF})
-            </ToggleButton>
-          </ToggleButtonGroup>
-
+        <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center" flexWrap="wrap" gap={2}>
           {/* Status Filter Toggle */}
           <StatusFilterToggle
             value={statusFilter}
@@ -519,7 +440,7 @@ const MembersTable: React.FC = () => {
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Phone</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', md: 'table-cell' }, fontWeight: 600, color: '#0f172a' }}>Date of Birth</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, display: { xs: 'none', sm: 'table-cell' }, fontWeight: 600, color: '#0f172a' }}>Join Date</TableCell>
-                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Role</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Status</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -551,11 +472,11 @@ const MembersTable: React.FC = () => {
                     {member.createDate ? new Date(member.createDate).toLocaleDateString('vi-VN') : '-'}
                   </TableCell>
                   <TableCell>
-                    <Chip 
-                      label={member.role?.name || 'USER'} 
-                      color={member.role?.name === 'STAFF' ? 'secondary' : 'primary'}
-                      size="small"
-                      sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
+                    <Chip
+                        label={member.isActive ? 'ACTIVE' : 'INACTIVE'}
+                        color={member.isActive ? 'success' : 'error'}
+                        size="small"
+                        sx={{ fontSize: { xs: '0.75rem', md: '0.8125rem' } }}
                     />
                   </TableCell>
                   <TableCell>
@@ -625,9 +546,7 @@ const MembersTable: React.FC = () => {
               <Typography variant="h6" color="text.secondary" mb={2}>
                 {isSearching 
                   ? `No results found for "${searchTerm}"` 
-                  : roleFilter === 'ALL' 
-                    ? 'No members found' 
-                    : `No ${roleFilter.toLowerCase()} members found`
+                  : 'No members found'
                 }
               </Typography>
               {isSearching ? (
@@ -638,15 +557,7 @@ const MembersTable: React.FC = () => {
                 >
                   Clear Search
                 </Button>
-              ) : roleFilter !== 'ALL' && (
-                <Button 
-                  variant="outlined" 
-                  onClick={() => setRoleFilter('ALL')}
-                  sx={{ borderRadius: 2, mr: 2 }}
-                >
-                  Show All Members
-                </Button>
-              )}
+              ) : null}
               <AddButton variant="contained" startIcon={<Add />} onClick={handleOpenCreate}>
                 Add Member
               </AddButton>
@@ -661,7 +572,7 @@ const MembersTable: React.FC = () => {
         user={selectedUser}
         roles={roles}
         mode={formMode}
-        allowedRoles={['USER', 'STAFF']}
+        allowedRoles={['USER']}
       />
 
       <UserDetailModal

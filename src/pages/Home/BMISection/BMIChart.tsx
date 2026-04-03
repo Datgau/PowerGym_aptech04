@@ -155,18 +155,19 @@ const BMIChart: React.FC = () => {
                 </Box>
 
                 {/* BMI image */}
-                <Box
+<Box
                     sx={{
                         mt: 3,
-                        height: { xs: 110, md: 140 },
+                        height: { xs: 180, md: 220 },
                         borderRadius: '12px',
                         overflow: 'hidden',
                         border: '1px solid rgba(19,102,186,0.12)',
                         backgroundImage: 'url(/images/bmi.jpg)',
-                        backgroundSize: 'cover',
+                        backgroundSize: 'contain',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
-                        background: 'linear-gradient(135deg, rgba(0,180,255,0.08), rgba(19,102,186,0.08))',
+                        backgroundColor: '#f8f5e8',
+                        position: 'relative',
                     }}
                 />
             </CardContent>

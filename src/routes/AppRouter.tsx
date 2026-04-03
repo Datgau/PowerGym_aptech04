@@ -12,13 +12,12 @@ import PrivacyPolicy from "../pages/PrivacyPolicy";
 // import Messages from "../pages/Messages";
 // import Notifications from "../pages/Notifications";
 import AuthRedirect from "../components/Auth/AuthRedirect";
-// import Profile from "../pages/Profile";
+import Profile from "../pages/Profile/Profile.tsx";
 // import Settings from "../pages/Settings";
 
 // PowerGym Pages
 import Service from "../pages/Services/Service.tsx";
 import StoryDetailPage from "../pages/Home/StoriesSection/StoryDetailPage.tsx";
-import Equipments from "../pages/Equipments/Equipments.tsx";
 import Pricing from "../pages/Pricing/Pricing.tsx";
 import News from "../pages/News/News.tsx";
 // import Promotions from "../pages/PowerGym/Promotions";
@@ -28,6 +27,7 @@ import Promotions from "../pages/Promotions/Promotions.tsx";
 import PaymentResult from "../pages/Payment/PaymentResult.tsx";
 import ForgotPassword from "../components/Auth/ForgotPassword.tsx";
 import ResetPassword from "../components/Auth/ResetPassword.tsx";
+import About from "../pages/About/About.tsx";
 
 export const AppRouter = () => (
     <>
@@ -43,52 +43,28 @@ export const AppRouter = () => (
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/data-deletion" element={<DataDeletion />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/service" element={<Service />} />
             <Route path="/service/:id" element={<Service />} />
             <Route path={"/promotions"} element={<Promotions />} />
             <Route path={"/rewards"} element={<Rewards />} />
             <Route path="/stories/:storyId" element={<StoryDetailPage />} />
-            <Route path="/equipment" element={<Equipments />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/news" element={<News />} />
-            <Route path="/payment/result" element={<PaymentResult />} />
-            
+
             {/* Protected Routes - Require authentication */}
             <Route element={<ProtectedRoute />}>
+                <Route path="/payment/result" element={<PaymentResult />} />
                 {/*<Route path="/powergym/news" element={<News />} />*/}
                 {/*<Route path="/powergym/promotions" element={<Promotions />} />*/}
                 <Route path="/powergym/rewards" element={<Rewards/>} />
                 {/*<Route path="/messages" element={<Messages />} />*/}
                 {/*<Route path="/messages/:conversationId" element={<Messages />} />*/}
                 {/*<Route path="/notifications" element={<Notifications />} />*/}
-                {/*<Route path="/profile" element={<Profile />} />*/}
+                <Route path="/profile" element={<Profile />} />
                 {/*<Route path="/settings" element={<Settings />} />*/}
             </Route>
-            {/* Public Routes */}
-            {/*<Route element={<MainLayout />}>*/}
-            {/*    <Route path="/" element={<Home />} />*/}
-            {/*    <Route path="/home" element={<Home />} />*/}
-            {/*    <Route path="/shop" element={<Shop />} />*/}
-            {/*    <Route path="/about" element={<About />} />*/}
-            {/*    <Route path="/contact" element={<Contact />} />*/}
-            {/*    <Route path="/blog" element={<Blog />} />*/}
-            {/*    <Route path="/blog/:id" element={<BlogDetail />} />*/}
-            {/*    <Route path="/detail-product/:id" element={<ProductDetail />} />*/}
-            {/*    <Route path="/cart" element={<Cart />} />*/}
-            {/*    <Route path="/wishlist" element={<WishlistPage />} />*/}
-            {/*    <Route path="/faqs" element={<FAQPage />} />*/}
-            {/*    <Route path="/myorders" element={<MyOrders />} />*/}
-            {/*    <Route path="/checkout" element={<Checkout />} />*/}
-            {/*</Route>*/}
 
-            {/* Protected Routes - cần đăng nhập */}
-            <Route element={<ProtectedRoute />}>
-                {/*<Route element={<MainLayout />}>*/}
-
-                {/*    <Route path="/profile" element={<Profile />} />*/}
-                {/*    <Route path="/profile/edit" element={<EditProfile />} />*/}
-                {/*</Route>*/}
-            </Route>
 
             {/* Admin Routes - Only for ADMIN role */}
             <Route

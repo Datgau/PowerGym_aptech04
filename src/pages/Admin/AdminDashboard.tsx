@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
+import StaffTable from './Tabs/Staff/StaffTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
 import ServiceCategoryGrid from './Tabs/ServiceCategory/ServiceCategoryGrid.tsx';
 import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Services/ServicesManagement.tsx';
+import ServiceRegistrationsGrid from './Tabs/ServiceRegistrations/ServiceRegistrationsGrid.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
-import EquipmentManagementPage from './Tabs/Equipment/EquipmentManagementPage.tsx';
 import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";
 
 // Format currency helper
@@ -21,12 +22,13 @@ const formatCurrency = (amount: number) => {
 // Tab Components - Defined outside to avoid re-creation on each render
 const DashboardTab: React.FC = () => <DashboardOverview formatCurrency={formatCurrency} />;
 const MembersTab: React.FC = () => <MembersTable />;
+const StaffTab: React.FC = () => <StaffTable />;
 const TrainersTab: React.FC = () => <TrainersGrid />;
 const CategoriesTab: React.FC = () => <ServiceCategoryGrid />;
 const ServicesTab: React.FC = () => <ServicesManagement />;
+const ServiceRegistrationsTab: React.FC = () => <ServiceRegistrationsGrid />;
 const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const MembershipTab: React.FC = () => <MembershipPackagesPage />;
-const EquipmentTab: React.FC = () => <EquipmentManagementPage />;
 
 const FinancialTab: React.FC = () => (
   <Box>
@@ -52,11 +54,12 @@ const AdminDashboard: React.FC = () => {
   const tabComponents = [
     <DashboardTab key="dashboard" />,
     <MembersTab key="members" />,
+    <StaffTab key="staff" />,
     <TrainersTab key="trainers" />,
     <CategoriesTab key="categories" />,
     <ServicesTab key="services" />,
+    <ServiceRegistrationsTab key="service-registrations" />,
     <StoriesTab key="stories" />,
-    <EquipmentTab key="equipment" />,
     <MembershipTab key="membership" />,
     <FinancialTab key="financial" />,
     <SettingsTab key="settings" />

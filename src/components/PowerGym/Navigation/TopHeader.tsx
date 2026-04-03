@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './TopHeader.module.css';
 import {useAuth} from "../../../hooks/useAuth.ts";
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const TopHeader: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -19,6 +22,12 @@ const TopHeader: React.FC = () => {
       navigate('/login', { replace: true });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleProfile = () => {
+    navigate('/profile');
+    setIsAvatarMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleLogin = () => {
@@ -44,12 +53,13 @@ const TopHeader: React.FC = () => {
     { label: 'REPORTS', path: '/admin/reports' },
     { label: 'SETTINGS', path: '/admin/settings' }
   ] : [
+    { label: 'ABOUT', path: '/about' },
     { label: 'SERVICES', path: '/service' },
     { label: 'PRICING', path: '/pricing' },
-    { label: 'EQUIPMENTS', path: '/equipment ' },
     { label: 'PROMOTIONS', path: '/promotions' },
+    { label: 'REWARDS', path: '/rewards' },
     { label: 'NEWS', path: '/news' },
-    { label: 'REWARDS', path: '/rewards' }
+
   ];
 
   const handleMenuClick = (path: string) => {
@@ -86,55 +96,73 @@ const TopHeader: React.FC = () => {
         </nav>
 
         <div className={styles.rightSection}>
-          {!isAdmin && (
-            <button className={styles.registerButton}>
-              FREE TRIAL
-            </button>
-          )}
-          
+          <div className={styles.timeDisplay}>
+            {getCurrentTime()}
+          </div>
+
           <div className={styles.userSection}>
-            <div className={styles.timeDisplay}>
-              {getCurrentTime()}
-            </div>
-            
+
+
             {user ? (
-              <>
-                <div className={styles.userInfo}>
-                  <div className={styles.userAvatar}>
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.fullName} />
-                    ) : (
-                      <span>{user.fullName?.charAt(0) || 'U'}</span>
-                    )}
-                  </div>
-                  <div className={styles.userDetails}>
-                    <span className={styles.userName}>{user.fullName || 'Anonymus'}</span>
-                    <span className={styles.userRole}>
+                <>
+                  <div
+                      className={styles.userInfo}
+                      onMouseEnter={() => setIsAvatarMenuOpen(true)}
+                      onMouseLeave={() => setIsAvatarMenuOpen(false)}
+                  >
+                    <div className={styles.userAvatar}>
+                      {user.avatar ? (
+                          <img src={user.avatar} alt={user.fullName}/>
+                      ) : (
+                          <span>{user.fullName?.charAt(0) || 'U'}</span>
+                      )}
+                    </div>
+                    <div className={styles.userDetails}>
+                      <span className={styles.userName}>{user.fullName || 'Anonymus'}</span>
+                      <span className={styles.userRole}>
                       {isAdmin ? 'Administrator' : 'Member'}
                     </span>
+                    </div>
+
+                    {/* Avatar Dropdown Menu */}
+                    {isAvatarMenuOpen && (
+                        <div className={styles.avatarDropdown}>
+                          <button
+                              className={styles.dropdownItem}
+                              onClick={handleProfile}
+                          >
+                        <span className={styles.dropdownIcon}>
+                          <PersonIcon fontSize="small"/>
+                        </span>
+                            Profile
+                          </button>
+
+                          <div className={styles.dropdownDivider}></div>
+
+                          <button
+                              className={styles.dropdownItem}
+                              onClick={handleLogout}
+                          >
+                        <span className={styles.dropdownIcon}>
+                          <LogoutIcon fontSize="small"/>
+                        </span>
+                            Logout
+                          </button>
+                        </div>
+                    )}
                   </div>
-                </div>
-                <button className={styles.logoutButton} onClick={handleLogout}>
-                  🚪
-                </button>
-              </>
+                </>
             ) : (
-              // Display login button when not logged in
-              <button className={styles.loginButton} onClick={handleLogin}>
-                Login
-              </button>
+                // Display login button when not logged in
+                <button className={styles.loginButton} onClick={handleLogin}>
+                  Login
+                </button>
             )}
           </div>
-
-          {/* Language selector */}
-          <div className={styles.languageSelector}>
-            <span className={styles.flagIcon}>🇻🇳</span>
-          </div>
-
           {/* Mobile menu button */}
-          <button 
-            className={styles.mobileMenuButton}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          <button
+              className={styles.mobileMenuButton}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             ☰
           </button>
@@ -143,7 +171,7 @@ const TopHeader: React.FC = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className={styles.mobileMenu}>
+          <div className={styles.mobileMenu}>
           {menuItems.map((item, index) => (
             <button
               key={index}
@@ -153,11 +181,7 @@ const TopHeader: React.FC = () => {
               {item.label}
             </button>
           ))}
-          {!isAdmin && (
-            <button className={styles.mobileRegisterButton}>
-              FREE TRIAL
-            </button>
-          )}
+
           {!user && (
             <button className={styles.mobileLoginButton} onClick={handleLogin}>
               Login

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useDeferredValue, useRef, memo } from 'react';
 import {
   Box,
   Typography,
@@ -15,21 +15,81 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Stack
+  Stack,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
-import { Add, Edit, Visibility, FitnessCenter } from '@mui/icons-material';
+import { Add, Edit, Visibility, FitnessCenter, Search, Clear } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { 
-  getAllTrainers, 
+  getAllTrainers,
+  searchTrainers,
   type TrainerResponse 
 } from '../../../../services/trainerService';
 import { toggleUserStatus } from '../../../../services/adminService';
 import CreateTrainerModal from './CreateTrainerModal';
+import UpdateTrainerModal from './UpdateTrainerModal';
 import TrainerDetailModal from './TrainerDetailModal';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 import StatusFilterToggle from '../../../../components/Common/StatusFilterToggle.tsx';
 import LockButton from '../../../../components/Common/LockButton.tsx';
+
+const SearchInput = memo(({ 
+  searchTerm, 
+  onSearchChange, 
+  onClearSearch 
+}: {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  onClearSearch: () => void;
+}) => {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  return (
+    <TextField
+      ref={searchInputRef}
+      fullWidth
+      placeholder="Search by email or phone number..."
+      value={searchTerm}
+      onChange={(e) => onSearchChange(e.target.value)}
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search sx={{ color: '#64748b' }} />
+            </InputAdornment>
+          ),
+          endAdornment: searchTerm && (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                onClick={onClearSearch}
+                sx={{ color: '#64748b' }}
+              >
+                <Clear />
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+      }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 2,
+          backgroundColor: '#f8fafc',
+          '&:hover': {
+            backgroundColor: '#f1f5f9',
+          },
+          '&.Mui-focused': {
+            backgroundColor: '#fff',
+          },
+        },
+      }}
+    />
+  );
+});
+
+SearchInput.displayName = 'SearchInput';
 const PageWrapper = styled(Box)({
   minHeight: '100%',
   background: '#f8faff',
@@ -100,9 +160,14 @@ const TrainersGrid: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState<TrainerResponse | null>(null);
-  const [statusFilter, setStatusFilter] = useState<boolean | null>(null); // null = all, true = active, false = inactive
+  const [statusFilter, setStatusFilter] = useState<boolean | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  
+  const deferredSearch = useDeferredValue(searchTerm);
 
   const {
     paginationState,
@@ -112,10 +177,92 @@ const TrainersGrid: React.FC = () => {
   } = usePagination(5);
 
   useEffect(() => {
-    loadTrainers(paginationState.page, paginationState.rowsPerPage);
-  }, [paginationState.page, paginationState.rowsPerPage, statusFilter]);
+    if (!isSearching) {
+      loadTrainers(paginationState.page, paginationState.rowsPerPage);
+    }
+  }, [paginationState.page, paginationState.rowsPerPage, statusFilter, isSearching]);
 
-  const loadTrainers = async (page: number = 0, size: number = 10) => {
+  // Handle search with useDeferredValue
+  useEffect(() => {
+    if (deferredSearch.length >= 2) {
+      if (!isSearching) {
+        setIsSearching(true);
+      }
+      
+      const performSearch = async () => {
+        try {
+          const response = await searchTrainers(
+            deferredSearch,
+            0,
+            paginationState.rowsPerPage
+          );
+          if (response.success) {
+            const pageData = response.data;
+            setTrainers(pageData.content);
+            setPaginationData(pageData.totalPages, pageData.totalElements);
+          }
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to search");
+          }
+        }
+      };
+      performSearch();
+    } else if (deferredSearch.length === 0 && isSearching) {
+      setIsSearching(false);
+      const reloadData = async () => {
+        try {
+          const response = await getAllTrainers(0, paginationState.rowsPerPage);
+          if (response.success) {
+            const pageData = response.data;
+            setTrainers(pageData.content);
+            setPaginationData(pageData.totalPages, pageData.totalElements);
+          }
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to load data");
+          }
+        }
+      };
+      reloadData();
+    }
+  }, [deferredSearch]);
+
+  useEffect(() => {
+    if (isSearching && deferredSearch.length >= 2 && paginationState.page > 0) {
+      const performPaginatedSearch = async () => {
+        try {
+          const response = await searchTrainers(
+            deferredSearch,
+            paginationState.page,
+            paginationState.rowsPerPage
+          );
+          if (response.success) {
+            const pageData = response.data;
+            setTrainers(pageData.content);
+            setPaginationData(pageData.totalPages, pageData.totalElements);
+          }
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Failed to search");
+          }
+        }
+      };
+      performPaginatedSearch();
+    }
+  }, [paginationState.page, paginationState.rowsPerPage]);
+
+  const loadTrainers = useCallback(async (page: number = 0, size: number = 10) => {
+    if (isSearching) {
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await getAllTrainers(page, size);
@@ -141,10 +288,24 @@ const TrainersGrid: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, isSearching, setPaginationData]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setIsSearching(false);
+  }, []);
+  
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
 
   const handleOpenCreate = () => {
     setOpenCreateModal(true);
+  };
+
+  const handleOpenEdit = (trainer: TrainerResponse) => {
+    setSelectedTrainer(trainer);
+    setOpenUpdateModal(true);
   };
 
   const handleOpenDetail = (trainer: TrainerResponse) => {
@@ -154,6 +315,11 @@ const TrainersGrid: React.FC = () => {
 
   const handleCreateSuccess = () => {
     setOpenCreateModal(false);
+    loadTrainers(paginationState.page, paginationState.rowsPerPage);
+  };
+
+  const handleUpdateSuccess = () => {
+    setOpenUpdateModal(false);
     loadTrainers(paginationState.page, paginationState.rowsPerPage);
   };
 
@@ -216,6 +382,15 @@ const TrainersGrid: React.FC = () => {
       )}
 
       <ContentSection>
+        {/* ── Search Bar ── */}
+        <Box mb={3}>
+          <SearchInput
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            onClearSearch={handleClearSearch}
+          />
+        </Box>
+
         {/* ── Status Filter ── */}
         <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center">
           <StatusFilterToggle
@@ -323,6 +498,7 @@ const TrainersGrid: React.FC = () => {
                       <IconButton 
                         size="small" 
                         title="Chỉnh sửa"
+                        onClick={() => handleOpenEdit(trainer)}
                         sx={{
                           color: '#0066ff',
                           '&:hover': { backgroundColor: 'rgba(0,102,255,0.1)' }
@@ -362,11 +538,24 @@ const TrainersGrid: React.FC = () => {
         {trainers.length === 0 && !loading && (
           <Box textAlign="center" py={8}>
             <Typography variant="h6" color="text.secondary" mb={2}>
-              No trainers found
+              {isSearching 
+                ? `No results found for "${searchTerm}"` 
+                : 'No trainers found'
+              }
             </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Create your first trainer to get started
-            </Typography>
+            {isSearching ? (
+              <Button 
+                variant="outlined" 
+                onClick={handleClearSearch}
+                sx={{ borderRadius: 2, mr: 2 }}
+              >
+                Clear Search
+              </Button>
+            ) : (
+              <Typography variant="body2" color="text.secondary" mb={3}>
+                Create your first trainer to get started
+              </Typography>
+            )}
             <AddButton variant="contained" startIcon={<Add />} onClick={handleOpenCreate}>
               Add Trainer
             </AddButton>
@@ -379,7 +568,12 @@ const TrainersGrid: React.FC = () => {
         onClose={() => setOpenCreateModal(false)}
         onSuccess={handleCreateSuccess}
       />
-
+      <UpdateTrainerModal
+          open={openUpdateModal}
+          onClose={() => setOpenUpdateModal(false)}
+          onSuccess={handleUpdateSuccess}
+          trainerId={selectedTrainer?.id || null}
+      />
       <TrainerDetailModal
         open={openDetailModal}
         onClose={() => setOpenDetailModal(false)}
@@ -390,3 +584,5 @@ const TrainersGrid: React.FC = () => {
 };
 
 export default TrainersGrid;
+
+

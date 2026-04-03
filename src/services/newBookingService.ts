@@ -103,6 +103,20 @@ export const cancelBooking = async (
 };
 
 /**
+ * Validate booking before creating (check conflicts)
+ */
+export const validateBooking = async (
+  userId: number,
+  request: NewCreateBookingRequest
+): Promise<ApiResponse<string>> => {
+  const response = await privateClient.post<ApiResponse<string>>(
+    `/bookings/validate?userId=${userId}`,
+    request
+  );
+  return response.data;
+};
+
+/**
  * Xem lịch trống/bận của trainer theo ngày
  */
 export const getTrainerDailySchedule = async (

@@ -17,13 +17,15 @@ import {
   Edit,
   Delete,
   Star,
-  CardMembership
+  CardMembership,
+  Visibility
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import membershipPackageService from '../../../../services/membershipPackageService';
 import type { MembershipPackageResponse } from '../../../../services/membershipPackageService';
-import PackageFormModal from './PackageFormModal.tsx';
+import PackageFormModal from './PackageFormModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
+import PackageMembersModal from './PackageMembersModal.tsx';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 
@@ -105,6 +107,8 @@ const MembershipPackagesPage: React.FC = () => {
     message: '',
     severity: 'success'
   });
+  const [membersModalOpen, setMembersModalOpen] = useState(false);
+  const [selectedPackageForMembers, setSelectedPackageForMembers] = useState<MembershipPackageResponse | null>(null);
 
   const {
     paginationState,
@@ -176,6 +180,11 @@ const MembershipPackagesPage: React.FC = () => {
   const handleDeleteClick = (pkg: MembershipPackageResponse) => {
     setSelectedPackage(pkg);
     setDeleteOpen(true);
+  };
+
+  const handleViewMembers = (pkg: MembershipPackageResponse) => {
+    setSelectedPackageForMembers(pkg);
+    setMembersModalOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -472,6 +481,24 @@ const MembershipPackagesPage: React.FC = () => {
                         >
                           <IconButton
                               size="small"
+                              onClick={() => handleViewMembers(pkg)}
+                              sx={{
+                                color: '#4caf50',
+                                bgcolor: '#f1f8f4',
+                                borderRadius: '8px',
+                                width: 34,
+                                height: 34,
+                                '&:hover': {
+                                  bgcolor: '#e8f5e9',
+                                  transform: 'scale(1.05)',
+                                },
+                                transition: 'all 0.15s ease',
+                              }}
+                          >
+                            <Visibility sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <IconButton
+                              size="small"
                               onClick={() => handleEdit(pkg)}
                               sx={{
                                 color: '#1976d2',
@@ -600,6 +627,13 @@ const MembershipPackagesPage: React.FC = () => {
             onConfirm={handleDeleteConfirm}
             title="Delete Package"
             message={`Are you sure you want to delete "${selectedPackage?.name}"? This action cannot be undone.`}
+        />
+
+        <PackageMembersModal
+            open={membersModalOpen}
+            onClose={() => setMembersModalOpen(false)}
+            packageId={selectedPackageForMembers?.id || 0}
+            packageName={selectedPackageForMembers?.name || ''}
         />
 
         <Snackbar

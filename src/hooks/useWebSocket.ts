@@ -1,15 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Client, StompSubscription } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { websocketService, type NotificationMessage } from '../services/websocketService';
 
-export interface NotificationMessage {
-  entityName: string;
-  action: string;
-  message: string;
-  data: any;
-  entityId: number | null;
-  timestamp: string;
-}
+export type { NotificationMessage };
 
 interface UseWebSocketOptions {
   onMessage?: (message: NotificationMessage) => void;
@@ -20,63 +12,48 @@ interface UseWebSocketOptions {
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const {
     onMessage,
-    topics = ['/topic/global'],
+    topics = ['/topic/admin'],
     autoConnect = true
   } = options;
 
-  const clientRef = useRef<Client | null>(null);
-  const subscriptionsRef = useRef<StompSubscription[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<NotificationMessage | null>(null);
-  const isConnectingRef = useRef(false);
+  const unsubscribeFunctionsRef = useRef<(() => void)[]>([]);
+  const isSubscribedRef = useRef(false);
 
   useEffect(() => {
-    if (!autoConnect || isConnectingRef.current) return;
+    if (!autoConnect || isSubscribedRef.current) return;
 
-    isConnectingRef.current = true;
-    
-    const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-      debug: () => {}, // Disable debug logs
-      reconnectDelay: 5000,
-      heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
-      onConnect: () => {
-        setIsConnected(true);
+    console.log('useWebSocket: Setting up subscriptions for topics:', topics);
+    isSubscribedRef.current = true;
 
-        // Subscribe to topics
-        topics.forEach(topic => {
-          const subscription = client.subscribe(topic, (message) => {
-            try {
-              const notification: NotificationMessage = JSON.parse(message.body);
-              setLastMessage(notification);
-              onMessage?.(notification);
-            } catch (error) {
-              console.error('Error parsing WebSocket message:', error);
-            }
-          });
-          subscriptionsRef.current.push(subscription);
-        });
-      },
-      onDisconnect: () => {
-        setIsConnected(false);
-      },
-      onStompError: (frame) => {
-        console.error('WebSocket error:', frame.headers['message']);
-      },
-    });
-
-    client.activate();
-    clientRef.current = client;
-
-    // Cleanup on unmount
-    return () => {
-      subscriptionsRef.current.forEach(sub => sub.unsubscribe());
-      subscriptionsRef.current = [];
-      client.deactivate();
-      isConnectingRef.current = false;
+    const setupSubscriptions = async () => {
+      try {
+        const unsubscribeFunctions = await Promise.all(
+          topics.map(topic => 
+            websocketService.subscribe(topic, (message) => {
+              setLastMessage(message);
+              onMessage?.(message);
+            })
+          )
+        );
+        
+        unsubscribeFunctionsRef.current = unsubscribeFunctions;
+        setIsConnected(websocketService.isConnected());
+      } catch (error) {
+        console.error('Failed to setup WebSocket subscriptions:', error);
+      }
     };
-  }, []);
+
+    setupSubscriptions();
+
+    return () => {
+      console.log('useWebSocket: Cleaning up subscriptions for topics:', topics);
+      unsubscribeFunctionsRef.current.forEach(unsubscribe => unsubscribe());
+      unsubscribeFunctionsRef.current = [];
+      isSubscribedRef.current = false;
+    };
+  }, [autoConnect, ...topics]);
 
   return {
     isConnected,

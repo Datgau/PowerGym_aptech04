@@ -23,9 +23,10 @@ interface PackageCardProps {
   readonly package: PackageOption;
   readonly onSelect: () => void;
   readonly processing: boolean;
+  readonly isActive?: boolean;
 }
 
-const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, processing }) => {
+const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, processing, isActive = false }) => {
   const IconComponent = pkg.icon || Star;
   const cardColor = pkg.color || '#1976d2';
 
@@ -336,10 +337,12 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
           fullWidth
           size="medium"
           onClick={onSelect}
-          disabled={processing}
+          disabled={processing || isActive}
           sx={{
             position: 'relative',
-            background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}, ${pkg.color || '#1976d2'}dd)`,
+            background: isActive 
+              ? 'linear-gradient(135deg, #4caf50, #45a049)'
+              : `linear-gradient(135deg, ${pkg.color || '#1976d2'}, ${pkg.color || '#1976d2'}dd)`,
             color: 'white',
             fontWeight: 700,
             fontSize: { xs: '0.8rem', md: '0.9rem' },
@@ -348,7 +351,9 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             overflow: 'hidden',
-            boxShadow: `0 6px 16px ${pkg.color || '#1976d2'}40`,
+            boxShadow: isActive 
+              ? '0 6px 16px rgba(76, 175, 80, 0.4)'
+              : `0 6px 16px ${pkg.color || '#1976d2'}40`,
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -360,25 +365,34 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg, onSelect, proce
               transition: 'left 0.5s ease'
             },
             '&:hover': {
-              background: `linear-gradient(135deg, ${pkg.color || '#1976d2'}ee, ${pkg.color || '#1976d2'})`,
-              transform: 'translateY(-4px)',
-              boxShadow: `0 12px 28px ${pkg.color || '#1976d2'}60`,
+              background: isActive
+                ? 'linear-gradient(135deg, #4caf50, #45a049)'
+                : `linear-gradient(135deg, ${pkg.color || '#1976d2'}ee, ${pkg.color || '#1976d2'})`,
+              transform: isActive ? 'none' : 'translateY(-4px)',
+              boxShadow: isActive
+                ? '0 6px 16px rgba(76, 175, 80, 0.4)'
+                : `0 12px 28px ${pkg.color || '#1976d2'}60`,
               '&::before': {
-                left: '100%'
+                left: isActive ? '-100%' : '100%'
               }
             },
             '&:active': {
-              transform: 'translateY(-2px)',
-              boxShadow: `0 6px 16px ${pkg.color || '#1976d2'}50`
+              transform: isActive ? 'none' : 'translateY(-2px)',
+              boxShadow: isActive
+                ? '0 6px 16px rgba(76, 175, 80, 0.4)'
+                : `0 6px 16px ${pkg.color || '#1976d2'}50`
             },
             '&:disabled': {
-              background: 'linear-gradient(135deg, #ccc, #bbb)',
-              color: '#666',
-              boxShadow: 'none'
+              background: isActive
+                ? 'linear-gradient(135deg, #4caf50, #45a049)'
+                : 'linear-gradient(135deg, #ccc, #bbb)',
+              color: isActive ? '#fff' : '#666',
+              boxShadow: isActive ? '0 6px 16px rgba(76, 175, 80, 0.4)' : 'none',
+              cursor: isActive ? 'not-allowed' : 'default'
             }
           }}
         >
-          {processing ? 'PROCESSING...' : 'SELECT PACKAGE'}
+          {processing ? 'PROCESSING...' : isActive ? 'ALREADY REGISTERED' : 'SELECT PACKAGE'}
         </Button>
       </CardActions>
     </Card>

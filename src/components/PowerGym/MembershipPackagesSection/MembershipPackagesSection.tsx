@@ -9,14 +9,16 @@ import { usePackageSelection } from './usePackageSelection';
 
 interface MembershipPackagesSectionProps {
     readonly packages: readonly PackageOption[];
-    readonly onSelectPackage: (packageId: string) => Promise<void>;
+    readonly onSelectPackage: (packageId: number) => Promise<void>;
     readonly loading?: boolean;
+    readonly activePackageIds?: number[];
 }
 
 const MembershipPackagesSection: React.FC<MembershipPackagesSectionProps> = ({
                                                                                  packages,
                                                                                  onSelectPackage,
                                                                                  loading = false,
+                                                                                 activePackageIds = [],
                                                                              }) => {
     const {
         selectedPackage,
@@ -197,7 +199,8 @@ const MembershipPackagesSection: React.FC<MembershipPackagesSectionProps> = ({
                                 <PackageCard
                                     package={pkg}
                                     onSelect={() => handlePackageSelect(pkg)}
-                                    processing={processingPackage === pkg.id}
+                                    processing={processingPackage === String(pkg.id)}
+                                    isActive={activePackageIds.includes(pkg.id)}
                                 />
                             </Box>
                         </Zoom>

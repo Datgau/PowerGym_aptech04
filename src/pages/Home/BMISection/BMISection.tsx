@@ -120,11 +120,17 @@ const BMISection: React.FC = () => {
                     gap: { xs: 3, md: 4 },
                     alignItems: 'stretch',
                 }}>
+                    {/* Calculator Column */}
                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <BMICalculator />
                     </Box>
-                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+
+                    {/* Chart & Image Column */}
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <BMIChart />
+                        
+                        {/* BMI image */}
+
                     </Box>
                 </Box>
             </Container>

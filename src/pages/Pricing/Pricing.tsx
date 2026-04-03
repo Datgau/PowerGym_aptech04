@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Container,
     Typography,
     Stack,
     Zoom,
-    Snackbar,
-    Alert
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
 import PaymentPackageCard from './PaymentPackageCard.tsx';
+import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
+import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
 import { useMembershipPaginated } from '../../hooks/useMembershipPaginated.ts';
 import { useAuth } from '../../hooks/useAuth.ts';
-import type { MoMoPaymentResponse } from '../../services/paymentService';
+import { useMembershipRegistrationFlow } from '../../hooks/useMembershipRegistrationFlow.ts';
+import membershipPackageService from '../../services/membershipPackageService.ts';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -22,72 +24,52 @@ const Pricing: React.FC = () => {
     const { 
         packages, 
         loading, 
-        registerPackage, 
         paginationState,
         handleChangePage,
         handleChangeRowsPerPage
     } = useMembershipPaginated(8);
-    const { requireAuth } = useAuth();
-    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const { requireAuth, user } = useAuth();
     const [selectedPackage, setSelectedPackage] = useState<any>(null);
-    const [snackbar, setSnackbar] = useState({
-        open: false,
-        message: '',
-        severity: 'success' as 'success' | 'error' | 'warning',
-    });
+    const [activePackageIds, setActivePackageIds] = useState<number[]>([]);
+    const flow = useMembershipRegistrationFlow(selectedPackage?.packageId);
 
-    const handlePackageSelect = async (packageId: string): Promise<void> => {
-        if (!requireAuth()) return;
+    useEffect(() => {
+        if (user?.id) {
+            loadActivePackages();
+        }
+    }, [user?.id]);
 
+    const loadActivePackages = async () => {
+        if (!user?.id) return;
         try {
-            const success = await registerPackage(packageId, 'CARD');
-
-            if (success) {
-                setSnackbar({
-                    open: true,
-                    message: 'Package registered successfully! Please confirm at the service desk.',
-                    severity: 'success'
-                });
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: 'Package registration failed. Please try again.',
-                    severity: 'error'
-                });
-            }
+            const activeIds = await membershipPackageService.getMyActivePackages();
+            setActivePackageIds(activeIds);
         } catch (error) {
-            console.error('Package registration error:', error);
-            setSnackbar({
-                open: true,
-                message: 'An error occurred while registering the package.',
-                severity: 'error'
-            });
+            console.error('Failed to load active packages:', error);
         }
     };
-    const handlePayNow = (pkg: any) => {
+
+    const handlePackageSelect = (pkg: any) => {
         if (!requireAuth()) return;
         setSelectedPackage(pkg);
-        setPaymentModalOpen(true);
+        flow.handleRegisterNow();
     };
 
-    const handlePaymentSuccess = (response: MoMoPaymentResponse) => {
-        setSnackbar({
-            open: true,
-            message: `Payment successful! Order ID: ${response.orderId}`,
-            severity: 'success'
-        });
-        setPaymentModalOpen(false);
-        setSelectedPackage(null);
+    const handlePaymentSuccess = () => {
+        toast.success('Payment successful! Your membership has been activated.');
+        loadActivePackages();
     };
 
     // Convert packages to format expected by PackageCard
     const availablePackages = packages.map(pkg => ({
-        id: pkg.packageId,
+        id: pkg.id,
+        packageId: pkg.packageId,
         name: pkg.name,
         duration: `${pkg.duration} days`,
-        price: `$${pkg.price.toLocaleString('en-US')}`,
+        price: `${pkg.price.toLocaleString('vi-VN')}đ`,
+        numericPrice: pkg.price,
         originalPrice: pkg.originalPrice
-            ? `$${pkg.originalPrice.toLocaleString('en-US')}`
+            ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ`
             : undefined,
         features: pkg.features,
         isPopular: pkg.isPopular,
@@ -242,9 +224,9 @@ const Pricing: React.FC = () => {
                                 >
                                     <PaymentPackageCard
                                         package={pkg}
-                                        onSelect={() => handlePackageSelect(pkg.id)}
-                                        onPayNow={() => handlePayNow(pkg)}
+                                        onSelect={() => handlePackageSelect(pkg)}
                                         processing={false}
+                                        isActive={activePackageIds.includes(pkg.id)}
                                     />
                                 </Box>
                             </Zoom>
@@ -284,34 +266,35 @@ const Pricing: React.FC = () => {
                 </Container>
             </Box>
 
+            <PaymentMethodSelectionModal
+                open={flow.showPaymentMethodSelection}
+                onClose={() => flow.setShowPaymentMethodSelection(false)}
+                onSelectMoMo={flow.handleSelectMoMo}
+                onSelectBankTransfer={flow.handleSelectBankTransfer}
+                serviceName={selectedPackage?.name}
+                amount={selectedPackage?.numericPrice}
+            />
+
             <MoMoPaymentModal
-                open={paymentModalOpen}
-                onClose={() => {
-                    setPaymentModalOpen(false);
-                    setSelectedPackage(null);
-                }}
-                onSuccess={handlePaymentSuccess}
-                defaultAmount={selectedPackage ? parseInt(selectedPackage.price.replace(/[^\d]/g, '')) : 0}
-                defaultOrderInfo={selectedPackage ? `Thanh toán PowerGym - Gói thành viên: ${selectedPackage.name}` : ''}
+                open={flow.showMoMoPayment && !!selectedPackage}
+                onClose={() => flow.setShowMoMoPayment(false)}
+                onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+                defaultAmount={selectedPackage?.numericPrice || 0}
+                defaultOrderInfo={selectedPackage ? `PowerGym Membership - ${selectedPackage.name}` : ''}
                 itemType="MEMBERSHIP"
-                itemId={selectedPackage?.id}
+                itemId={selectedPackage?.id?.toString()}
                 itemName={selectedPackage?.name}
             />
 
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={5000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert
-                    severity={snackbar.severity}
-                    variant="filled"
-                    onClose={() => setSnackbar({ ...snackbar, open: false })}
-                >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
+            <BankPaymentModal
+                open={flow.showBankPayment && !!selectedPackage}
+                onClose={() => flow.setShowBankPayment(false)}
+                onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+                serviceName={selectedPackage?.name}
+                amount={selectedPackage?.numericPrice}
+                serviceId={selectedPackage?.id?.toString()}
+                itemType="MEMBERSHIP"
+            />
         </PowerGymLayout>
     );
 };
