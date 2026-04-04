@@ -33,6 +33,8 @@ import { styled } from '@mui/material/styles';
 import { useAuth } from '../../hooks/useAuth';
 import { getMyRegistrations } from '../../services/serviceRegistrationService';
 import type { ServiceRegistrationResponse } from '../../services/serviceRegistrationService';
+import { getCurrentTrainerProfile } from '../../services/trainerService';
+import type { TrainerResponse } from '../../services/trainerService';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
@@ -145,6 +147,7 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const [registrations, setRegistrations] = useState<ServiceRegistrationResponse[]>([]);
+  const [trainerProfile, setTrainerProfile] = useState<TrainerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
@@ -163,7 +166,16 @@ const Profile: React.FC = () => {
       setLoading(true);
       setError('');
 
-      if (!isTrainer && !isAdmin) {
+      if (isTrainer) {
+        try {
+          const response = await getCurrentTrainerProfile();
+          if (response.success) {
+            setTrainerProfile(response.data);
+          }
+        } catch (trainerError: any) {
+          console.warn('Error loading trainer profile:', trainerError);
+        }
+      } else if (!isAdmin) {
         try {
           const response = await getMyRegistrations();
           if (response.success) {
@@ -470,38 +482,10 @@ const Profile: React.FC = () => {
                           </IconBox>
                           <Box flex={1}>
                             <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                              Certifications
+                              Education
                             </Typography>
                             <Typography variant="body1" fontWeight={600} color="text.primary">
-                              Coming soon...
-                            </Typography>
-                          </Box>
-                        </InfoItem>
-
-                        <InfoItem>
-                          <IconBox>
-                            <VerifiedUser />
-                          </IconBox>
-                          <Box flex={1}>
-                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                              Professional License
-                            </Typography>
-                            <Typography variant="body1" fontWeight={600} color="text.primary">
-                              Coming soon...
-                            </Typography>
-                          </Box>
-                        </InfoItem>
-
-                        <InfoItem>
-                          <IconBox>
-                            <FitnessCenter />
-                          </IconBox>
-                          <Box flex={1}>
-                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                              Specialties
-                            </Typography>
-                            <Typography variant="body1" fontWeight={600} color="text.primary">
-                              Coming soon...
+                              {trainerProfile?.education || 'Not provided'}
                             </Typography>
                           </Box>
                         </InfoItem>
@@ -512,11 +496,114 @@ const Profile: React.FC = () => {
                           </IconBox>
                           <Box flex={1}>
                             <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                              Years of Experience
+                              Total Experience
                             </Typography>
                             <Typography variant="body1" fontWeight={600} color="text.primary">
-                              Coming soon...
+                              {trainerProfile?.totalExperienceYears ? `${trainerProfile.totalExperienceYears} years` : 'Not provided'}
                             </Typography>
+                          </Box>
+                        </InfoItem>
+
+                        <InfoItem>
+                          <IconBox>
+                            <FitnessCenter />
+                          </IconBox>
+                          <Box flex={1}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              Specialties & Experience
+                            </Typography>
+                            {trainerProfile?.specialties && trainerProfile.specialties.length > 0 ? (
+                              <Box mt={1}>
+                                {trainerProfile.specialties.map((specialty) => (
+                                  <Box key={specialty.id} mb={1.5}>
+                                    <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                                      <Chip
+                                        label={specialty.specialty.displayName}
+                                        size="small"
+                                        sx={{
+                                          background: specialty.specialty.color || BRAND_GRADIENT,
+                                          color: 'white',
+                                          fontWeight: 600,
+                                        }}
+                                      />
+                                      {specialty.level && (
+                                        <Chip
+                                          label={specialty.level}
+                                          size="small"
+                                          variant="outlined"
+                                          sx={{
+                                            borderColor: specialty.specialty.color || '#00b4ff',
+                                            color: specialty.specialty.color || '#00b4ff',
+                                            fontWeight: 600,
+                                          }}
+                                        />
+                                      )}
+                                    </Box>
+                                    <Typography variant="body2" color="text.primary" fontWeight={600}>
+                                      {specialty.experienceYears ? `${specialty.experienceYears} years experience` : 'Experience not specified'}
+                                    </Typography>
+                                    {specialty.certifications && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        Certifications: {specialty.certifications}
+                                      </Typography>
+                                    )}
+                                    {specialty.description && (
+                                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                                        {specialty.description}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography variant="body1" fontWeight={600} color="text.primary">
+                                No specialties added
+                              </Typography>
+                            )}
+                          </Box>
+                        </InfoItem>
+
+                        <InfoItem>
+                          <IconBox>
+                            <VerifiedUser />
+                          </IconBox>
+                          <Box flex={1}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              Certifications & Documents
+                            </Typography>
+                            {trainerProfile?.documents && trainerProfile.documents.length > 0 ? (
+                              <Box mt={1}>
+                                {trainerProfile.documents.map((doc) => (
+                                  <Box key={doc.id} mb={1}>
+                                    <Typography variant="body2" fontWeight={600} color="text.primary">
+                                      {doc.documentType.replace(/_/g, ' ')}
+                                      {doc.isVerified && (
+                                        <Chip
+                                          label="Verified"
+                                          size="small"
+                                          sx={{
+                                            ml: 1,
+                                            background: 'linear-gradient(135deg, #11998e, #38ef7d)',
+                                            color: 'white',
+                                            height: '20px',
+                                            fontSize: '0.7rem',
+                                          }}
+                                        />
+                                      )}
+                                    </Typography>
+                                    {doc.description && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        {doc.description}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography variant="body1" fontWeight={600} color="text.primary">
+                                No documents uploaded
+                              </Typography>
+                            )}
                           </Box>
                         </InfoItem>
                       </CardContent>

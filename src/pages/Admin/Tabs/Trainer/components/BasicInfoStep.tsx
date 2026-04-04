@@ -132,24 +132,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ formik, emailCheckLoading
             helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
           />
 
-          <StyledTextField
-            fullWidth
-            label="Years of Experience"
-            name="totalExperienceYears"
-            type="number"
-            value={formik.values.totalExperienceYears}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={
-              formik.touched.totalExperienceYears &&
-              Boolean(formik.errors.totalExperienceYears)
-            }
-            helperText={
-              formik.touched.totalExperienceYears &&
-              formik.errors.totalExperienceYears
-            }
-          />
-
           {/* Bio full width */}
           <Box sx={{ gridColumn: "1 / -1" }}>
             <StyledTextField

@@ -196,6 +196,12 @@ export const getServiceCategoryByName = async (name: string): Promise<ApiRespons
   return response.data;
 };
 
+// Authenticated trainer endpoints
+export const getCurrentTrainerProfile = async (): Promise<ApiResponse<TrainerResponse>> => {
+  const response = await privateClient.get('/trainers/me');
+  return response.data;
+};
+
 // Public endpoints (No authentication required)
 export const getPublicTrainers = async (page: number = 0, size: number = 10): Promise<ApiResponse<PageResponse<TrainerResponse>>> => {
   const response = await publicClient.get(`/public/trainers?page=${page}&size=${size}`);

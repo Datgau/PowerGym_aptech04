@@ -122,11 +122,13 @@ const DocumentsStep = ({
                          avatarPreview,
                          coverPreview,
                          documents,
+                         existingDocuments = [],
                          handleAvatarUpload,
                          handleCoverUpload,
                          handleDocumentUpload,
                          updateDocument,
-                         removeDocument
+                         removeDocument,
+                         removeExistingDocument
                        }: any) => {
   return (
       <Fade in timeout={300}>
@@ -320,7 +322,7 @@ const DocumentsStep = ({
             </Stack>
 
             {/* EMPTY */}
-            {documents.length === 0 && (
+            {documents.length === 0 && existingDocuments.length === 0 && (
                 <Paper
                     elevation={0}
                     sx={{
@@ -341,7 +343,121 @@ const DocumentsStep = ({
                 </Paper>
             )}
 
-            {/* LIST */}
+            {/* EXISTING DOCUMENTS */}
+            {existingDocuments.map((doc: any) => (
+                <DocumentCard key={`existing-${doc.id}`} variant="outlined">
+                  <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+
+                    {/* file info row */}
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+                        <Box
+                            sx={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: 2,
+                              background: alpha("#0066ff", 0.1),
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0
+                            }}
+                        >
+                          <InsertDriveFile sx={{ color: "#0066ff", fontSize: 18 }} />
+                        </Box>
+
+                        <Typography
+                            fontSize={13}
+                            fontWeight={600}
+                            color="#1a2340"
+                            noWrap
+                            sx={{ maxWidth: { xs: 140, sm: 260 } }}
+                        >
+                          {doc.fileName}
+                        </Typography>
+
+                        {doc.isVerified && (
+                            <Chip
+                                label="Verified"
+                                size="small"
+                                sx={{
+                                  fontSize: 11,
+                                  height: 22,
+                                  flexShrink: 0,
+                                  background: 'linear-gradient(135deg, #11998e, #38ef7d)',
+                                  color: 'white',
+                                  fontWeight: 600
+                                }}
+                            />
+                        )}
+                      </Stack>
+
+                      <Tooltip title="Delete Document" arrow>
+                        <IconButton
+                            size="small"
+                            onClick={() => removeExistingDocument && removeExistingDocument(doc.id)}
+                            sx={{
+                              color: "#e53935",
+                              background: "#fff0f0",
+                              borderRadius: 2,
+                              ml: 1,
+                              flexShrink: 0,
+                              "&:hover": { background: "#ffe0e0" }
+                            }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+
+                    {/* Document Info */}
+                    <Stack spacing={1.5}>
+                      <Box>
+                        <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+                          Document Type
+                        </Typography>
+                        <Typography fontSize={13} color="#1a2340" fontWeight={600}>
+                          {doc.documentType.replace(/_/g, ' ')}
+                        </Typography>
+                      </Box>
+
+                      {doc.description && (
+                          <Box>
+                            <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+                              Description
+                            </Typography>
+                            <Typography fontSize={13} color="#1a2340">
+                              {doc.description}
+                            </Typography>
+                          </Box>
+                      )}
+
+                      {doc.expiryDate && (
+                          <Box>
+                            <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+                              Expiry Date
+                            </Typography>
+                            <Typography fontSize={13} color="#1a2340">
+                              {new Date(doc.expiryDate).toLocaleDateString('vi-VN')}
+                            </Typography>
+                          </Box>
+                      )}
+
+                      <Box>
+                        <Typography fontSize={11} color="text.secondary" fontWeight={600}>
+                          Uploaded
+                        </Typography>
+                        <Typography fontSize={13} color="#1a2340">
+                          {new Date(doc.createdAt).toLocaleDateString('vi-VN')}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                  </CardContent>
+                </DocumentCard>
+            ))}
+
+            {/* NEW DOCUMENTS TO UPLOAD */}
             {documents.map((doc: any, index: number) => (
                 <DocumentCard key={index} variant="outlined">
                   <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>

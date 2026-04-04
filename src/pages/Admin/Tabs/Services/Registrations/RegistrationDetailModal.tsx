@@ -15,7 +15,6 @@ interface Props {
     registration: ServiceRegistrationResponse | null;
 }
 
-/* ── helpers ─────────────────────────────────────────────────── */
 const fmtDate = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString('vi-VN', {
         year: 'numeric', month: '2-digit', day: '2-digit',
@@ -83,7 +82,6 @@ const SectionHead = ({ children }: { children: React.ReactNode }) => (
     </Box>
 );
 
-/* ── main ───────────────────────────────────────────────────── */
 const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration: reg }) => {
     if (!reg) return null;
 
@@ -94,7 +92,7 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
             slotProps={{
                 paper: {
@@ -137,7 +135,6 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
             }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2.5 }}>
 
-                    {/* ── Status strip ──────────────────────────────────── */}
                     <Box sx={{
                         display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center',
                         bgcolor: '#fff', borderRadius: '12px', p: 2,
@@ -168,7 +165,6 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                         </Box>
                     </Box>
 
-                    {/* ── User info ─────────────────────────────────────── */}
                     <Box sx={{ bgcolor: '#fff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.07)', p: 2.5 }}>
                         <SectionHead>Registered User</SectionHead>
 
@@ -208,8 +204,8 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
 
                         <Divider sx={{ mb: 1.5, opacity: 0.4 }} />
 
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0 }}>
-                            <Box sx={{ flex: '1 1 200px' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 <InfoRow icon={<Person sx={{ fontSize: 18 }} />} label="User ID">
                                     <TextVal v={`#${user.id}`} />
                                 </InfoRow>
@@ -220,7 +216,7 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                                     <TextVal v={user.username} />
                                 </InfoRow>
                             </Box>
-                            <Box sx={{ flex: '1 1 200px' }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 <InfoRow icon={<Phone sx={{ fontSize: 18 }} />} label="Phone Number">
                                     <TextVal v={user.phoneNumber} />
                                 </InfoRow>
@@ -242,7 +238,6 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                         )}
                     </Box>
 
-                    {/* ── Service info ──────────────────────────────────── */}
                     {svc && (
                         <Box sx={{ bgcolor: '#fff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.07)', overflow: 'hidden' }}>
                             {/* Service image strip */}
@@ -339,12 +334,11 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                         </Box>
                     )}
 
-                    {/* ── Registration timeline ─────────────────────────── */}
                     <Box sx={{ bgcolor: '#fff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.07)', p: 2.5 }}>
                         <SectionHead>Registration Timeline</SectionHead>
 
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0 }}>
-                            <Box sx={{ flex: '1 1 200px' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 <InfoRow icon={<CalendarToday sx={{ fontSize: 18 }} />} label="Registration Date">
                                     <TextVal v={fmtDate(reg.registrationDate)} />
                                 </InfoRow>
@@ -352,7 +346,7 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                                     <TextVal v={fmtDate(reg.expirationDate)} />
                                 </InfoRow>
                             </Box>
-                            <Box sx={{ flex: '1 1 200px' }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 {reg.cancelledDate && (
                                     <InfoRow icon={<EventBusy sx={{ fontSize: 18 }} />} label="Cancelled Date">
                                         <TextVal v={fmtDate(reg.cancelledDate)} />
@@ -384,11 +378,10 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                         )}
                     </Box>
 
-                    {/* ── Payment ───────────────────────────────────────── */}
                     <Box sx={{ bgcolor: '#fff', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.07)', p: 2.5 }}>
                         <SectionHead>Payment & Billing</SectionHead>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0 }}>
-                            <Box sx={{ flex: '1 1 180px' }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 <InfoRow icon={<Payment sx={{ fontSize: 18 }} />} label="Payment Status">
                                     <Badge map={PAYMENT_MAP} value={reg.paymentStatus} />
                                 </InfoRow>
@@ -396,7 +389,7 @@ const RegistrationDetailModal: React.FC<Props> = ({ open, onClose, registration:
                                     <TextVal v={svc ? `$${svc.price?.toLocaleString()}` : undefined} />
                                 </InfoRow>
                             </Box>
-                            <Box sx={{ flex: '1 1 180px' }}>
+                            <Box sx={{ flex: '1 1 280px' }}>
                                 <InfoRow icon={<Computer sx={{ fontSize: 18 }} />} label="Registration Type">
                                     <TextVal v={reg.registrationType} />
                                 </InfoRow>

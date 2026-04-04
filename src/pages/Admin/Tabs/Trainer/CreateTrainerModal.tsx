@@ -142,7 +142,6 @@ const validationSchema = Yup.object({
     .matches(/^[0-9+\-\s()]+$/, 'Invalid phone number')
     .required('Phone number is required'),
   bio: Yup.string().max(1000),
-  totalExperienceYears: Yup.number().min(0).max(50).nullable(),
   education: Yup.string().max(200),
   emergencyContact: Yup.string().max(100),
   emergencyPhone: Yup.string().matches(/^[0-9+\-\s()]*$/, 'Invalid phone number'),

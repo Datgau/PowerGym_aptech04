@@ -5,6 +5,7 @@ import ErrorBoundary from "antd/es/alert/ErrorBoundary";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/toast.css';
+import { AiChatPopup } from "./components/AiChat/AiChatPopup.tsx";
 
 
 
@@ -27,6 +28,8 @@ function App() {
           pauseOnHover
           theme="light"
         />
+        {/* AI Chat Popup - Always visible */}
+        <AiChatPopup />
       </AuthProvider>
     </ErrorBoundary>
   );

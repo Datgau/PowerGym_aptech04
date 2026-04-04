@@ -36,6 +36,7 @@ import {
   uploadTrainerAvatar,
   uploadTrainerCoverPhoto,
   uploadTrainerDocument,
+  deleteTrainerDocument,
   type CreateTrainerRequest,
   type TrainerSpecialtyRequest,
   type TrainerResponse
@@ -145,7 +146,6 @@ const validationSchema = Yup.object({
     .matches(/^[0-9+\-\s()]+$/, 'Invalid phone number')
     .required('Phone number is required'),
   bio: Yup.string().max(1000),
-  totalExperienceYears: Yup.number().min(0).max(50).nullable(),
   education: Yup.string().max(200),
   emergencyContact: Yup.string().max(100),
   emergencyPhone: Yup.string().matches(/^[0-9+\-\s()]*$/, 'Invalid phone number'),
@@ -186,6 +186,7 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string>('');
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
+  const [existingDocuments, setExistingDocuments] = useState<TrainerResponse['documents']>([]);
 
   const formik = useFormik<CreateTrainerRequest>({
     initialValues: {
@@ -291,6 +292,11 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
         if (trainer.coverPhoto) {
           setCoverPreview(trainer.coverPhoto);
         }
+        
+        // Set existing documents
+        if (trainer.documents && trainer.documents.length > 0) {
+          setExistingDocuments(trainer.documents);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load trainer data');
@@ -340,6 +346,7 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
     setAvatarFile(null); setAvatarPreview('');
     setCoverFile(null); setCoverPreview('');
     setDocuments([]);
+    setExistingDocuments([]);
     setError(''); setSuccess('');
     onClose();
   };
@@ -367,12 +374,6 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
         else if (formik.errors.phoneNumber) errors.push(formik.errors.phoneNumber);
         
         setError(errors.join(', '));
-        return;
-      }
-      
-      if (formik.values.totalExperienceYears && (formik.values.totalExperienceYears < 0 || formik.values.totalExperienceYears > 50)) {
-        formik.setTouched({ totalExperienceYears: true });
-        setError('Total experience years must be between 0 and 50');
         return;
       }
     }
@@ -470,11 +471,22 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
             coverFile={coverFile}
             coverPreview={coverPreview}
             documents={documents}
+            existingDocuments={existingDocuments}
             handleAvatarUpload={handleAvatarUpload}
             handleCoverUpload={handleCoverUpload}
             handleDocumentUpload={handleDocumentUpload}
             updateDocument={updateDocument}
             removeDocument={removeDocument}
+            removeExistingDocument={async (docId: number) => {
+              if (!trainerId) return;
+              try {
+                await deleteTrainerDocument(trainerId, docId);
+                setExistingDocuments(prev => prev.filter(d => d.id !== docId));
+                message.success('Document deleted successfully', 2000);
+              } catch (err: any) {
+                message.error(err.message || 'Failed to delete document', 3000);
+              }
+            }}
           />
         );
       default: 
@@ -619,11 +631,8 @@ const UpdateTrainerModal: React.FC<UpdateTrainerModalProps> = ({ open, onClose, 
                     fullName: true,
                     phoneNumber: true,
                     specialties: formik.values.specialties.map(() => ({})) as any,
-                    totalExperienceYears: true,
                   });
-                  if (errors.totalExperienceYears) {
-                    setError(`Total Experience Years: ${errors.totalExperienceYears}`);
-                  } else if (errors.specialties) {
+                  if (errors.specialties) {
                     setError('Please check your specialties - make sure all have a category selected');
                   } else {
                     setError('Please check all required fields');
