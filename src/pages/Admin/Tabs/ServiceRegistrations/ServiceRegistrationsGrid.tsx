@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -16,13 +15,14 @@ import {
   Stack,
   Link as MuiLink, IconButton, Tooltip
 } from '@mui/material';
-import { Assignment, PersonAdd, Payment } from '@mui/icons-material';
+import { Assignment, PersonAdd, Payment, Print } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import {
   getAllServiceRegistrations,
   type ServiceRegistrationFilters
 } from '../../../../services/serviceRegistrationService';
+import { downloadInvoice } from '../../../../services/api';
 import type {
   ServiceRegistrationResponse,
   FilterState,
@@ -78,36 +78,6 @@ const ContentSection = styled(Box)({
   border: '1px solid #eaeef8',
   padding: '24px',
   boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-});
-
-const SetTrainerButton = styled(Button)({
-  borderRadius: 8,
-  textTransform: 'none',
-  fontWeight: 600,
-  fontSize: 13,
-  padding: '6px 14px',
-  background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
-  color: '#fff',
-  boxShadow: '0 2px 8px rgba(0,102,255,0.24)',
-  '&:hover': {
-    background: 'linear-gradient(135deg, #00c6ff, #0077ff)',
-    boxShadow: '0 4px 12px rgba(0,102,255,0.32)',
-  },
-});
-
-const ConfirmPaymentButton = styled(Button)({
-  borderRadius: 8,
-  textTransform: 'none',
-  fontWeight: 600,
-  fontSize: 13,
-  padding: '6px 14px',
-  background: 'linear-gradient(135deg, #10b981, #059669)',
-  color: '#fff',
-  boxShadow: '0 2px 8px rgba(16,185,129,0.24)',
-  '&:hover': {
-    background: 'linear-gradient(135deg, #34d399, #10b981)',
-    boxShadow: '0 4px 12px rgba(16,185,129,0.32)',
-  },
 });
 
 // Format date as DD/MM/YYYY
@@ -166,6 +136,7 @@ const ServiceRegistrationsGrid: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<ServiceRegistrationResponse | null>(null);
   const [openTrainerModal, setOpenTrainerModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [printingInvoice, setPrintingInvoice] = useState<number | null>(null);
 
   const {
     paginationState,
@@ -265,6 +236,32 @@ const ServiceRegistrationsGrid: React.FC = () => {
     navigate(`/admin?tab=1&memberId=${userId}`);
   };
 
+  const handlePrintInvoice = async (registration: ServiceRegistrationResponse) => {
+    if (!registration.paymentOrderId) {
+      setError('No payment order found for this registration');
+      return;
+    }
+
+    try {
+      setPrintingInvoice(registration.id);
+      const blob = await downloadInvoice(registration.paymentOrderId);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice-${registration.paymentOrderId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to download invoice');
+    } finally {
+      setPrintingInvoice(null);
+    }
+  };
+
   if (loading && registrations.length === 0) {
     return (
       <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
@@ -338,22 +335,29 @@ const ServiceRegistrationsGrid: React.FC = () => {
               {registrations.map((registration) => (
                 <TableRow key={registration.id} hover sx={{ '&:hover': { backgroundColor: '#f8faff' } }}>
                   <TableCell>
-                    <MuiLink
-                      component="button"
-                      onClick={() => handleMemberClick(registration.user.id)}
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: { xs: '0.875rem', md: '1rem' },
-                        color: '#0066ff',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          textDecoration: 'underline',
-                        },
-                      }}
-                    >
-                      {registration.user.fullName}
-                    </MuiLink>
+                    <Box>
+                      <MuiLink
+                        component="button"
+                        onClick={() => handleMemberClick(registration.user.id)}
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: { xs: '0.875rem', md: '1rem' },
+                          color: '#0066ff',
+                          textDecoration: 'none',
+                          cursor: 'pointer',
+                          display: 'block',
+                          textAlign: 'left',
+                          '&:hover': {
+                            textDecoration: 'underline',
+                          },
+                        }}
+                      >
+                        {registration.user.fullName}
+                      </MuiLink>
+                      <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.875rem' }}>
+                        {registration.user.email}
+                      </Typography>
+                    </Box>
                   </TableCell>
                   <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                     {registration.service.name}
@@ -436,6 +440,30 @@ const ServiceRegistrationsGrid: React.FC = () => {
                                 color="success"
                             >
                               <Payment fontSize="small" />
+                            </IconButton>
+                          </span>
+                      </Tooltip>
+
+                      {/* Print Invoice */}
+                      <Tooltip
+                          title={
+                            !registration.paymentOrderId
+                                ? 'No payment order'
+                                : 'Download invoice'
+                          }
+                      >
+                          <span>
+                            <IconButton
+                                size="small"
+                                onClick={() => handlePrintInvoice(registration)}
+                                disabled={!registration.paymentOrderId || printingInvoice === registration.id}
+                                color="secondary"
+                            >
+                              {printingInvoice === registration.id ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <Print fontSize="small" />
+                              )}
                             </IconButton>
                           </span>
                       </Tooltip>

@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { PackageFormData } from '../types';
 import { VALIDATION_MESSAGES, MAX_FEATURES, MAX_NAME_LENGTH } from '../constants';
 
 export const usePackageValidation = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validateForm = (formData: PackageFormData): boolean => {
+  const validateForm = useCallback((formData: PackageFormData): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -39,11 +39,11 @@ export const usePackageValidation = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, []);
 
-  const clearErrors = () => {
+  const clearErrors = useCallback(() => {
     setErrors({});
-  };
+  }, []);
 
   return {
     errors,

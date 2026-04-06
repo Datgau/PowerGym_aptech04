@@ -55,12 +55,7 @@ export const AppRouter = () => (
             {/* Protected Routes - Require authentication */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/payment/result" element={<PaymentResult />} />
-                {/*<Route path="/powergym/news" element={<News />} />*/}
-                {/*<Route path="/powergym/promotions" element={<Promotions />} />*/}
                 <Route path="/powergym/rewards" element={<Rewards/>} />
-                {/*<Route path="/messages" element={<Messages />} />*/}
-                {/*<Route path="/messages/:conversationId" element={<Messages />} />*/}
-                {/*<Route path="/notifications" element={<Notifications />} />*/}
                 <Route path="/profile" element={<Profile />} />
                 {/*<Route path="/settings" element={<Settings />} />*/}
             </Route>

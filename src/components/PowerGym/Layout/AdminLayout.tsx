@@ -35,6 +35,8 @@ import {
     KeyboardArrowRight,
     ListAlt,
     SupervisorAccount,
+    LocalOffer,
+    EmojiEvents,
 } from '@mui/icons-material';
 import GlobalNotification from '../../Notification/GlobalNotification.tsx';
 import { useTokenRefresh } from '../../../hooks/useTokenRefresh.ts';
@@ -59,6 +61,8 @@ const menuItems = [
     { text: 'Service Registrations', icon: <ListAlt /> },
     { text: 'Stories',    icon: <WebStoriesIcon/> },
     { text: 'Membership', icon: <CardMembership /> },
+    { text: 'Promotions', icon: <LocalOffer /> },
+    { text: 'Rewards',    icon: <EmojiEvents /> },
     { text: 'Financial',  icon: <AccountBalanceWalletIcon  /> },
     { text: 'Settings',   icon: <Settings /> },
 ];

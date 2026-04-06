@@ -40,7 +40,42 @@ const PackageFormModal: React.FC<PackageFormModalProps> = ({
   }, [open, clearErrors]);
 
   const handleFieldChange = (field: string, value: any) => {
-    updateField(field, value);
+    // Auto-calculate logic for pricing fields
+    if (field === 'discount' && value !== undefined && value !== '') {
+      // When discount changes, calculate original price from current price
+      const discountPercent = parseFloat(value);
+      if (!isNaN(discountPercent) && discountPercent > 0 && discountPercent <= 100 && formData.price > 0) {
+        // Formula: originalPrice = price / (1 - discount/100)
+        const calculatedOriginalPrice = Math.round(formData.price / (1 - discountPercent / 100));
+        updateField('originalPrice', calculatedOriginalPrice);
+      }
+      updateField(field, value);
+    } else if (field === 'originalPrice' && value !== undefined && value !== '') {
+      // When original price changes, calculate discount from current price
+      const origPrice = parseFloat(value);
+      if (!isNaN(origPrice) && origPrice > formData.price && formData.price > 0) {
+        // Formula: discount = (1 - price/originalPrice) * 100
+        const calculatedDiscount = Math.round((1 - formData.price / origPrice) * 100);
+        updateField('discount', calculatedDiscount);
+      }
+      updateField(field, value);
+    } else if (field === 'price') {
+      // When price changes, recalculate based on existing discount or original price
+      const newPrice = parseFloat(value) || 0;
+      updateField(field, newPrice);
+      
+      if (formData.discount && formData.discount > 0) {
+        // Recalculate original price based on discount
+        const calculatedOriginalPrice = Math.round(newPrice / (1 - formData.discount / 100));
+        updateField('originalPrice', calculatedOriginalPrice);
+      } else if (formData.originalPrice && formData.originalPrice > newPrice) {
+        // Recalculate discount based on original price
+        const calculatedDiscount = Math.round((1 - newPrice / formData.originalPrice) * 100);
+        updateField('discount', calculatedDiscount);
+      }
+    } else {
+      updateField(field, value);
+    }
   };
 
   const handleFeatureChange = (index: number, value: string) => {

@@ -6,9 +6,9 @@ import {
     Person, School, Description, Verified, Warning, Download,
     CalendarToday, WorkspacePremium,
 } from '@mui/icons-material';
-import type { TrainerResponse } from '../../../../../services/trainerService';
 import StatCell from './StatCell';
 import { getSpecialtyColor, getLevelColor, formatDocumentType } from '../helpers';
+import type {TrainerResponse} from "../../../../../../services/trainerService.ts";
 
 interface Props {
     trainer: TrainerResponse;
@@ -175,7 +175,7 @@ const ProfileTab: React.FC<Props> = ({ trainer, onVerifyDocument }) => (
                                 >
                                     {specialty.experienceYears && (
                                         <Box flex={1}>
-                                            <StatCell label="Experience" value={`${specialty.experienceYears} yrs`} />
+                                            <StatCell label="Experience" value={`${specialty.experienceYears} years`} />
                                         </Box>
                                     )}
                                     {specialty.certifications && (

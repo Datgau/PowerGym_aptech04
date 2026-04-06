@@ -65,6 +65,23 @@ const Service: React.FC = () => {
 
   const flow = useServiceRegistrationFlow(selectedServiceForFlow?.id);
 
+  // Calculate final amount based on promotion data
+  const finalAmount = React.useMemo(() => {
+    if (flow.pendingBookingData?.promotionData?.finalAmount) {
+      return flow.pendingBookingData.promotionData.finalAmount;
+    }
+    return selectedServiceForFlow?.price || 0;
+  }, [flow.pendingBookingData?.promotionData, selectedServiceForFlow?.price]);
+
+  // Generate order info with promotion details
+  const orderInfo = React.useMemo(() => {
+    const baseInfo = selectedServiceForFlow ? `PowerGym Service - ${selectedServiceForFlow.name}` : '';
+    if (flow.pendingBookingData?.promotionData?.promotionCode) {
+      return `${baseInfo} (Promo: ${flow.pendingBookingData.promotionData.promotionCode})`;
+    }
+    return baseInfo;
+  }, [selectedServiceForFlow, flow.pendingBookingData?.promotionData]);
+
   const getServiceImage = (service: any) =>
       service.images?.[0] || '/images/default-service.jpg';
   useEffect(() => {
@@ -90,8 +107,7 @@ const Service: React.FC = () => {
           if (!regRes.success) {
               toast.error("Registration failed !")
           }
-         toast.success("Registration successful! Please go to the counter to complete payment and schedule a session with a trainer for the service \"${service.name}\".")
-      } catch (err: any) {
+          toast.success(`Registration successful! Please go to the counter to complete payment and schedule a session with a trainer for the service "${service.name}".`);      } catch (err: any) {
           toast.error("You have already registered for this service")
       } finally {
           setCounterRegistering(false);
@@ -560,15 +576,15 @@ const Service: React.FC = () => {
             onSelectMoMo={flow.handleSelectMoMo}
             onSelectBankTransfer={flow.handleSelectBankTransfer}
             serviceName={selectedServiceForFlow?.name}
-            amount={selectedServiceForFlow?.price}
+            amount={finalAmount}
         />
 
         <MoMoPaymentModal
             open={flow.showMoMoPayment}
             onClose={() => flow.setShowMoMoPayment(false)}
             onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
-            defaultAmount={selectedServiceForFlow?.price || 0}
-            defaultOrderInfo={selectedServiceForFlow ? `PowerGym Service - ${selectedServiceForFlow.name}` : ''}
+            defaultAmount={finalAmount}
+            defaultOrderInfo={orderInfo}
             itemType="SERVICE"
             itemId={selectedServiceForFlow?.id?.toString()}
             itemName={selectedServiceForFlow?.name}
@@ -579,8 +595,9 @@ const Service: React.FC = () => {
               onClose={() => flow.setShowBankPayment(false)}
               onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
               serviceName={selectedServiceForFlow?.name}
-              amount={selectedServiceForFlow?.price}
+              amount={finalAmount}
               serviceId={selectedServiceForFlow?.id?.toString()}
+              promotionCode={flow.pendingBookingData?.promotionData?.promotionCode}
           />
 
         <Snackbar

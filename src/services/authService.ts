@@ -26,6 +26,9 @@ export interface LoginResult {
   email?: string;
   fullName?: string;
   avatar?: string;
+  phoneNumber?: string;
+  bio?: string;
+  dateOfBirth?: string;
   token: {
     accessToken: string;
     refreshToken: string;

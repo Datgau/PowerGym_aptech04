@@ -15,30 +15,34 @@ const PricingFields: React.FC<PricingFieldsProps> = ({
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '200px' }}
-          label="Duration (days)"
-          type="number"
-          value={duration}
-          onChange={(e) => onChange('duration', parseInt(e.target.value) || 0)}
-          error={!!errors.duration}
-          helperText={errors.duration}
+          label="Current Price (After Discount)"
+          type="text"
+          inputMode="numeric"
+          value={price}
+          onChange={(e) => onChange('price', parseFloat(e.target.value) || 0)}
+          error={!!errors.price}
+          helperText={errors.price || 'Final price customers will pay'}
           required
-          InputProps={{
-            inputProps: { min: 1 }
+          slotProps={{
+            input: {
+              endAdornment: <InputAdornment position="end">VND</InputAdornment>,
+            },
+            htmlInput: { min: 0, step: 1000 }
           }}
         />
 
         <TextField
           sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '200px' }}
-          label="Price"
-          type="number"
-          value={price}
-          onChange={(e) => onChange('price', parseFloat(e.target.value) || 0)}
-          error={!!errors.price}
-          helperText={errors.price}
+          label="Duration (days)"
+          type="text"
+          inputMode="numeric"
+          value={duration}
+          onChange={(e) => onChange('duration', parseInt(e.target.value) || 0)}
+          error={!!errors.duration}
+          helperText={errors.duration}
           required
-          InputProps={{
-            endAdornment: <InputAdornment position="end">VND</InputAdornment>,
-            inputProps: { min: 0, step: 1000 }
+          slotProps={{
+            htmlInput: { min: 1 }
           }}
         />
       </Box>
@@ -46,29 +50,35 @@ const PricingFields: React.FC<PricingFieldsProps> = ({
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '200px' }}
-          label="Original Price (Optional)"
-          type="number"
+          label="Original Price (Before Discount)"
+          type="text"
+          inputMode="numeric"
           value={originalPrice || ''}
           onChange={(e) => onChange('originalPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
           error={!!errors.originalPrice}
-          helperText={errors.originalPrice || 'For showing discount'}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">VND</InputAdornment>,
-            inputProps: { min: 0, step: 1000 }
+          helperText={errors.originalPrice || 'Auto-calculated when you enter discount %'}
+          slotProps={{
+            input: {
+              endAdornment: <InputAdornment position="end">VND</InputAdornment>,
+            },
+            htmlInput: { min: 0, step: 1000 }
           }}
         />
 
         <TextField
           sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '200px' }}
-          label="Discount %"
-          type="number"
+          label="Discount Percentage"
+          type="text"
+          inputMode="numeric"
           value={discount || ''}
           onChange={(e) => onChange('discount', e.target.value ? parseInt(e.target.value) : undefined)}
           error={!!errors.discount}
-          helperText={errors.discount || 'Discount percentage (0-100)'}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">%</InputAdornment>,
-            inputProps: { min: 0, max: 100 }
+          helperText={errors.discount || 'Auto-calculated when you enter original price'}
+          slotProps={{
+            input: {
+              endAdornment: <InputAdornment position="end">%</InputAdornment>,
+            },
+            htmlInput: { min: 0, max: 100 }
           }}
         />
       </Box>

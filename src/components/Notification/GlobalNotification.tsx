@@ -113,8 +113,8 @@ const GlobalNotification: React.FC<GlobalNotificationProps> = ({ userId }) => {
   const formatNotificationTitle = (entityName: string, action: string): string => {
     const titles: Record<string, string> = {
       'SERVICE_REGISTRATION_REGISTERED': 'New Service Registration',
-      'SERVICE_REGISTRATION_ACTIVATED': 'Service Activated',
-      'SERVICE_REGISTRATION_CANCELLED': 'Service Cancelled',
+      'SERVICE_REGISTRATION_ACTIVATED': 'New Service activated',
+      'SERVICE_REGISTRATION_CANCELLED': 'A Service cancelled',
       'BOOKING_CREATED': 'New Booking',
       'BOOKING_CONFIRMED': 'Booking Confirmed',
       'BOOKING_REJECTED': 'Booking Rejected',

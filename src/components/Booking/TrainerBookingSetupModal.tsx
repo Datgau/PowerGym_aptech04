@@ -19,6 +19,7 @@ import {
     type TimeSlotOption,
 } from '../../services/newBookingService';
 import type { ServiceItem } from '../../@type/powergym';
+import type { ApplyPromotionResponse } from '../../@type/reward';
 
 import TrainerStep   from './TrainerStep';
 import ScheduleStep  from './ScheduleStep';
@@ -32,6 +33,7 @@ export interface BookingData {
     startTime: string;
     endTime: string;
     endDate: string;
+    promotionData?: ApplyPromotionResponse | null;
 }
 
 interface Props {
@@ -58,6 +60,9 @@ export default function TrainerBookingSetupModal({
     const [bookedTimes,  setBookedTimes]  = useState<Set<string>>(new Set());
     const [loadingSlots, setLoadingSlots] = useState(false);
 
+    /* Step 3 — Promotion */
+    const [promotionData, setPromotionData] = useState<ApplyPromotionResponse | null>(null);
+
     useEffect(() => {
         if (open) {
             setStep(0);
@@ -67,6 +72,7 @@ export default function TrainerBookingSetupModal({
             setStartDate(null);
             setSelectedSlot(null);
             setBookedTimes(new Set());
+            setPromotionData(null);
         }
     }, [open]);
 
@@ -177,6 +183,7 @@ export default function TrainerBookingSetupModal({
                 startTime:   selectedSlot!.startTime,
                 endTime:     selectedSlot!.endTime,
                 endDate,
+                promotionData,
             });
         }
     };
@@ -301,6 +308,7 @@ export default function TrainerBookingSetupModal({
                         startDate={startDate ? startDate.toDate() : null}
                         endDate={endDate}
                         slot={selectedSlot}
+                        onPromotionApplied={setPromotionData}
                     />
                 )}
             </DialogContent>

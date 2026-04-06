@@ -15,9 +15,11 @@ import {
   Alert,
   Chip,
   Avatar,
-  Stack
+  Stack,
+  TextField,
+  InputAdornment
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility , Build } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility , Build, Search, Clear } from '@mui/icons-material';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { styled } from '@mui/material/styles';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService.ts';
@@ -30,6 +32,7 @@ import TablePagination from '../../../../components/Common/TablePagination.tsx';
 import { usePagination } from '../../../../hooks/usePagination.ts';
 import RichTextDisplay from '../../../../components/Common/RichTextDisplay.tsx';
 import ServiceFormModal from "./ServiceFormModal/ServiceFormModal.tsx";
+import StatusFilterToggle from '../../../../components/Common/StatusFilterToggle.tsx';
 
 /* ─── Styled Components ─────────────────────────────────── */
 
@@ -100,6 +103,7 @@ const ContentSection = styled(Box)({
 
 const ServicesManagement: React.FC = () => {
   const [services, setServices] = useState<GymServiceDto[]>([]);
+  const [allServices, setAllServices] = useState<GymServiceDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openForm, setOpenForm] = useState(false);
@@ -108,6 +112,10 @@ const ServicesManagement: React.FC = () => {
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  
+  // Filter states
+  const [searchName, setSearchName] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
 
   const {
     paginationState,
@@ -138,7 +146,8 @@ const ServicesManagement: React.FC = () => {
       
       if (response.success) {
         const pageData = response.data;
-        setServices(pageData.content);
+        setAllServices(pageData.content);
+        applyFilters(pageData.content);
         setPaginationData(pageData.totalPages, pageData.totalElements);
       }
     } catch (err: any) {
@@ -147,6 +156,30 @@ const ServicesManagement: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const applyFilters = (servicesList: GymServiceDto[]) => {
+    let filtered = servicesList;
+
+    // Filter by name
+    if (searchName.trim()) {
+      filtered = filtered.filter(service =>
+        service.name.toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+
+    // Filter by status
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(service =>
+        filterStatus === 'active' ? service.isActive : !service.isActive
+      );
+    }
+
+    setServices(filtered);
+  };
+
+  useEffect(() => {
+    applyFilters(allServices);
+  }, [searchName, filterStatus, allServices]);
 
   const handleOpenCreate = () => {
     setSelectedService(null);
@@ -277,6 +310,53 @@ const ServicesManagement: React.FC = () => {
       )}
 
       <ContentSection>
+        <Box mb={3}>
+          <TextField
+            fullWidth
+            placeholder="Search by service name..."
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: '#64748b' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchName && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchName('')}
+                      sx={{ color: '#64748b' }}
+                    >
+                      <Clear />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                backgroundColor: '#f8fafc',
+                '&:hover': {
+                  backgroundColor: '#f1f5f9',
+                },
+                '&.Mui-focused': {
+                  backgroundColor: '#fff',
+                },
+              },
+            }}
+          />
+        </Box>
+
+        <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center" flexWrap="wrap" gap={2}>
+          <StatusFilterToggle
+            value={filterStatus === 'all' ? null : filterStatus === 'active'}
+            onChange={(value) => setFilterStatus(value === null ? 'all' : value ? 'active' : 'inactive')}
+          />
+        </Box>
         <TableContainer component={Paper} sx={{ 
           overflowX: 'auto',
           borderRadius: 3,

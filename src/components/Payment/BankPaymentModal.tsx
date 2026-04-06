@@ -32,6 +32,7 @@ interface BankPaymentModalProps {
   amount?: number;
   serviceId?: string;
   itemType?: 'SERVICE' | 'MEMBERSHIP';
+  promotionCode?: string; // Add promotion code prop
 }
 
 const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
@@ -40,7 +41,8 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   onSuccess,
   serviceName,
   serviceId,
-  itemType = 'SERVICE'
+  itemType = 'SERVICE',
+  promotionCode // Add promotion code
 }) => {
   const { user } = useAuth();
   const [paymentInfo, setPaymentInfo] = useState<CreateBankPaymentResponse | null>(null);
@@ -85,6 +87,13 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
           } else {
             request.serviceId = Number(serviceId);
           }
+          
+          // Add promotion code if available
+          if (promotionCode) {
+            request.promotionCode = promotionCode;
+          }
+          
+          console.log('[BankPaymentModal] Creating payment with request:', request);
           
           const response = await paymentService.createBankPayment(request);
 

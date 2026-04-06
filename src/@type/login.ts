@@ -11,6 +11,9 @@ export interface AuthUser {
   fullName?: string;
   avatar?: string;
   tokens: AuthTokens;
+  phoneNumber: string;
+  dateOfBirth: string;
+  bio: string;
 }
 
 export interface FacebookLoginResponse {

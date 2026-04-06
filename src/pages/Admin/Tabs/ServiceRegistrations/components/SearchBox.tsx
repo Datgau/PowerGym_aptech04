@@ -30,7 +30,7 @@ interface SearchBoxProps {
 const SearchBox: React.FC<SearchBoxProps> = ({
   value,
   onChange,
-  placeholder = 'Search by member name or service name...',
+  placeholder = 'Search by member name or email...',
   debounceMs = 300,
 }) => {
   const [localValue, setLocalValue] = useState(value);

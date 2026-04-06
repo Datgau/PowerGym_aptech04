@@ -4,55 +4,46 @@ import {
   Container,
   Typography,
   Card,
+  CardContent,
   Chip,
-  Grid,
-  Zoom
+  LinearProgress,
+  CircularProgress,
+  Alert,
+  Stack,
+  Button,
 } from '@mui/material';
+import { EmojiEvents, TrendingUp, History, Login } from '@mui/icons-material';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
-import { EmojiEvents, CardGiftcard, Star, Loyalty } from '@mui/icons-material';
+import { useReward } from '../../hooks/useReward';
+import { useAuth } from '../../hooks/useAuth';
+import { usePromotion } from '../../hooks/usePromotion';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const Rewards: React.FC = () => {
-  const rewardTiers = [
-    {
-      name: 'Bronze',
-      range: '0-999 điểm',
-      color: '#CD7F32',
-      icon: <EmojiEvents />,
-      benefits: ['Tích điểm cơ bản', 'Đổi quà theo điểm']
-    },
-    {
-      name: 'Silver',
-      range: '1000-2999 điểm',
-      color: '#C0C0C0',
-      icon: <Star />,
-      benefits: ['Tích điểm x1.2', 'Ưu tiên đặt lịch', 'Giảm giá 5%']
-    },
-    {
-      name: 'Gold',
-      range: '3000+ điểm',
-      color: '#FFD700',
-      icon: <Loyalty />,
-      benefits: ['Tích điểm x1.5', 'Ưu tiên cao nhất', 'Giảm giá 10%', 'Quà tặng đặc biệt']
+  const { isLoggedIn, requireAuth } = useAuth();
+  const { reward, transactions, loading, error } = useReward();
+  const { promotions, loading: promotionsLoading, error: promotionsError } = usePromotion();
+
+  const getMembershipColor = (level: string) => {
+    // Use brand gradient for all membership levels
+    return BRAND_GRADIENT;
+  };
+
+  const getMembershipIcon = (level: string) => {
+    switch (level) {
+      case 'PLATINUM':
+        return '💎';
+      case 'GOLD':
+        return '🏆';
+      default:
+        return '🥈';
     }
-  ];
+  };
 
-  const pointRules = [
-    { action: 'Mỗi lần check-in', points: 10 },
-    { action: 'Tham gia lớp nhóm', points: 15 },
-    { action: 'Giới thiệu bạn bè', points: 100 },
-    { action: 'Đánh giá dịch vụ', points: 5 }
-  ];
-
-  const rewards = [
-    { name: 'Áo thun PowerGym', points: 1000, icon: <CardGiftcard /> },
-    { name: 'Bình nước thể thao', points: 800, icon: <CardGiftcard /> },
-    { name: 'Khăn tập PowerGym', points: 600, icon: <CardGiftcard /> },
-    { name: '1 buổi PT miễn phí', points: 500, icon: <CardGiftcard /> },
-    { name: '1 tuần tập miễn phí', points: 1500, icon: <CardGiftcard /> },
-    { name: '1 tháng tập miễn phí', points: 2000, icon: <CardGiftcard /> }
-  ];
+  const progressToNext = reward?.nextLevel
+    ? ((reward.totalPoints % 5000) / 5000) * 100
+    : 100;
 
   return (
     <PowerGymLayout>
@@ -107,7 +98,7 @@ const Rewards: React.FC = () => {
                 letterSpacing: '-0.5px',
               }}
             >
-              PowerRewards
+              My Rewards
             </Typography>
 
             <Box sx={{
@@ -126,7 +117,7 @@ const Rewards: React.FC = () => {
                 mx: 'auto',
               }}
             >
-              Membership Reward Program — train more, earn more rewards.
+              Earn points and get special benefits with every purchase
             </Typography>
           </Box>
         </Container>
@@ -135,160 +126,472 @@ const Rewards: React.FC = () => {
       {/* ── Content Section ── */}
       <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
         <Container maxWidth="xl">
-          {/* How it works */}
-          <Box sx={{ mb: 8 }}>
-            <Typography
-              variant="overline"
-              sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
-            >
-              How It Works
-            </Typography>
-            <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5} mb={4}>
-              Earn Points & Redeem Rewards
-            </Typography>
+          {/* Public Content - For unauthenticated users */}
+            {!isLoggedIn && (
+                <>
+                    {promotionsLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                            <CircularProgress size={60} />
+                        </Box>
+                    ) : promotionsError ? (
+                        <Alert severity="error" sx={{ borderRadius: 3, mb: 3 }}>
+                            {promotionsError}
+                        </Alert>
+                    ) : (
+                        <>
+                            {/* Login CTA Banner */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    borderRadius: 3,
+                                    border: '1px solid rgba(0,0,0,0.07)',
+                                    mb: 4,
+                                    background: BRAND_GRADIENT,
+                                    color: 'white',
+                                }}
+                            >
+                                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                                    <Login sx={{ fontSize: 48, mb: 2, opacity: 0.9 }} />
+                                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                                        Log in to unlock personalized offers
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
+                                        Access your reward points, transaction history, and exclusive promotions
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        onClick={() => requireAuth()}
+                                        sx={{
+                                            bgcolor: 'white',
+                                            color: '#045668',
+                                            fontWeight: 600,
+                                            px: 4,
+                                            '&:hover': {
+                                                bgcolor: 'rgba(255,255,255,0.9)',
+                                            },
+                                        }}
+                                    >
+                                        See now
+                                    </Button>
+                                </CardContent>
+                            </Card>
 
-            <Grid container spacing={3}>
-              {pointRules.map((rule, idx) => (
-                <Grid item xs={12} sm={6} md={3} key={idx}>
-                  <Zoom in timeout={500 + idx * 100}>
-                    <Card
-                      elevation={0}
+                            {/* Public Promotions */}
+                            <Box>
+                                <Typography
+                                    variant="h5"
+                                    sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}
+                                >
+                                    Public Reward Redemption Programs
+                                </Typography>
+
+                                {promotions.length === 0 ? (
+                                    <Box sx={{ textAlign: 'center', py: 8 }}>
+                                        <Typography variant="h6" color="text.secondary">
+                                            No promotions available
+                                        </Typography>
+                                    </Box>
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: {
+                                                xs: '1fr',
+                                                sm: 'repeat(2, 1fr)',
+                                                md: 'repeat(3, 1fr)',
+                                            },
+                                            gap: 3,
+                                        }}
+                                    >
+                                        {promotions.map((promotion) => (
+                                            <Card
+                                                key={promotion.id}
+                                                elevation={0}
+                                                sx={{
+                                                    borderRadius: 3,
+                                                    border: '1px solid rgba(0,0,0,0.07)',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                }}
+                                            >
+                                                {promotion.image && (
+                                                    <Box
+                                                        component="img"
+                                                        src={promotion.image}
+                                                        alt={promotion.title}
+                                                        sx={{
+                                                            width: '100%',
+                                                            height: 200,
+                                                            objectFit: 'cover',
+                                                            borderRadius: '12px 12px 0 0',
+                                                        }}
+                                                    />
+                                                )}
+                                                <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                                                        {promotion.title}
+                                                    </Typography>
+
+                                                    {promotion.subtitle && (
+                                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                            {promotion.subtitle}
+                                                        </Typography>
+                                                    )}
+
+                                                    {promotion.description && (
+                                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                                            {promotion.description}
+                                                        </Typography>
+                                                    )}
+
+                                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                        {promotion.discountPercentage && (
+                                                            <Chip
+                                                                label={`${promotion.discountPercentage}% OFF`}
+                                                                color="primary"
+                                                                size="small"
+                                                            />
+                                                        )}
+
+                                                        {promotion.discountAmount && (
+                                                            <Chip
+                                                                label={`-${promotion.discountAmount.toLocaleString()} VND`}
+                                                                color="primary"
+                                                                size="small"
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Box>
+                        </>
+                    )}
+                </>
+            )}
+
+          {/* Private Content - For authenticated users */}
+          {isLoggedIn && (
+            <>
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                  <CircularProgress size={60} />
+                </Box>
+              ) : error ? (
+                <Alert severity="error" sx={{ borderRadius: 3 }}>
+                  {error}
+                </Alert>
+              ) : !reward ? (
+                <Box sx={{ textAlign: 'center', py: 8 }}>
+                  <Typography variant="h6" color="text.secondary">
+                    No reward data available
+                  </Typography>
+                </Box>
+              ) : (
+                <>
+                  {/* Section header */}
+                  <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
+                    <Box>
+                      <Typography
+                        variant="overline"
+                        sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
+                      >
+                        Membership Status
+                      </Typography>
+                      <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
+                        {reward.membershipLevelDisplay} Member
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {/* Top Row: Membership Card + Quick Stats */}
+                    <Box
                       sx={{
-                        borderRadius: 3,
-                        border: '1px solid rgba(0,0,0,0.07)',
-                        textAlign: 'center',
-                        p: 3,
-                        transition: 'transform 0.3s ease',
-                        '&:hover': { transform: 'translateY(-4px)' },
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' },
+                        gap: 3,
                       }}
                     >
-                      <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
-                        {rule.action}
-                      </Typography>
-                      <Chip
-                        label={`+${rule.points} điểm`}
+                      {/* Membership Card */}
+                      <Card
+                        elevation={0}
                         sx={{
-                          background: BRAND_GRADIENT,
-                          color: '#fff',
-                          fontWeight: 700,
+                          background: getMembershipColor(reward.membershipLevel),
+                          color: 'white',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          borderRadius: 3,
+                          border: '1px solid rgba(0,0,0,0.07)',
                         }}
-                      />
-                    </Card>
-                  </Zoom>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+                      >
+                        <CardContent sx={{ p: 4 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                            <Box>
+                              <Typography variant="overline" sx={{ opacity: 0.9 }}>
+                                Membership Level
+                              </Typography>
+                              <Typography variant="h3" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                {getMembershipIcon(reward.membershipLevel)} {reward.membershipLevelDisplay}
+                              </Typography>
+                            </Box>
+                            <Chip
+                              icon={<EmojiEvents />}
+                              label={`${reward.totalPoints.toLocaleString()} points`}
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.2)',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: '1rem',
+                                px: 1,
+                              }}
+                            />
+                          </Box>
 
-          {/* Membership Tiers */}
-          <Box sx={{ mb: 8 }}>
-            <Typography
-              variant="overline"
-              sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
-            >
-              Hạng thành viên
-            </Typography>
-            <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5} mb={4}>
-              Đặc Quyền Theo Hạng
-            </Typography>
+                          <Box sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Points Value
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {reward.pointsValue.toLocaleString()} VNĐ
+                              </Typography>
+                            </Box>
+                          </Box>
 
-            <Grid container spacing={3}>
-              {rewardTiers.map((tier, idx) => (
-                <Grid item xs={12} md={4} key={idx}>
-                  <Zoom in timeout={700 + idx * 100}>
-                    <Card
-                      elevation={0}
-                      sx={{
-                        borderRadius: 3,
-                        border: '2px solid',
-                        borderColor: tier.color,
-                        textAlign: 'center',
-                        p: 4,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 4,
-                          background: tier.color,
-                        },
-                      }}
-                    >
-                      <Box sx={{ color: tier.color, mb: 2 }}>
-                        {tier.icon}
+                          {reward.nextLevel && (
+                            <Box>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  Progress to {reward.nextLevel}
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                  {reward.pointsToNextLevel.toLocaleString()} points remaining
+                                </Typography>
+                              </Box>
+                              <LinearProgress
+                                variant="determinate"
+                                value={progressToNext}
+                                sx={{
+                                  height: 8,
+                                  borderRadius: 4,
+                                  bgcolor: 'rgba(255,255,255,0.2)',
+                                  '& .MuiLinearProgress-bar': {
+                                    bgcolor: 'white',
+                                    borderRadius: 4,
+                                  },
+                                }}
+                              />
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Quick Stats */}
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr',
+                          gap: 2,
+                        }}
+                      >
+                        <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.07)' }}>
+                          <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Box
+                                sx={{
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: 2,
+                                  background: BRAND_GRADIENT,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <TrendingUp sx={{ color: 'white' }} />
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  Total Points
+                                </Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                  {reward.totalPoints.toLocaleString()}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+
+                        <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.07)' }}>
+                          <CardContent>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Box
+                                sx={{
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: 2,
+                                  background: BRAND_GRADIENT,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <History sx={{ color: 'white' }} />
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  Transactions
+                                </Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                  {transactions.length}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
                       </Box>
-                      <Typography variant="h5" fontWeight={700} color="text.primary" gutterBottom>
-                        {tier.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {tier.range}
-                      </Typography>
-                      <Box sx={{ mt: 2 }}>
-                        {tier.benefits.map((benefit, i) => (
-                          <Chip
-                            key={i}
-                            label={benefit}
-                            size="small"
-                            sx={{ m: 0.5, backgroundColor: 'rgba(0,0,0,0.05)' }}
-                          />
-                        ))}
-                      </Box>
-                    </Card>
-                  </Zoom>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+                    </Box>
 
-          {/* Available Rewards */}
-          <Box>
-            <Typography
-              variant="overline"
-              sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
-            >
-              Quà tặng
-            </Typography>
-            <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5} mb={4}>
-              Danh Sách Phần Thưởng
-            </Typography>
-
-            <Grid container spacing={3}>
-              {rewards.map((reward, idx) => (
-                <Grid item xs={12} sm={6} md={4} key={idx}>
-                  <Zoom in timeout={900 + idx * 100}>
-                    <Card
-                      elevation={0}
-                      sx={{
-                        borderRadius: 3,
-                        border: '1px solid rgba(0,0,0,0.07)',
-                        p: 3,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 2,
-                        transition: 'transform 0.3s ease',
-                        '&:hover': { transform: 'translateY(-4px)' },
-                      }}
-                    >
-                      <Box sx={{ color: '#1366ba' }}>
-                        {reward.icon}
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body1" fontWeight={600} color="text.primary">
-                          {reward.name}
+                    {/* Transaction History */}
+                    <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.07)' }}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+                          Transaction History
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {reward.points} điểm
-                        </Typography>
-                      </Box>
+
+                        {transactions.length === 0 ? (
+                          <Box sx={{ textAlign: 'center', py: 4 }}>
+                            <Typography color="text.secondary">No transactions yet</Typography>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {transactions.map((transaction) => (
+                              <Box
+                                key={transaction.id}
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  p: 2,
+                                  borderRadius: 2,
+                                  bgcolor: 'background.default',
+                                }}
+                              >
+                                <Box>
+                                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                    {transaction.description}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {transaction.formattedDate}
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  label={`${transaction.transactionType === 'EARN' ? '+' : '-'}${transaction.points} points`}
+                                  color={transaction.transactionType === 'EARN' ? 'success' : 'error'}
+                                  sx={{ fontWeight: 600 }}
+                                />
+                              </Box>
+                            ))}
+                          </Box>
+                        )}
+                      </CardContent>
                     </Card>
-                  </Zoom>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+
+                    {/* All Active Promotions */}
+                    {promotionsLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                      </Box>
+                    ) : promotions.length > 0 && (
+                      <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.07)' }}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
+                            Chương trình khuyến mãi
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: 'repeat(2, 1fr)',
+                                md: 'repeat(3, 1fr)',
+                              },
+                              gap: 3,
+                            }}
+                          >
+                            {promotions.map((promotion) => (
+                              <Card
+                                key={promotion.id}
+                                elevation={0}
+                                sx={{
+                                  borderRadius: 2,
+                                  border: '1px solid rgba(0,0,0,0.05)',
+                                  height: '100%',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                }}
+                              >
+                                {promotion.image && (
+                                  <Box
+                                    component="img"
+                                    src={promotion.image}
+                                    alt={promotion.title}
+                                    sx={{
+                                      width: '100%',
+                                      height: 200,
+                                      objectFit: 'cover',
+                                      borderRadius: '8px 8px 0 0',
+                                    }}
+                                  />
+                                )}
+                                <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, fontSize: '1rem' }}>
+                                    {promotion.title}
+                                  </Typography>
+                                  {promotion.subtitle && (
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                      {promotion.subtitle}
+                                    </Typography>
+                                  )}
+                                  {promotion.description && (
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                      {promotion.description}
+                                    </Typography>
+                                  )}
+                                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                    {promotion.discountPercentage && (
+                                      <Chip
+                                        label={`${promotion.discountPercentage}% OFF`}
+                                        color="primary"
+                                        size="small"
+                                      />
+                                    )}
+                                    {promotion.discountAmount && (
+                                      <Chip
+                                        label={`-${promotion.discountAmount.toLocaleString()} VNĐ`}
+                                        color="primary"
+                                        size="small"
+                                      />
+                                    )}
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </Box>
+                </>
+              )}
+            </>
+          )}
         </Container>
       </Box>
     </PowerGymLayout>

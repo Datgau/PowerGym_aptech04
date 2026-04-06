@@ -43,7 +43,7 @@ export default function TrainerCard({ trainer, selected, onSelect }: TrainerCard
                     {trainer.totalExperienceYears && (
                         <Chip
                             icon={<Star sx={{ fontSize: '12px !important' }} />}
-                            label={`${trainer.totalExperienceYears} yrs exp`}
+                            label={`${trainer.totalExperienceYears} years exp`}
                             size="small"
                             sx={{
                                 height: 20, fontSize: '0.65rem',

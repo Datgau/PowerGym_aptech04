@@ -53,6 +53,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
     const {
         isRegistering,
         showBookingSetup,
+        pendingBookingData,
         showPaymentMethodSelection,
         showMoMoPayment,
         showBankPayment,
@@ -67,6 +68,23 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
         setShowMoMoPayment,
         setShowBankPayment,
     } = useServiceRegistrationFlow(service?.id);
+
+    // Calculate final amount based on promotion data
+    const finalAmount = useMemo(() => {
+        if (pendingBookingData?.promotionData?.finalAmount) {
+            return pendingBookingData.promotionData.finalAmount;
+        }
+        return service?.price || 0;
+    }, [pendingBookingData?.promotionData, service?.price]);
+
+    // Generate order info with promotion details
+    const orderInfo = useMemo(() => {
+        const baseInfo = service ? `PowerGym Service - ${service.name}` : '';
+        if (pendingBookingData?.promotionData?.promotionCode) {
+            return `${baseInfo} (Promo: ${pendingBookingData.promotionData.promotionCode})`;
+        }
+        return baseInfo;
+    }, [service, pendingBookingData?.promotionData]);
 
     const images = useMemo(() =>
             service?.images?.length ? service.images : ['/images/default-service.jpg'],
@@ -525,8 +543,8 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 open={showMoMoPayment}
                 onClose={() => setShowMoMoPayment(false)}
                 onSuccess={() => handlePaymentSuccess(onClose)}
-                defaultAmount={service?.price || 0}
-                defaultOrderInfo={service ? `PowerGym Service - ${service.name}` : ''}
+                defaultAmount={finalAmount}
+                defaultOrderInfo={orderInfo}
                 itemType="SERVICE"
                 itemId={service?.id?.toString()}
                 itemName={service?.name}
@@ -538,8 +556,9 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 onClose={() => setShowBankPayment(false)}
                 onSuccess={() => handlePaymentSuccess(onClose)}
                 serviceName={service?.name}
-                amount={service?.price}
+                amount={finalAmount}
                 serviceId={service?.id}
+                promotionCode={pendingBookingData?.promotionData?.promotionCode}
             />
         </Dialog>
     );

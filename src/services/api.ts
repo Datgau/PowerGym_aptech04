@@ -149,4 +149,12 @@ privateClient.interceptors.response.use(
     }
 );
 
+// Invoice download function
+export const downloadInvoice = async (paymentOrderId: string): Promise<Blob> => {
+    const response = await privateClient.get(`/invoices/${paymentOrderId}/download`, {
+        responseType: 'blob',
+    });
+    return response.data;
+};
+
 export default privateClient;

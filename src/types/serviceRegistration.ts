@@ -114,6 +114,7 @@ export interface ServiceRegistrationResponse {
   paymentStatus: PaymentStatus | null;
   trainerName: string | null;
   registrationType: RegistrationType;
+  paymentOrderId: string | null;
 }
 
 /**

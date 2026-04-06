@@ -9,6 +9,8 @@ import AdminStoriesManagement from './Tabs/Stories/AdminStoriesManagement.tsx';
 import ServicesManagement from './Tabs/Services/ServicesManagement.tsx';
 import ServiceRegistrationsGrid from './Tabs/ServiceRegistrations/ServiceRegistrationsGrid.tsx';
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
+import PromotionsPage from './Tabs/Promotions/PromotionsPage.tsx';
+import RewardsPage from './Tabs/Rewards/RewardsPage.tsx';
 import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";
 
 // Format currency helper
@@ -29,6 +31,8 @@ const ServicesTab: React.FC = () => <ServicesManagement />;
 const ServiceRegistrationsTab: React.FC = () => <ServiceRegistrationsGrid />;
 const StoriesTab: React.FC = () => <AdminStoriesManagement />;
 const MembershipTab: React.FC = () => <MembershipPackagesPage />;
+const PromotionsTab: React.FC = () => <PromotionsPage />;
+const RewardsTab: React.FC = () => <RewardsPage />;
 
 const FinancialTab: React.FC = () => (
   <Box>
@@ -61,6 +65,8 @@ const AdminDashboard: React.FC = () => {
     <ServiceRegistrationsTab key="service-registrations" />,
     <StoriesTab key="stories" />,
     <MembershipTab key="membership" />,
+    <PromotionsTab key="promotions" />,
+    <RewardsTab key="rewards" />,
     <FinancialTab key="financial" />,
     <SettingsTab key="settings" />
   ];

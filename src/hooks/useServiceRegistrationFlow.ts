@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { loadAuthSession } from '../services/authStorage';
 import { createBooking } from '../services/newBookingService';
+import type { ApplyPromotionResponse } from '../@type/reward';
 
 export interface BookingSetupData {
   trainerId: number | null;
@@ -11,6 +12,7 @@ export interface BookingSetupData {
   endTime: string;
   endDate: string;
   bookingId?: number; // Store booking ID after creation
+  promotionData?: ApplyPromotionResponse | null;
 }
 
 export interface ServiceRegistrationFlowState {

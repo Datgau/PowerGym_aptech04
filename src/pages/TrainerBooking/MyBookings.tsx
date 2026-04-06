@@ -35,6 +35,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import TrainerBookingLayout from './components/TrainerBookingLayout';
 import { message } from '../../until/message.ts';
+import type {TrainerBookingResponse} from "../../services/trainerBookingService.ts";
 
 interface TabPanelProps {
   children?: React.ReactNode;

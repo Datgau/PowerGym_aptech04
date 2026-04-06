@@ -63,6 +63,9 @@ const Login = () => {
         email: response.data.email || '',
         fullName: response.data.fullName,
         avatar: response.data.avatar,
+        phoneNumber: response.data.phoneNumber || '',
+        dateOfBirth: response.data.dateOfBirth || '',
+        bio: response.data.bio || '',
         tokens: {
           accessToken: response.data.token.accessToken,
           refreshToken: response.data.token.refreshToken,

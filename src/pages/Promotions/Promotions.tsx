@@ -1,43 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
   Typography,
-  Card,
-  CardContent,
-  Button,
   Stack,
-  Chip,
-  Zoom
+  Tabs,
+  Tab,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
+import { LocalOffer, Star } from '@mui/icons-material';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
+import { usePromotion } from '../../hooks/usePromotion';
+import PromotionCard from '../../components/Promotion/PromotionCard';
+import {toast} from "react-toastify";
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const Promotions: React.FC = () => {
-  const promotions = [
-    {
-      id: 1,
-      title: 'TET 2024 PROMOTION',
-      description: '50% off 6-month package + 1 free month',
-      validUntil: '29/02/2024',
-      discount: '50%'
-    },
-    {
-      id: 2,
-      title: 'STUDENT DISCOUNT',
-      description: '30% off all packages for students with valid ID',
-      validUntil: '31/12/2024',
-      discount: '30%'
-    },
-    {
-      id: 3,
-      title: 'GROUP REGISTRATION',
-      description: '20% off for group registration of 3 or more people',
-      validUntil: '31/03/2024',
-      discount: '20%'
-    }
-  ];
+  const { promotions, featuredPromotions, loading, error } = usePromotion();
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success(`Copied to clipboard: ${code}`);
+  };
+
+  const displayPromotions = tabValue === 0 ? featuredPromotions : promotions;
 
   return (
     <PowerGymLayout>
@@ -92,7 +81,7 @@ const Promotions: React.FC = () => {
                 letterSpacing: '-0.5px',
               }}
             >
-              Khuyến Mãi Đặc Biệt
+              Promotions
             </Typography>
 
             <Box sx={{
@@ -111,139 +100,105 @@ const Promotions: React.FC = () => {
                 mx: 'auto',
               }}
             >
-              Những ưu đãi hấp dẫn dành riêng cho bạn — tiết kiệm chi phí,
-              tối đa hóa trải nghiệm tập luyện.
+              Get special offers for our services and membership packages
             </Typography>
           </Box>
         </Container>
       </Box>
 
-      {/* ── Promotions Section ── */}
+      {/* ── Content Section ── */}
       <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
         <Container maxWidth="xl">
-          {/* Section header */}
-          <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
-            <Box>
-              <Typography
-                variant="overline"
-                sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
-              >
-                Ưu đại hiện tại
-              </Typography>
-              <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
-                {promotions.length} Chương Trình Khuyến Mãi
-              </Typography>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+              <CircularProgress size={60} />
             </Box>
-          </Stack>
+          ) : error ? (
+            <Alert severity="error" sx={{ borderRadius: 3 }}>
+              {error}
+            </Alert>
+          ) : (
+            <>
+              {/* Section header with tabs */}
+              <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
+                <Box>
+                  <Typography
+                    variant="overline"
+                    sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
+                  >
+                    Special Offers
+                  </Typography>
+                  <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
+                    {displayPromotions.length} Promotion{displayPromotions.length !== 1 ? 's' : ''} Available
+                  </Typography>
+                </Box>
+              </Stack>
 
-          {/* Promotions Grid */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-              gap: 3,
-            }}
-          >
-            {promotions.map((promotion, idx) => (
-              <Zoom in timeout={500 + idx * 100} key={promotion.id}>
-                <Card
-                  elevation={0}
+              {/* Tabs */}
+              <Box sx={{ mb: 4 }}>
+                <Tabs 
+                  value={tabValue} 
+                  onChange={(_, newValue) => setTabValue(newValue)}
                   sx={{
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    border: '1px solid',
-                    borderColor: 'rgba(0,0,0,0.07)',
-                    position: 'relative',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 20px 48px rgba(0,0,0,0.12)',
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
                     },
                   }}
                 >
-                  {/* Discount Badge */}
-                  <Chip
-                    label={promotion.discount}
-                    sx={{
-                      position: 'absolute',
-                      top: 16,
-                      right: 16,
-                      background: BRAND_GRADIENT,
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                      zIndex: 1,
-                    }}
+                  <Tab
+                    icon={<Star />}
+                    iconPosition="start"
+                    label={`Featured (${featuredPromotions.length})`}
                   />
+                  <Tab
+                    icon={<LocalOffer />}
+                    iconPosition="start"
+                    label={`All Promotions (${promotions.length})`}
+                  />
+                </Tabs>
+              </Box>
 
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h5" fontWeight={700} color="text.primary" gutterBottom>
-                      {promotion.title}
-                    </Typography>
-
-                    <Typography
-                      variant="body1"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.75, mb: 3 }}
-                    >
-                      {promotion.description}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 3 }}
-                    >
-                      Có hiệu lực đến: {promotion.validUntil}
-                    </Typography>
-
-                    <Button
-                      fullWidth
-                      variant="contained"
+              {/* Grid */}
+              {displayPromotions.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 8 }}>
+                  <Typography variant="h6" color="text.secondary" mb={2}>
+                    No promotions available
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Check back later for special offers
+                  </Typography>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' },
+                    gap: 3,
+                  }}
+                >
+                  {displayPromotions.map((promotion, idx) => (
+                    <Box
+                      key={promotion.id}
                       sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        background: BRAND_GRADIENT,
-                        boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
-                        '&:hover': {
-                          boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                          background: BRAND_GRADIENT,
+                        animationName: 'fadeUp',
+                        animationDuration: '0.5s',
+                        animationFillMode: 'both',
+                        animationDelay: `${idx * 0.07}s`,
+                        '@keyframes fadeUp': {
+                          from: { opacity: 0, transform: 'translateY(24px)' },
+                          to: { opacity: 1, transform: 'translateY(0)' },
                         },
                       }}
                     >
-                      Đăng Ký Ngay
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Zoom>
-            ))}
-          </Box>
-
-          {/* Terms Section */}
-          <Box sx={{ mt: 8 }}>
-            <Card
-              elevation={0}
-              sx={{
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'rgba(0,0,0,0.07)',
-              }}
-            >
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
-                  Điều Khoản & Điều Kiện
-                </Typography>
-                <Box component="ul" sx={{ pl: 2, color: 'text.secondary' }}>
-                  <li>Các chương trình khuyến mãi không thể kết hợp với nhau</li>
-                  <li>Giảm giá sinh viên yêu cầu thẻ sinh viên hợp lệ</li>
-                  <li>Đăng ký nhóm yêu cầu thanh toán cùng lúc</li>
-                  <li>PowerGym có quyền thay đổi điều khoản mà không cần thông báo trước</li>
+                      <PromotionCard promotion={promotion} onUse={handleCopyCode} />
+                    </Box>
+                  ))}
                 </Box>
-              </CardContent>
-            </Card>
-          </Box>
+              )}
+            </>
+          )}
         </Container>
       </Box>
     </PowerGymLayout>

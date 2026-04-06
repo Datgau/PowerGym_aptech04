@@ -185,7 +185,7 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
           <List dense disablePadding>
             <InfoRow icon={<Email />} text={trainer?.email} />
             <InfoRow icon={<Phone />} text={trainer?.phoneNumber || 'Not provided'} />
-            {displayExp > 0 && <InfoRow icon={<Work />} text={`${displayExp} yrs experience`} />}
+            {displayExp > 0 && <InfoRow icon={<Work />} text={`${displayExp} years experience`} />}
             {trainer?.education && <InfoRow icon={<School />} text={trainer.education} />}
           </List>
 

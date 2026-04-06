@@ -31,11 +31,13 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../../hooks/useAuth';
+import { loadAuthSession, persistAuthSession } from '../../services/authStorage';
 import { getMyRegistrations } from '../../services/serviceRegistrationService';
 import type { ServiceRegistrationResponse } from '../../services/serviceRegistrationService';
 import { getCurrentTrainerProfile } from '../../services/trainerService';
 import type { TrainerResponse } from '../../services/trainerService';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
+import EditProfileModal from '../../components/Profile/EditProfileModal';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -145,13 +147,14 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 };
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, checkAuthStatus } = useAuth();
   const [registrations, setRegistrations] = useState<ServiceRegistrationResponse[]>([]);
   const [trainerProfile, setTrainerProfile] = useState<TrainerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(1);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const itemsPerPage = 2; // Hiển thị 2 services mỗi trang
 
   const isTrainer = user?.role === 'TRAINER';
@@ -222,6 +225,27 @@ const Profile: React.FC = () => {
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
+  };
+
+  const handleEditProfileSuccess = (updatedUser: any) => {
+    // Update AuthContext with new user data
+    const session = loadAuthSession();
+    if (session && user) {
+      const updatedAuthUser = {
+        ...user,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phoneNumber: updatedUser.phoneNumber,
+        dateOfBirth: updatedUser.dateOfBirth,
+        bio: updatedUser.bio,
+        avatar: updatedUser.avatar,
+      };
+      persistAuthSession(updatedAuthUser, session.remember);
+      // Refresh auth context to pick up new data
+      checkAuthStatus();
+    }
+    // Reload user data after successful update
+    loadUserData();
   };
 
   if (loading) {
@@ -300,14 +324,15 @@ const Profile: React.FC = () => {
                         },
                       }}
                     >
+
                       <Edit fontSize="small" />
                     </IconButton>
+
                   </Box>
 
                   <Typography variant="h4" fontWeight={700} mb={1}>
                     {user?.fullName || 'User'}
                   </Typography>
-
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -315,6 +340,15 @@ const Profile: React.FC = () => {
                     sx={{ fontStyle: user?.email ? 'normal' : 'italic', px: 2 }}
                   >
                     {user?.email || 'No bio available'}
+                  </Typography>
+
+                  <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      mb={3}
+                      sx={{ fontStyle: user?.phoneNumber ? 'normal' : 'italic', px: 2 }}
+                  >
+                    {user?.phoneNumber || 'No bio available'}
                   </Typography>
 
                   <Stack direction="row" spacing={1} mb={2} flexWrap="wrap" justifyContent="center">
@@ -333,6 +367,7 @@ const Profile: React.FC = () => {
                     variant="contained"
                     startIcon={<Edit />}
                     fullWidth
+                    onClick={() => setEditModalOpen(true)}
                     sx={{
                       borderRadius: '12px',
                       py: 1.5,
@@ -729,6 +764,24 @@ const Profile: React.FC = () => {
             </Box>
           </ProfileCard>
         </Container>
+
+        {/* Edit Profile Modal */}
+        {user && (
+          <EditProfileModal
+            open={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            currentUser={{
+              id: user.id,
+              fullName: user.fullName || '',
+              email: user.email || '',
+              phoneNumber: user.phoneNumber,
+              dateOfBirth: user.dateOfBirth,
+              bio: user.bio,
+              avatar: user.avatar,
+            }}
+            onSuccess={handleEditProfileSuccess}
+          />
+        )}
       </PageWrapper>
     </PowerGymLayout>
   );

@@ -295,8 +295,17 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ servicesData, onServi
                                             {service.name}
                                         </Typography>
 
-                                        <Box sx={{ mb: 3, color: "#fff" }}>
-                                            <RichTextDisplay content={service.description} />
+                                        <Box sx={{
+                                            mb: 3, color: "#fff",
+                                            WebkitLineClamp: 3,
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitBoxOrient: 'vertical'
+                                        }}>
+                                            <RichTextDisplay
+                                                content={service.description}
+                                                maxLines={3}
+                                            />
                                         </Box>
 
                                         <Box sx={{

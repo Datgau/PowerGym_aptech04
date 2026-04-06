@@ -18,6 +18,7 @@ export interface CreateBankPaymentRequest {
   packageId?: number;
   itemType?: string;
   bookingId?: number;
+  promotionCode?: string; // Add promotion code
 }
 
 export interface CreateBankPaymentResponse {
