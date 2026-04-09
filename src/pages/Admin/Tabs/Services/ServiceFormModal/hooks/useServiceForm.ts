@@ -26,7 +26,8 @@ export const useServiceForm = (
         price: service.price?.toString() || '',
         duration: service.duration?.toString() || '',
         maxParticipants: service.maxParticipants?.toString() || '',
-        isActive: service.isActive ?? true
+        isActive: service.isActive ?? true,
+        trainerPercentage: service.trainerPercentage?.toString() || '0.30'
       });
     } else {
       setFormData(INITIAL_FORM_DATA);

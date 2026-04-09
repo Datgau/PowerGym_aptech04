@@ -7,10 +7,11 @@ import {
 } from '@mui/material';
 import {
   Close, Email, Phone, School, Work,
-  Person, FiberManualRecord, Schedule, Assessment, PendingActions,
+  Person, FiberManualRecord, Schedule, Assessment, PendingActions, AttachMoney,
 } from '@mui/icons-material';
 import { getTrainerById, verifyTrainerDocument } from '../../../../../services/trainerService';
 import trainerManagementService from '../../../../../services/trainerManagementService';
+import {trainerSalaryApi, type TrainerSalaryResponse} from '../../../../../services/trainerSalaryService';
 import type { TrainerDetailModalProps, TrainerDetailState } from './types';
 import { dialogPaper } from './constants';
 import InfoRow from './components/InfoRow';
@@ -18,6 +19,7 @@ import ProfileTab from './components/ProfileTab';
 import ScheduleTab from './components/ScheduleTab';
 import PendingRequestsTab from './components/PendingRequestsTab';
 import StatisticsTab from './components/StatisticsTab';
+import SalaryTab from './components/SalaryTab';
 
 const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, trainerId }) => {
   const [state, setState] = useState<TrainerDetailState>({
@@ -28,6 +30,9 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
 
   const { trainer, loading, error, activeTab, schedule, pendingRequests, statistics,
     loadingSchedule, loadingRequests, loadingStats } = state;
+
+  const [salaryData, setSalaryData] = useState<TrainerSalaryResponse | null>(null);
+  const [loadingSalary, setLoadingSalary] = useState(false);
 
   const set = (patch: Partial<TrainerDetailState>) => setState(prev => ({ ...prev, ...patch }));
 
@@ -88,12 +93,33 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
     }
   };
 
+  const loadSalary = async () => {
+    if (!trainerId) return;
+    try {
+      setLoadingSalary(true);
+      console.log('Loading salary for trainer:', trainerId);
+      const response = await trainerSalaryApi.getTrainerSalaryById(trainerId);
+      console.log('Salary response:', response);
+      if (response.success) {
+        console.log('Setting salary data:', response.data);
+        setSalaryData(response.data);
+      } else {
+        console.error('Salary API returned error:', response.message);
+      }
+    } catch (err) {
+      console.error('Failed to load salary:', err);
+    } finally {
+      setLoadingSalary(false);
+    }
+  };
+
   useEffect(() => {
     if (open && trainerId) {
       loadTrainerDetail();
       if (activeTab === 1) loadSchedule();
       if (activeTab === 2) loadPendingRequests();
       if (activeTab === 3) loadStatistics();
+      if (activeTab === 4) loadSalary();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, trainerId, activeTab]);
@@ -213,6 +239,7 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
               <Tab icon={<Badge badgeContent={pendingRequests.length} color="error"><PendingActions /></Badge>}
                 label="Requests" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
               <Tab icon={<Assessment />} label="Statistics" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
+              <Tab icon={<AttachMoney />} label="Salary" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
             </Tabs>
           </Box>
 
@@ -220,6 +247,7 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
           {activeTab === 1 && <ScheduleTab loading={loadingSchedule} schedule={schedule} />}
           {activeTab === 2 && <PendingRequestsTab loading={loadingRequests} pendingRequests={pendingRequests} />}
           {activeTab === 3 && <StatisticsTab loading={loadingStats} statistics={statistics} />}
+          {activeTab === 4 && <SalaryTab loading={loadingSalary} salaryData={salaryData} currentBalance={trainer?.salaryBalance} />}
         </Box>
       </DialogContent>
 

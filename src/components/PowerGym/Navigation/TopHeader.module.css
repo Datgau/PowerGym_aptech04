@@ -339,6 +339,25 @@
   transform: translateY(-1px);
 }
 
+.cartButton {
+  padding: 0.5rem;
+  background: transparent;
+  color: #00b4ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+}
+
+.cartButton:hover {
+  background: rgb(120, 217, 244);
+  transform: translateY(-1px);
+}
+
 .mobileLoginButton {
   background: #00b4ff;
   color: white;

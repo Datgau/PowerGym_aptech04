@@ -17,7 +17,7 @@ import {
   Chip,
   Stack,
   TextField,
-  InputAdornment,
+  InputAdornment, Tooltip,
 } from '@mui/material';
 import { Add, Edit, Visibility, FitnessCenter, Search, Clear } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -270,14 +270,11 @@ const TrainersGrid: React.FC = () => {
       if (response.success) {
         const pageData = response.data;
         let filteredContent = pageData.content;
-        
-        // Apply status filter on frontend
         if (statusFilter !== null) {
           filteredContent = pageData.content.filter(trainer => 
             statusFilter ? trainer.isActive : !trainer.isActive
           );
         }
-        
         setTrainers(filteredContent);
         setPaginationData(pageData.totalPages, pageData.totalElements);
       } else {
@@ -355,7 +352,6 @@ const TrainersGrid: React.FC = () => {
 
   return (
     <PageWrapper>
-      {/* ── Header ── */}
       <HeaderSection>
         <HeaderLeft>
           <HeaderIconBox>
@@ -382,7 +378,6 @@ const TrainersGrid: React.FC = () => {
       )}
 
       <ContentSection>
-        {/* ── Search Bar ── */}
         <Box mb={3}>
           <SearchInput
             searchTerm={searchTerm}
@@ -390,8 +385,6 @@ const TrainersGrid: React.FC = () => {
             onClearSearch={handleClearSearch}
           />
         </Box>
-
-        {/* ── Status Filter ── */}
         <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center">
           <StatusFilterToggle
             value={statusFilter}
@@ -461,12 +454,9 @@ const TrainersGrid: React.FC = () => {
                   </TableCell>
                   <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
                     {(() => {
-                      // Show totalExperienceYears if available
                       if (trainer.totalExperienceYears) {
                         return `${trainer.totalExperienceYears} years`;
                       }
-                      
-                      // Otherwise, show max experience from specialties
                       const maxSpecialtyExp = trainer.specialties?.reduce((max, spec) => {
                         return Math.max(max, spec.experienceYears || 0);
                       }, 0);
@@ -484,6 +474,7 @@ const TrainersGrid: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Box display="flex" gap={0.5}>
+                      <Tooltip title="View Details">
                       <IconButton 
                         size="small" 
                         title="Xem chi tiết"
@@ -495,9 +486,10 @@ const TrainersGrid: React.FC = () => {
                       >
                         <Visibility fontSize="small" />
                       </IconButton>
+                        </Tooltip>
+                      <Tooltip title="Edit Trainer">
                       <IconButton 
                         size="small" 
-                        title="Chỉnh sửa"
                         onClick={() => handleOpenEdit(trainer)}
                         sx={{
                           color: '#0066ff',
@@ -506,6 +498,7 @@ const TrainersGrid: React.FC = () => {
                       >
                         <Edit fontSize="small" />
                       </IconButton>
+                      </Tooltip>
                       <LockButton
                         isLocked={!trainer.isActive}
                         onToggle={() => handleToggleStatus(trainer.id)}

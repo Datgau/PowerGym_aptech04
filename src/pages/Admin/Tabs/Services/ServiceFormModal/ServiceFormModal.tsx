@@ -92,7 +92,8 @@ const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         description: formData.description,
         categoryId: parseInt(formData.categoryId),
         price: parseFloat(formData.price),
-        isActive: formData.isActive
+        isActive: formData.isActive,
+        trainerPercentage: parseFloat(formData.trainerPercentage)
       };
 
       if (formData.duration) submitData.duration = parseInt(formData.duration);
@@ -220,6 +221,7 @@ const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               duration={formData.duration}
               maxParticipants={formData.maxParticipants}
               isActive={formData.isActive}
+              trainerPercentage={formData.trainerPercentage}
               loading={loading}
               onChange={handleChange}
             />

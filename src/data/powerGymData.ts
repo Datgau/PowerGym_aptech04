@@ -7,14 +7,8 @@ import type {
   // PackageOption
 } from '../@type/powergym';
 
-// MUI Icons
 import {
   Groups,
-  // CalendarToday,
-  // Schedule,
-  // Group,
-  // CheckCircle,
-  // QrCodeScanner,
   Star,
   LocalOffer,
   Diamond
@@ -58,55 +52,6 @@ export const bannerPromotionData: BannerPromotion = {
   validUntil: '2024-12-31'
 } as const;
 
-// Quick Actions Data
-// export const quickActionsData: readonly QuickActionItem[] = [
-//   {
-//     id: 'schedule',
-//     title: 'Lịch hẹn',
-//     icon: CalendarToday,
-//     path: '/powergym/schedule',
-//     color: '#2196F3',
-//     requiresAuth: true,
-//     tooltip: 'Xem và đặt lịch tập với huấn luyện viên',
-//     badge: 2
-//   },
-//   {
-//     id: 'services',
-//     title: 'Lịch dịch vụ',
-//     icon: Schedule,
-//     path: '/powergym/services',
-//     color: '#4CAF50',
-//     tooltip: 'Xem lịch các dịch vụ và lớp học'
-//   },
-//   {
-//     id: 'classes',
-//     title: 'Lớp cộng đồng',
-//     icon: Group,
-//     path: '/powergym/classes',
-//     color: '#FF9800',
-//     tooltip: 'Tham gia các lớp tập nhóm'
-//   },
-//   {
-//     id: 'participation',
-//     title: 'Lớp đã tham gia',
-//     icon: CheckCircle,
-//     path: '/powergym/my-classes',
-//     color: '#9C27B0',
-//     requiresAuth: true,
-//     tooltip: 'Xem lịch sử các lớp đã tham gia'
-//   },
-//   {
-//     id: 'checkin',
-//     title: 'QR check-in',
-//     icon: QrCodeScanner,
-//     path: '/powergym/checkin',
-//     color: '#FF4444',
-//     requiresAuth: true,
-//     tooltip: 'Quét mã QR để check-in vào phòng gym'
-//   }
-// ] as const;
-
-// Membership Packages Data
 export const membershipPackagesData: readonly PackageOption[] = [
   {
     id: 'monthly',
@@ -163,15 +108,3 @@ export const membershipPackagesData: readonly PackageOption[] = [
     discount: 17
   }
 ] as const;
-
-// Mock Membership Stats
-// export const mockMembershipStats: MembershipStats = {
-//   membershipType: 'Gói 3 + 1 tháng',
-//   daysLeft: 85,
-//   totalDays: 120,
-//   expiryDate: '2024-05-15',
-//   startDate: '2024-01-15',
-//   isActive: true,
-//   status: 'ACTIVE',
-//   nextPaymentDate: '2024-05-15'
-// } as const;

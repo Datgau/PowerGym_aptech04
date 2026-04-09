@@ -26,6 +26,7 @@ export interface UserResponse {
   role: string;
   isActive: boolean;
   createDate: string;
+  salaryBalance?: number;
 }
 
 export interface ApiResponse<T> {

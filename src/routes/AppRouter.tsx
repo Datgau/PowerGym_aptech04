@@ -29,6 +29,12 @@ import ForgotPassword from "../components/Auth/ForgotPassword.tsx";
 import ResetPassword from "../components/Auth/ResetPassword.tsx";
 import About from "../pages/About/About.tsx";
 
+// Product and Order Pages
+import { ProductCatalog } from "../pages/User/ProductCatalog";
+import { ShoppingCart } from "../pages/User/Cart";
+import { CheckoutPage, OrderConfirmation } from "../pages/User/Checkout";
+import { OrderHistory, OrderDetail } from "../pages/User/Orders";
+
 export const AppRouter = () => (
     <>
         <Routes>
@@ -51,12 +57,20 @@ export const AppRouter = () => (
             <Route path="/stories/:storyId" element={<StoryDetailPage />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/news" element={<News />} />
+            
+            {/* Product Catalog - Public access */}
+            <Route path="/products" element={<ProductCatalog />} />
 
             {/* Protected Routes - Require authentication */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/payment/result" element={<PaymentResult />} />
                 <Route path="/powergym/rewards" element={<Rewards/>} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/cart" element={<ShoppingCart />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+                <Route path="/orders" element={<OrderHistory />} />
+                <Route path="/orders/:orderId" element={<OrderDetail />} />
                 {/*<Route path="/settings" element={<Settings />} />*/}
             </Route>
 

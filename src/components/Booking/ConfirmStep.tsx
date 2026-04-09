@@ -50,11 +50,8 @@ export default function ConfirmStep({ service, trainer, startDate, endDate, slot
                 setPromotionData(response);
                 onPromotionApplied?.(response);
             } else {
-                // Show detailed error with debug info if available
                 let errorMsg = response.message || 'Invalid promotion code';
                 if (response.debugInfo) {
-                    console.error('[ConfirmStep] Promotion validation failed:', response.debugInfo);
-                    // Optionally append debug info to error message for development
                     if (process.env.NODE_ENV === 'development') {
                         errorMsg += `\n\nDebug Info:\n${JSON.stringify(response.debugInfo, null, 2)}`;
                     }
@@ -64,7 +61,6 @@ export default function ConfirmStep({ service, trainer, startDate, endDate, slot
                 onPromotionApplied?.(null);
             }
         } catch (error: any) {
-            console.error('[ConfirmStep] Promotion error:', error);
             const errorMsg = error?.response?.data?.message || 'Failed to apply promotion code';
             setPromotionError(errorMsg);
             setPromotionData(null);

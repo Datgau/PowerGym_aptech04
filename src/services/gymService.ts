@@ -21,6 +21,7 @@ export interface GymServiceDto {
   maxParticipants?: number;
   isActive: boolean;
   registrationCount?: number;
+   trainerPercentage?: number;
 }
 
 export interface GymServiceCreateRequest {
@@ -32,6 +33,7 @@ export interface GymServiceCreateRequest {
   maxParticipants?: number;
   isActive?: boolean;
   images?: File[];
+  trainerPercentage?: number;
 }
 
 export interface GymServiceImage {
@@ -125,6 +127,7 @@ export const gymServiceApi = {
     if (data.duration) formData.append('duration', data.duration.toString());
     if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
     if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+    if (data.trainerPercentage !== undefined) formData.append('trainerPercentage', data.trainerPercentage.toString());
     if (data.images && data.images.length > 0) {
       data.images.forEach(image => {
         formData.append('images', image);
@@ -149,6 +152,7 @@ export const gymServiceApi = {
     if (data.duration) formData.append('duration', data.duration.toString());
     if (data.maxParticipants) formData.append('maxParticipants', data.maxParticipants.toString());
     if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+    if (data.trainerPercentage !== undefined) formData.append('trainerPercentage', data.trainerPercentage.toString());
 
     // Handle new images
     if (data.images && data.images.length > 0) {

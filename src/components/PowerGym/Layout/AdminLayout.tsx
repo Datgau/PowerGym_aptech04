@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Box,
     Drawer,
@@ -15,7 +15,7 @@ import {
     MenuItem,
     useMediaQuery,
     useTheme,
-    Tooltip,
+    Tooltip, Collapse,
 } from '@mui/material';
 
 import AnalyticsIcon from '@mui/icons-material/Analytics';
@@ -25,19 +25,22 @@ import {
     Menu as MenuIcon,
     People,
     FitnessCenter,
-    Build,
     Assignment,
     CardMembership,
     Settings,
     Logout,
     AccountCircle,
     Category,
-    KeyboardArrowRight,
     ListAlt,
     SupervisorAccount,
     LocalOffer,
     EmojiEvents,
+    Inventory,
+    ShoppingCart,
+    Receipt,
 } from '@mui/icons-material';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GlobalNotification from '../../Notification/GlobalNotification.tsx';
 import { useTokenRefresh } from '../../../hooks/useTokenRefresh.ts';
 import { useAuth } from '../../../hooks/useAuth.ts';
@@ -51,20 +54,54 @@ interface AdminLayoutProps {
     onTabChange?: (tabIndex: number) => void;
 }
 
-const menuItems = [
-    { text: 'Overview',   icon: <AnalyticsIcon  /> },
-    { text: 'Members',    icon: <People /> },
-    { text: 'Staff',      icon: <SupervisorAccount /> },
-    { text: 'Trainers',   icon: <FitnessCenter /> },
-    { text: 'Categories', icon: <Category /> },
-    { text: 'Services',   icon: <Assignment /> },
-    { text: 'Service Registrations', icon: <ListAlt /> },
-    { text: 'Stories',    icon: <WebStoriesIcon/> },
-    { text: 'Membership', icon: <CardMembership /> },
-    { text: 'Promotions', icon: <LocalOffer /> },
-    { text: 'Rewards',    icon: <EmojiEvents /> },
-    { text: 'Financial',  icon: <AccountBalanceWalletIcon  /> },
-    { text: 'Settings',   icon: <Settings /> },
+const menuGroups = [
+    {
+        title: 'Dashboard',
+        items: [
+            { text: 'Overview', icon: <AnalyticsIcon /> },
+            { text: 'Inventory Dashboard', icon: <AnalyticsIcon /> },
+        ],
+    },
+    {
+        title: 'User Management',
+        items: [
+            { text: 'Members', icon: <People /> },
+            { text: 'Staff', icon: <SupervisorAccount /> },
+            { text: 'Trainers', icon: <FitnessCenter /> },
+        ],
+    },
+    {
+        title: 'Services',
+        items: [
+            { text: 'Categories', icon: <Category /> },
+            { text: 'Services', icon: <Assignment /> },
+            { text: 'Service Registrations', icon: <ListAlt /> },
+            { text: 'Membership', icon: <CardMembership /> },
+        ],
+    },
+    {
+        title: 'Business',
+        items: [
+            { text: 'Products', icon: <Inventory /> },
+            { text: 'Import Receipts', icon: <Receipt /> },
+            { text: 'Orders', icon: <ShoppingCart /> },
+            { text: 'Financial', icon: <AccountBalanceWalletIcon /> },
+        ],
+    },
+    {
+        title: 'Marketing',
+        items: [
+            { text: 'Stories', icon: <WebStoriesIcon /> },
+            { text: 'Promotions', icon: <LocalOffer /> },
+            { text: 'Rewards', icon: <EmojiEvents /> },
+        ],
+    },
+    {
+        title: 'System',
+        items: [
+            { text: 'Settings', icon: <Settings /> },
+        ],
+    },
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTabChange }) => {
@@ -74,9 +111,29 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { logout, user } = useAuth();
     const navigate = useNavigate();
-
+    const [openGroups, setOpenGroups] = useState<{ [key: string]: boolean }>({});
     useTokenRefresh();
 
+    const handleToggleGroup = (title: string) => {
+        setOpenGroups((prev) => ({
+            ...prev,
+            [title]: !prev[title],
+        }));
+    };
+    useEffect(() => {
+        const newOpenGroups: any = {};
+        let flatIndex = 0;
+        for (const group of menuGroups) {
+            for (let i = 0; i < group.items.length; i++) {
+                if (flatIndex === activeTab) {
+                    newOpenGroups[group.title] = true;
+                    break;
+                }
+                flatIndex++;
+            }
+        }
+        setOpenGroups(newOpenGroups);
+    }, [activeTab]);
     const handleDrawerToggle = () => setMobileOpen((v) => !v);
 
     const handleMenuClick = (index: number) => {
@@ -141,68 +198,71 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
 
             {/* Nav items */}
             <List sx={{ flex: 1, px: 1.5, py: 1 }}>
-                {menuItems.map((item, index) => {
-                    const isActive = activeTab === index;
-                    return (
-                        <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
-                            <ListItemButton
-                                onClick={() => handleMenuClick(index)}
-                                sx={{
-                                    borderRadius: 2,
-                                    px: 1.5,
-                                    py: 1,
-                                    position: 'relative',
-                                    bgcolor: isActive ? 'rgba(0,180,255,0.1)' : 'transparent',
-                                    border: '1px solid',
-                                    borderColor: isActive ? 'rgba(0,180,255,0.3)' : 'transparent',
-                                    '&:hover': {
-                                        bgcolor: isActive ? 'rgba(0,180,255,0.15)' : 'rgba(0,0,0,0.035)',
-                                        borderColor: isActive ? 'rgba(0,180,255,0.4)' : 'transparent',
-                                    },
-                                    transition: 'all 0.15s ease',
-                                }}
-                            >
-                                {/* Active indicator bar */}
-                                {isActive && (
-                                    <Box
-                                        sx={{
-                                            position: 'absolute',
-                                            left: 0,
-                                            top: '20%',
-                                            height: '60%',
-                                            width: 3,
-                                            borderRadius: '0 3px 3px 0',
-                                            bgcolor: '#00b4ff',
-                                        }}
-                                    />
-                                )}
+                {(() => {
+                    let flatIndex = 0;
+                    return menuGroups.map((group, groupIndex) => (
+                        <Box key={group.title} sx={{ mb: 1 }}>
 
-                                <ListItemIcon
+                            {/* GROUP TITLE */}
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    onClick={() => handleToggleGroup(group.title)}
                                     sx={{
-                                        minWidth: 36,
-                                        color: isActive ? '#00b4ff' : 'text.secondary',
-                                        '& svg': { fontSize: 20 },
+                                        borderRadius: 2,
+                                        px: 1.5,
+                                        py: 1,
                                     }}
                                 >
-                                    {item.icon}
-                                </ListItemIcon>
+                                    <ListItemText
+                                        primary={group.title}
+                                        primaryTypographyProps={{
+                                            fontWeight: 700,
+                                            fontSize: '0.85rem',
+                                            color: 'text.secondary',
+                                        }}
+                                    />
+                                    {openGroups[group.title] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                </ListItemButton>
+                            </ListItem>
 
-                                <ListItemText
-                                    primary={item.text}
-                                    primaryTypographyProps={{
-                                        fontWeight: isActive ? 700 : 500,
-                                        fontSize: '0.9rem',
-                                        color: isActive ? '#00b4ff' : 'text.primary',
-                                    }}
-                                />
+                            {/* CHILD ITEMS */}
+                            <Collapse in={openGroups[group.title]} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding>
+                                    {group.items.map((item, index) => {
+                                        const currentIndex = flatIndex++;
+                                        const isActive = activeTab === currentIndex;
 
-                                {isActive && (
-                                    <KeyboardArrowRight sx={{ fontSize: 16, color: '#00b4ff', opacity: 0.6 }} />
-                                )}
-                            </ListItemButton>
-                        </ListItem>
-                    );
-                })}
+                                        return (
+                                            <ListItem key={item.text} disablePadding sx={{ pl: 2 }}>
+                                                <ListItemButton
+                                                    onClick={() => handleMenuClick(currentIndex)}
+                                                    sx={{
+                                                        borderRadius: 2,
+                                                        px: 1.5,
+                                                        py: 1,
+                                                        bgcolor: isActive ? 'rgba(0,180,255,0.1)' : 'transparent',
+                                                    }}
+                                                >
+                                                    <ListItemIcon sx={{ minWidth: 36 }}>
+                                                        {item.icon}
+                                                    </ListItemIcon>
+
+                                                    <ListItemText
+                                                        primary={item.text}
+                                                        primaryTypographyProps={{
+                                                            fontWeight: isActive ? 700 : 500,
+                                                            fontSize: '0.9rem',
+                                                        }}
+                                                    />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        );
+                                    })}
+                                </List>
+                            </Collapse>
+                        </Box>
+                    ));
+                })()}
             </List>
 
             <Divider sx={{ mx: 2 }} />
@@ -330,7 +390,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                                 ADMIN PANEL
                             </Typography>
                             <Typography variant="subtitle1" fontWeight={700} lineHeight={1.1} letterSpacing={-0.2}>
-                                {menuItems[activeTab]?.text ?? 'Dashboard'}
+                                {(() => {
+                                    let flatIndex = 0;
+                                    for (const group of menuGroups) {
+                                        for (const item of group.items) {
+                                            if (flatIndex === activeTab) {
+                                                return item.text;
+                                            }
+                                            flatIndex++;
+                                        }
+                                    }
+                                    return 'Dashboard';
+                                })()}
                             </Typography>
                         </Box>
                     </Box>

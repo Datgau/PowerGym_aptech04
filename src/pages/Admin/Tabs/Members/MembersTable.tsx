@@ -172,8 +172,6 @@ const MembersTable: React.FC = () => {
     handleChangeRowsPerPage,
     setPaginationData,
   } = usePagination(5);
-
-  // Load initial data - tách biệt để tránh conflict với search
   useEffect(() => {
     if (!isSearching) {
       loadData(paginationState.page, paginationState.rowsPerPage);
@@ -181,7 +179,6 @@ const MembersTable: React.FC = () => {
   }, [paginationState.page, paginationState.rowsPerPage, statusFilter, isSearching]);
   useEffect(() => {
     if (deferredSearch.length >= 2) {
-      // Chỉ set isSearching nếu chưa search
       if (!isSearching) {
         setIsSearching(true);
       }
@@ -382,7 +379,6 @@ const MembersTable: React.FC = () => {
 
   return (
     <PageWrapper>
-      {/* ── Header ── */}
       <HeaderSection>
         <HeaderLeft>
           <HeaderIconBox>
@@ -409,7 +405,6 @@ const MembersTable: React.FC = () => {
       )}
 
       <ContentSection>
-        {/* ── Search Bar ── */}
         <Box mb={3}>
           <SearchInput
             searchTerm={searchTerm}
@@ -417,10 +412,7 @@ const MembersTable: React.FC = () => {
             onClearSearch={handleClearSearch}
           />
         </Box>
-
-        {/* ── Filter Bar ── */}
         <Box mb={3} display="flex" justifyContent="flex-end" alignItems="center" flexWrap="wrap" gap={2}>
-          {/* Status Filter Toggle */}
           <StatusFilterToggle
             value={statusFilter}
             onChange={setStatusFilter}

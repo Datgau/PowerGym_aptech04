@@ -1,14 +1,12 @@
 import { privateClient, publicClient } from './api';
 import type { ApiResponse } from '../@type/apiResponse';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 export interface NewCreateBookingRequest {
   trainerId?: number | null;
   serviceRegistrationId: number;
-  bookingDate: string;      // YYYY-MM-DD
-  startTime: string;        // HH:mm
-  endTime: string;          // HH:mm
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
   notes?: string;
   sessionType?: string;
 }
@@ -36,7 +34,7 @@ export interface NewTrainerBookingResponse {
 export interface SlotInfo {
   slotId: number;
   dayOfWeek: string;
-  startTime: string;    // HH:mm
+  startTime: string;
   endTime: string;
   status: 'AVAILABLE' | 'BOOKED' | 'DAY_OFF' | 'INACTIVE';
   isDayOff: boolean;
@@ -53,11 +51,6 @@ export interface TrainerScheduleResponse {
   weeklySchedule?: Record<string, SlotInfo[]>;
 }
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
-
-/**
- * Tạo booking mới (sau khi thanh toán thành công)
- */
 export const createBooking = async (
   userId: number,
   request: NewCreateBookingRequest
@@ -69,9 +62,6 @@ export const createBooking = async (
   return response.data;
 };
 
-/**
- * Lấy danh sách booking của user
- */
 export const getMyBookings = async (
   userId: number,
   status?: string
@@ -84,9 +74,6 @@ export const getMyBookings = async (
   return response.data;
 };
 
-/**
- * Hủy booking
- */
 export const cancelBooking = async (
   bookingId: number,
   userId: number,
@@ -102,9 +89,6 @@ export const cancelBooking = async (
   return response.data;
 };
 
-/**
- * Validate booking before creating (check conflicts)
- */
 export const validateBooking = async (
   userId: number,
   request: NewCreateBookingRequest
@@ -116,9 +100,6 @@ export const validateBooking = async (
   return response.data;
 };
 
-/**
- * Xem lịch trống/bận của trainer theo ngày
- */
 export const getTrainerDailySchedule = async (
   trainerId: number,
   date: string // YYYY-MM-DD
@@ -130,9 +111,6 @@ export const getTrainerDailySchedule = async (
   return response.data;
 };
 
-/**
- * Lấy danh sách trainer phù hợp với service (theo category của service)
- */
 export const getTrainersByServiceId = async (
   serviceId: number
 ): Promise<ApiResponse<TrainerSpecialtyItem[]>> => {
@@ -162,20 +140,18 @@ export interface TrainerSpecialtyItem {
   isActive: boolean;
 }
 
-// ── Time slot generator 8:00 → 22:00 ────────────────────────────────────────
 
 export interface TimeSlotOption {
-  startTime: string; // "08:00"
-  endTime: string;   // "09:00"
-  label: string;     // "08:00 - 09:00"
+  startTime: string;
+  endTime: string;
+  label: string;
 }
 
-/** Generate 1-hour slots from 08:00 to 22:00 */
 export const generateBookingSlots = (): TimeSlotOption[] => {
   const slots: TimeSlotOption[] = [];
   for (let h = 8; h < 22; h++) {
     const start = `${String(h).padStart(2, '0')}:00`;
-    const end   = `${String(h + 1).padStart(2, '0')}:00`;
+    const end   = `${String(h + 2).padStart(2, '0')}:00`;
     const label = `${start} – ${end}`;
     slots.push({ startTime: start, endTime: end, label });
   }
@@ -184,16 +160,26 @@ export const generateBookingSlots = (): TimeSlotOption[] => {
 
 export const BOOKING_SLOTS = generateBookingSlots();
 
-/** Calculate end date from start date and duration (in days) */
 export const calcEndDate = (startDate: string, durationDays: number): string => {
   const d = new Date(startDate);
   d.setDate(d.getDate() + durationDays - 1);
   return d.toISOString().split('T')[0];
 };
-
-/** Format date to Vietnamese */
 export const formatDateVi = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString('vi-VN', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
+};
+
+
+export const getTrainerBookedDatesInMonth = async (
+  trainerId: number,
+  year: number,
+  month: number
+): Promise<ApiResponse<{ fullyBooked: string[]; partiallyBooked: string[] }>> => {
+  const response = await privateClient.get<ApiResponse<{ fullyBooked: string[]; partiallyBooked: string[] }>>(
+    `/bookings/trainers/${trainerId}/booked-dates`,
+    { params: { year, month } }
+  );
+  return response.data;
 };

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useMemo } from 'react';
+import { Box } from '@mui/material';
 import DOMPurify from 'dompurify';
 
 interface RichTextDisplayProps {
@@ -13,14 +13,18 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   maxLines,
   variant = 'body2'
 }) => {
-  // Sanitize HTML to prevent XSS attacks
-  const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 
-      'blockquote', 'code', 'h1', 'h2', 'h3'
-    ],
-    ALLOWED_ATTR: ['href', 'target', 'rel']
-  });
+  // Memoize sanitized content to prevent unnecessary re-sanitization
+  const sanitizedContent = useMemo(() => {
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li', 
+        'blockquote', 'code', 'h1', 'h2', 'h3'
+      ],
+      ALLOWED_ATTR: ['href', 'target', 'rel']
+    });
+  }, [content]);
+
+  const fontSize = variant === 'body1' ? '1rem' : variant === 'caption' ? '0.75rem' : '0.875rem';
 
   return (
     <Box
@@ -84,6 +88,8 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         '& h3': {
           fontSize: '1.125rem'
         },
+        fontSize,
+        lineHeight: 1.5,
         ...(maxLines && {
           display: '-webkit-box',
           WebkitLineClamp: maxLines,
@@ -93,11 +99,9 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         })
       }}
     >
-      <Typography
-        variant={variant}
-        component="div"
-        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      />
+      <div
+          key={sanitizedContent}
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
     </Box>
   );
 };

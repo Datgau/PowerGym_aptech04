@@ -3,6 +3,7 @@ import {
   Dialog
 } from '@mui/material';
 import { paymentService, type CreatePaymentRequest, type MoMoPaymentResponse, type PaymentOrder } from '../../services/paymentService';
+import { createOrderFromPayment } from '../../services/productOrderService';
 import PaymentSuccessWithTrainerModal from './PaymentSuccessWithTrainerModal';
 
 import PaymentFormStep from './steps/PaymentFormStep';
@@ -21,6 +22,16 @@ interface MoMoPaymentModalProps {
   itemType?: string;
   itemId?: string;
   itemName?: string;
+  deliveryInfo?: {
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+    notes?: string;
+  };
+  cartItems?: Array<{
+    productId: number;
+    quantity: number;
+  }>;
 }
 
 const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
@@ -31,7 +42,9 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
   defaultOrderInfo = '',
   itemType,
   itemId,
-  itemName
+  itemName,
+  deliveryInfo,
+  cartItems
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -140,6 +153,29 @@ const MoMoPaymentModal: React.FC<MoMoPaymentModalProps> = ({
           setPaymentStatus(statusResponse.data);
           
           if (status === 'SUCCESS') {
+            // If itemType is PRODUCT, create order from payment
+            if (itemType === 'PRODUCT' && deliveryInfo && cartItems && cartItems.length > 0) {
+              try {
+                await createOrderFromPayment({
+                  paymentId: orderId,
+                  customerName: deliveryInfo.customerName,
+                  customerPhone: deliveryInfo.customerPhone,
+                  customerAddress: deliveryInfo.customerAddress,
+                  notes: deliveryInfo.notes,
+                  cartItems
+                });
+                
+                toast.success('Order created successfully!');
+              } catch (orderError: any) {
+                console.error('Failed to create order:', orderError);
+                toast.error(orderError.response?.data?.message || 'Failed to create order. Please contact support.');
+                // Don't clear interval yet, let user see the error
+                clearInterval(interval);
+                setCurrentStep(2);
+                return;
+              }
+            }
+            
             try {
               const trainerSelectionResponse = await paymentService.getPaymentStatusWithTrainerSelection(orderId);
               if (trainerSelectionResponse.success && trainerSelectionResponse.data) {

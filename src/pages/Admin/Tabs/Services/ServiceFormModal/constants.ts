@@ -10,7 +10,8 @@ export const INITIAL_FORM_DATA = {
   price: '',
   duration: '',
   maxParticipants: '',
-  isActive: true
+  isActive: true,
+  trainerPercentage: '0.30'
 };
 
 export const VALIDATION_MESSAGES = {

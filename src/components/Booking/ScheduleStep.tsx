@@ -1,7 +1,8 @@
-import { Box, Typography, Skeleton, Tooltip } from '@mui/material';
+import { Box, Typography, Tooltip } from '@mui/material';
 import { CalendarToday, AccessTime, CheckCircle } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+import { PickersDay, type PickersDayProps } from '@mui/x-date-pickers/PickersDay';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import type { Dayjs } from 'dayjs';
 import { BOOKING_SLOTS, formatDateVi, type TimeSlotOption } from '../../services/newBookingService';
@@ -17,13 +18,44 @@ interface ScheduleStepProps {
     selectedSlot: TimeSlotOption | null;
     onSlotSelect: (slot: TimeSlotOption | null) => void;
     bookedTimes: Set<string>;
-    loading: boolean;
+    bookedDates?: Set<string>;
+    onMonthChange?: (month: Dayjs) => void;
 }
 
 export default function ScheduleStep({
                                          service, startDate, onDateChange, endDate, minDate,
-                                         selectedSlot, onSlotSelect, bookedTimes, loading,
+                                         selectedSlot, onSlotSelect, bookedTimes,
+                                         bookedDates = new Set(),
+                                         onMonthChange,
                                      }: ScheduleStepProps) {
+
+    const CustomDay = (props: PickersDayProps) => {
+        const day = props.day as Dayjs;
+        const dateStr = day.format('YYYY-MM-DD');
+        const hasBooking = bookedDates.has(dateStr);
+
+        return (
+            <PickersDay
+                {...props}
+                sx={{
+                    ...(hasBooking && {
+                        backgroundColor: `${ACCENT}30`,
+                        fontWeight: 600,
+                        '&:hover': {
+                            backgroundColor: `${ACCENT}50`,
+                        },
+                        '&.Mui-selected': {
+                            backgroundColor: ACCENT,
+                            '&:hover': {
+                                backgroundColor: ACCENT,
+                            },
+                        },
+                    }),
+                }}
+            />
+        );
+    };
+
     return (
         <Box sx={{ p: 2.5 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -42,16 +74,48 @@ export default function ScheduleStep({
                             displayStaticWrapperAs="desktop"
                             value={startDate}
                             onChange={onDateChange}
+                            onMonthChange={onMonthChange}
                             minDate={minDate}
+                            slots={{
+                                day: CustomDay,
+                            }}
                             sx={{
-                                '& .MuiPickersDay-root.Mui-selected': { background: ACCENT },
+                                '& .MuiPickersDay-root.Mui-selected': {
+                                    background: ACCENT,
+                                    fontWeight: 800,
+                                    '&:hover': {
+                                        backgroundColor: ACCENT,
+                                    },
+                                },
                                 '& .MuiPickersDay-root:hover': { background: `${ACCENT}20` },
-                                background: '#fff', borderRadius: '12px',
+                                background: '#fff',
+                                borderRadius: '12px',
                                 boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
                                 border: '1.5px solid rgba(0,0,0,0.07)',
                             }}
                         />
                     </LocalizationProvider>
+
+                    {/* Legend */}
+                    <Box sx={{
+                        mt: 1.5, p: 1.5, borderRadius: '10px',
+                        background: '#f8f9fa',
+                        border: '1px solid rgba(0,0,0,0.08)',
+                    }}>
+                        <Typography fontSize="0.75rem" fontWeight={600} color={DARK} mb={0.8}>
+                            Legend:
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{
+                                width: 20, height: 20, borderRadius: '4px',
+                                background: 'linear-gradient(135deg, #e0f7fa, #b2ebf2)',
+                                border: '2px solid #00acc1',
+                            }} />
+                            <Typography fontSize="0.7rem" color="#666">
+                                Date with booked schedule
+                            </Typography>
+                        </Box>
+                    </Box>
 
                     {startDate && endDate && (
                         <Box sx={{
@@ -72,7 +136,6 @@ export default function ScheduleStep({
                     )}
                 </Box>
 
-                {/* Time slot selector */}
                 <Box sx={{ flex: '1 1 240px', minWidth: 0 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                         <AccessTime sx={{ color: ACCENT, fontSize: 18 }} />
@@ -88,10 +151,6 @@ export default function ScheduleStep({
                         }}>
                             <CalendarToday sx={{ fontSize: 36, mb: 1, opacity: 0.3 }} />
                             <Typography fontSize="0.82rem">Please select a date first</Typography>
-                        </Box>
-                    ) : loading ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            {[1, 2, 3, 4].map(i => <Skeleton key={i} height={44} variant="rounded" />)}
                         </Box>
                     ) : (
                         <Box sx={{

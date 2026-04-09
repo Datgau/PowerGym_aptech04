@@ -134,9 +134,9 @@ const MyBookings: React.FC = () => {
 
   const getStatusText = (status: NewTrainerBookingResponse['status']) => {
     const map: Record<string, string> = {
-      PENDING: 'Chờ xác nhận', CONFIRMED: 'Đã xác nhận',
-      CANCELLED: 'Đã hủy', REJECTED: 'Bị từ chối',
-      COMPLETED: 'Hoàn thành', NO_SHOW: 'Không đến', RESCHEDULED: 'Đổi lịch',
+      PENDING: 'Pending', CONFIRMED: 'Confirmed',
+      CANCELLED: 'Cancelled', REJECTED: 'Rejected',
+      COMPLETED: 'Completed', NO_SHOW: 'No show', RESCHEDULED: 'Rescheduled',
     };
     return map[status] ?? status;
   };

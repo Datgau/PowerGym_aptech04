@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../hooks/useAuth';
 import paymentService, {type CreateBankPaymentResponse} from "../../services/paymentService.ts";
+import { createOrderFromPayment } from '../../services/productOrderService';
 import {toast} from "react-toastify";
 
 interface BankPaymentModalProps {
@@ -31,8 +32,19 @@ interface BankPaymentModalProps {
   serviceName?: string;
   amount?: number;
   serviceId?: string;
-  itemType?: 'SERVICE' | 'MEMBERSHIP';
-  promotionCode?: string; // Add promotion code prop
+  itemType?: 'SERVICE' | 'MEMBERSHIP' | 'PRODUCT';
+  promotionCode?: string;
+  itemName?: string;
+  deliveryInfo?: {
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+    notes?: string;
+  };
+  cartItems?: Array<{
+    productId: number;
+    quantity: number;
+  }>;
 }
 
 const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
@@ -42,7 +54,11 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   serviceName,
   serviceId,
   itemType = 'SERVICE',
-  promotionCode // Add promotion code
+  promotionCode,
+  amount,
+  itemName,
+  deliveryInfo,
+  cartItems
 }) => {
   const { user } = useAuth();
   const [paymentInfo, setPaymentInfo] = useState<CreateBankPaymentResponse | null>(null);
@@ -70,7 +86,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   };
 
   useEffect(() => {
-    if (open && (serviceId || itemType === 'MEMBERSHIP') && user?.id) {
+    if (open && user?.id) {
       const initPayment = async () => {
         try {
           setLoading(true);
@@ -84,6 +100,14 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
           
           if (itemType === 'MEMBERSHIP') {
             request.packageId = Number(serviceId);
+          } else if (itemType === 'PRODUCT') {
+            // For PRODUCT, send amount and itemName
+            if (!amount || amount <= 0) {
+              throw new Error('Amount is required for product orders');
+            }
+            request.amount = amount;
+            request.itemName = itemName || serviceName || 'Product Order';
+            request.serviceId = serviceId ? Number(serviceId) : 0;
           } else {
             request.serviceId = Number(serviceId);
           }
@@ -120,7 +144,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
         intervalRef.current = null;
       }
     }
-  }, [open, serviceId, user, itemType]);
+  }, [open, serviceId, user, itemType, promotionCode, amount, itemName, serviceName]);
 
   useEffect(() => {
     // Polling mechanism
@@ -130,6 +154,30 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
           const statusRes = await paymentService.getBankPaymentStatus(paymentInfo.content);
           if (statusRes.success && statusRes.data) {
             if (statusRes.data.status === 'SUCCESS') {
+               // If itemType is PRODUCT, create order from payment
+               if (itemType === 'PRODUCT' && deliveryInfo && cartItems && cartItems.length > 0) {
+                 try {
+                   await createOrderFromPayment({
+                     paymentId: paymentInfo.orderId, // Use orderId, not content
+                     customerName: deliveryInfo.customerName,
+                     customerPhone: deliveryInfo.customerPhone,
+                     customerAddress: deliveryInfo.customerAddress,
+                     notes: deliveryInfo.notes,
+                     cartItems
+                   });
+                   
+                   toast.success('Order created successfully!');
+                 } catch (orderError: any) {
+                   console.error('Failed to create order:', orderError);
+                   toast.error(orderError.response?.data?.message || 'Failed to create order. Please contact support.');
+                   // Stop polling
+                   if (intervalRef.current) clearInterval(intervalRef.current);
+                   setPaymentSuccess(false);
+                   setError('Payment succeeded but order creation failed. Please contact support.');
+                   return;
+                 }
+               }
+               
                // Stop polling
                if (intervalRef.current) clearInterval(intervalRef.current);
                setPaymentSuccess(true);
@@ -155,7 +203,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [open, paymentInfo?.content, onSuccess, onClose, paymentSuccess]);
+  }, [open, paymentInfo?.content, onSuccess, onClose, paymentSuccess, itemType, deliveryInfo, cartItems]);
 
   const handleClose = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);

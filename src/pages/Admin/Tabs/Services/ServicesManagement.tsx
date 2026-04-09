@@ -444,6 +444,7 @@ const ServicesManagement: React.FC = () => {
 
                     <TableCell>
                       <Box display="flex" gap={0.5}>
+
                         <IconButton
                             size="small"
                             onClick={() => handleOpenRegistrations(service)}

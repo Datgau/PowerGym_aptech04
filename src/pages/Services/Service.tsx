@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
 import {
     Box,
@@ -36,8 +36,8 @@ import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFl
 import TrainerBookingSetupModal from '../../components/Booking/TrainerBookingSetupModal.tsx';
 import { loadAuthSession } from '../../services/authStorage';
 import { registerService } from '../../services/serviceRegistrationService';
-import { RegistrationType } from '../../types/serviceRegistration';
 import {toast} from "react-toastify";
+import {RegistrationType} from "../../types";
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -65,7 +65,6 @@ const Service: React.FC = () => {
 
   const flow = useServiceRegistrationFlow(selectedServiceForFlow?.id);
 
-  // Calculate final amount based on promotion data
   const finalAmount = React.useMemo(() => {
     if (flow.pendingBookingData?.promotionData?.finalAmount) {
       return flow.pendingBookingData.promotionData.finalAmount;
@@ -73,7 +72,6 @@ const Service: React.FC = () => {
     return selectedServiceForFlow?.price || 0;
   }, [flow.pendingBookingData?.promotionData, selectedServiceForFlow?.price]);
 
-  // Generate order info with promotion details
   const orderInfo = React.useMemo(() => {
     const baseInfo = selectedServiceForFlow ? `PowerGym Service - ${selectedServiceForFlow.name}` : '';
     if (flow.pendingBookingData?.promotionData?.promotionCode) {
@@ -82,19 +80,20 @@ const Service: React.FC = () => {
     return baseInfo;
   }, [selectedServiceForFlow, flow.pendingBookingData?.promotionData]);
 
-  const getServiceImage = (service: any) =>
-      service.images?.[0] || '/images/default-service.jpg';
+  const getServiceImage = useCallback((service: any) =>
+      service.images?.[0] || '/images/default-service.jpg', []);
   useEffect(() => {
     if (selectedServiceForFlow) {
       flow.handleRegisterNow();
     }
-  }, [selectedServiceForFlow?.id]);
+  }, [selectedServiceForFlow?.id, flow.handleRegisterNow]);
 
-  const handleRegisterNow = (service: any) => {
+  const handleRegisterNow = useCallback((service: any) => {
     if (!requireAuth()) return;
     setSelectedServiceForFlow(service);
-  };
-  const handleRegisterAtCounter = async (service: any) => {
+  }, [requireAuth]);
+  
+  const handleRegisterAtCounter = useCallback(async (service: any) => {
       if (!requireAuth()) return;
 
       setCounterRegistering(true);
@@ -112,7 +111,7 @@ const Service: React.FC = () => {
       } finally {
           setCounterRegistering(false);
       }
-  };
+  }, [requireAuth]);
     useEffect(() => {
         if (!id) return;
 
@@ -136,9 +135,7 @@ const Service: React.FC = () => {
 
   return (
       <PowerGymLayout>
-
-        {/* ── Hero Banner ── */}
-        <Box
+          <Box
             sx={{
               background: BRAND_GRADIENT,
               py: { xs: 8, md: 12 },
@@ -146,7 +143,6 @@ const Service: React.FC = () => {
               overflow: 'hidden',
             }}
         >
-          {/* Decorative circles */}
           <Box sx={{
             position: 'absolute', top: -80, right: -80, width: 360, height: 360,
             borderRadius: '50%', background: 'rgb(19,102,186)', pointerEvents: 'none',
@@ -159,7 +155,6 @@ const Service: React.FC = () => {
             position: 'absolute', top: '30%', left: '25%', width: 180, height: 180,
             borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none',
           }} />
-
           <Container maxWidth="xl">
             <Box sx={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
               <Typography
@@ -175,7 +170,6 @@ const Service: React.FC = () => {
               >
                 PowerGym Premium
               </Typography>
-
               <Typography
                   variant="h2"
                   component="h1"
@@ -190,13 +184,11 @@ const Service: React.FC = () => {
               >
                 Our Services
               </Typography>
-
               <Box sx={{
                 width: 56, height: 3,
                 background: 'rgba(255,255,255,0.5)',
                 borderRadius: 2, mx: 'auto', mb: 3,
               }} />
-
               <Typography
                   variant="body1"
                   sx={{
@@ -212,13 +204,9 @@ const Service: React.FC = () => {
             </Box>
           </Container>
         </Box>
-
-        {/* ── Cards Section ── */}
-        <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
+          <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
           <Container maxWidth="xl">
-
-            {/* Section header */}
-            <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
+              <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
               <Box>
                 <Typography
                     variant="overline"
@@ -231,9 +219,7 @@ const Service: React.FC = () => {
                   </Typography>
               </Box>
             </Stack>
-
-            {/* Grid */}
-            {loading ? (
+              {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
                 <CircularProgress size={60} />
               </Box>
@@ -336,8 +322,6 @@ const Service: React.FC = () => {
                           />
                       )}
                     </Box>
-
-                    {/* Content */}
                     <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
                         {service.name}
@@ -352,12 +336,8 @@ const Service: React.FC = () => {
                                 }
                             />
                         </Typography>
-
                       <Divider sx={{ my: 2 }} />
-
-                      {/* Price & Duration */}
                         <Stack direction="row" spacing={2.5} mb={3}>
-                            {/* Price */}
                             <Box
                                 sx={{
                                     flex: 1,
@@ -398,8 +378,6 @@ const Service: React.FC = () => {
                                     </Typography>
                                 </Box>
                             </Box>
-
-                            {/* Duration */}
                             <Box
                                 sx={{
                                     flex: 1,
@@ -430,7 +408,6 @@ const Service: React.FC = () => {
                                 >
                                     <AccessTimeIcon sx={{ fontSize: 20, color: '#02cbf8' }} />
                                 </Box>
-
                                 <Box>
                                     <Typography variant="body2" color="text.secondary" lineHeight={1}>
                                         Duration
@@ -441,10 +418,7 @@ const Service: React.FC = () => {
                                 </Box>
                             </Box>
                         </Stack>
-
-                      {/* Buttons */}
                       <Stack direction="row" spacing={1.5} alignItems="center">
-                        {/* Eye Icon for Detail */}
                         <Tooltip title="View Details" arrow>
                           <IconButton
                             onClick={() => setSelectedService(service)}
@@ -465,7 +439,6 @@ const Service: React.FC = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                          {/* Register at Counter Button */}
                           <Button
                               fullWidth
                               variant="outlined"
@@ -489,7 +462,6 @@ const Service: React.FC = () => {
                           >
                               Register at Counter
                           </Button>
-                        {/* Register Now Button */}
                         <Button
                             fullWidth
                             variant="contained"
@@ -517,15 +489,11 @@ const Service: React.FC = () => {
                               ? <CircularProgress size={20} sx={{ color: '#fff' }} />
                               : 'Register Now'}
                         </Button>
-
-
                       </Stack>
                     </CardContent>
                   </Card>
               ))}
             </Box>
-
-            {/* Pagination */}
             {totalElements > rowsPerPage && (
               <Box sx={{ 
                 display: 'flex', 
@@ -551,14 +519,11 @@ const Service: React.FC = () => {
         )}
           </Container>
         </Box>
-
         <ServiceDetailModal
             open={Boolean(selectedService)}
             service={selectedService}
             onClose={() => setSelectedService(null)}
         />
-
-        {/* Trainer Booking Setup Modal — Register Now flow only */}
         {flow.showBookingSetup && selectedServiceForFlow && (
             <TrainerBookingSetupModal
                 open={flow.showBookingSetup}
@@ -568,8 +533,6 @@ const Service: React.FC = () => {
                 onReadyToPay={flow.handleBookingSetupComplete}
             />
         )}
-
-        {/* Payment Method Selection Modal */}
         <PaymentMethodSelectionModal
             open={flow.showPaymentMethodSelection}
             onClose={() => flow.setShowPaymentMethodSelection(false)}
@@ -578,7 +541,6 @@ const Service: React.FC = () => {
             serviceName={selectedServiceForFlow?.name}
             amount={finalAmount}
         />
-
         <MoMoPaymentModal
             open={flow.showMoMoPayment}
             onClose={() => flow.setShowMoMoPayment(false)}
@@ -589,7 +551,6 @@ const Service: React.FC = () => {
             itemId={selectedServiceForFlow?.id?.toString()}
             itemName={selectedServiceForFlow?.name}
         />
-
           <BankPaymentModal
               open={flow.showBankPayment}
               onClose={() => flow.setShowBankPayment(false)}
@@ -599,7 +560,6 @@ const Service: React.FC = () => {
               serviceId={selectedServiceForFlow?.id?.toString()}
               promotionCode={flow.pendingBookingData?.promotionData?.promotionCode}
           />
-
         <Snackbar
             open={snackbar.open}
             autoHideDuration={3000}

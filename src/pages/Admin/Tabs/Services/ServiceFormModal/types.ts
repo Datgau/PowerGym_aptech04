@@ -8,6 +8,7 @@ export interface ServiceFormData {
   duration: string;
   maxParticipants: string;
   isActive: boolean;
+  trainerPercentage: string;
 }
 
 export interface ServiceFormModalProps {

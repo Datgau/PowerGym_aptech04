@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { loadAuthSession } from '../services/authStorage';
 import { createBooking } from '../services/newBookingService';
@@ -32,16 +32,16 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
   const [showMoMoPayment, setShowMoMoPayment] = useState(false);
   const [showBankPayment, setShowBankPayment] = useState(false);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setIsRegistering(false);
     setShowBookingSetup(false);
     setPendingBookingData(null);
     setShowPaymentMethodSelection(false);
     setShowMoMoPayment(false);
     setShowBankPayment(false);
-  };
+  }, []);
 
-  const handleRegisterNow = async () => {
+  const handleRegisterNow = useCallback(async () => {
     if (!serviceId) return;
     try {
       setIsRegistering(true);
@@ -59,27 +59,27 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
       setIsRegistering(false);
     }
     setShowBookingSetup(true);
-  };
+  }, [serviceId]);
 
-  const handleBookingSetupComplete = (bookingData: BookingSetupData) => {
+  const handleBookingSetupComplete = useCallback((bookingData: BookingSetupData) => {
     // Just store booking data and show payment modal
     // Booking will be created AFTER payment succeeds
     setPendingBookingData(bookingData);
     setShowBookingSetup(false);
     setShowPaymentMethodSelection(true);
-  };
+  }, []);
 
-  const handleSelectMoMo = () => {
+  const handleSelectMoMo = useCallback(() => {
     setShowPaymentMethodSelection(false);
     setShowMoMoPayment(true);
-  };
+  }, []);
 
-  const handleSelectBankTransfer = () => {
+  const handleSelectBankTransfer = useCallback(() => {
     setShowPaymentMethodSelection(false);
     setShowBankPayment(true);
-  };
+  }, []);
 
-  const handlePaymentSuccess = async (onDone?: () => void) => {
+  const handlePaymentSuccess = useCallback(async (onDone?: () => void) => {
     // Payment successful - webhook has already activated ServiceRegistration
     // Now just create the TrainerBooking
     console.log('[handlePaymentSuccess] Starting...', { pendingBookingData, serviceId });
@@ -149,7 +149,7 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
       console.error('[handlePaymentSuccess] Error:', error);
       toast.error(error?.response?.data?.message || 'Failed to complete booking');
     }
-  };
+  }, [pendingBookingData, serviceId, reset]);
 
   return {
     // State

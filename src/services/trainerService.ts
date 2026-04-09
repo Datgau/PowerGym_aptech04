@@ -70,6 +70,7 @@ export interface TrainerResponse {
   emergencyPhone?: string;
   specialties: TrainerSpecialtyResponse[];
   documents: TrainerDocumentResponse[];
+  salaryBalance?: number;
 }
 
 export interface ApiResponse<T> {

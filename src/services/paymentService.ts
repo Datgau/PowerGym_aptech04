@@ -19,6 +19,8 @@ export interface CreateBankPaymentRequest {
   itemType?: string;
   bookingId?: number;
   promotionCode?: string; // Add promotion code
+  amount?: number; // Override amount for products
+  itemName?: string; // Item name for products
 }
 
 export interface CreateBankPaymentResponse {

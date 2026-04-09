@@ -24,8 +24,6 @@ interface Props {
 
 const ScheduleTab: React.FC<Props> = ({ loading, schedule }) => {
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(dayjs());
-
-  // Tạo set các ngày có booking
   const datesWithBookings = useMemo(() => {
     if (!schedule?.dailySchedules) return new Set<string>();
     return new Set(

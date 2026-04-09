@@ -6,6 +6,7 @@ interface PricingFieldsProps {
   duration: string;
   maxParticipants: string;
   isActive: boolean;
+  trainerPercentage: string;
   loading: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -15,6 +16,7 @@ const PricingFields: React.FC<PricingFieldsProps> = ({
   duration,
   maxParticipants,
   isActive,
+  trainerPercentage,
   loading,
   onChange
 }) => {
@@ -50,17 +52,32 @@ const PricingFields: React.FC<PricingFieldsProps> = ({
           />
         </Box>
 
-        <TextField
-          label="Maximum Participants"
-          name="maxParticipants"
-          type="number"
-          value={maxParticipants}
-          onChange={onChange}
-          fullWidth
-          disabled={loading}
-          inputProps={{ min: 1 }}
-          helperText="Leave empty if there is no participant limit"
-        />
+        <Box display="flex" gap={2}>
+          <TextField
+            label="Maximum Participants"
+            name="maxParticipants"
+            type="number"
+            value={maxParticipants}
+            onChange={onChange}
+            fullWidth
+            disabled={loading}
+            inputProps={{ min: 1 }}
+            helperText="Leave empty if there is no participant limit"
+          />
+
+          <TextField
+            label="Trainer Percentage"
+            name="trainerPercentage"
+            type="number"
+            value={trainerPercentage}
+            onChange={onChange}
+            required
+            fullWidth
+            disabled={loading}
+            inputProps={{ min: 0, max: 1, step: 0.01 }}
+            helperText="Trainer's commission rate (0.30 = 30%)"
+          />
+        </Box>
 
         <FormControlLabel
           control={

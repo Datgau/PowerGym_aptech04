@@ -12,7 +12,6 @@ import dayjs, { type Dayjs } from 'dayjs';
 
 import {
     calcEndDate,
-    getTrainerDailySchedule,
     getTrainersByServiceId,
     validateBooking,
     type TrainerSpecialtyItem,
@@ -58,7 +57,7 @@ export default function TrainerBookingSetupModal({
     const [startDate,    setStartDate]    = useState<Dayjs | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<TimeSlotOption | null>(null);
     const [bookedTimes,  setBookedTimes]  = useState<Set<string>>(new Set());
-    const [loadingSlots, setLoadingSlots] = useState(false);
+    const [bookedDates,  setBookedDates]  = useState<Set<string>>(new Set());
 
     /* Step 3 — Promotion */
     const [promotionData, setPromotionData] = useState<ApplyPromotionResponse | null>(null);
@@ -72,6 +71,7 @@ export default function TrainerBookingSetupModal({
             setStartDate(null);
             setSelectedSlot(null);
             setBookedTimes(new Set());
+            setBookedDates(new Set());
             setPromotionData(null);
         }
     }, [open]);
@@ -103,44 +103,12 @@ export default function TrainerBookingSetupModal({
         );
     }, [trainers, searchQuery]);
 
-
-    const loadBookedSlots = useCallback(async (trainerId: number, date: Dayjs) => {
-        setLoadingSlots(true);
-        try {
-            const res = await getTrainerDailySchedule(trainerId, date.format('YYYY-MM-DD'));
-            if (res.success && res.data?.dailySlots) {
-                const bookedSlots = res.data.dailySlots.filter(
-                    s => s.status === 'BOOKED' || s.status === 'DAY_OFF'
-                );
-                const booked = new Set<string>(bookedSlots.map(s => s.startTime));
-                setBookedTimes(booked);
-                if (bookedSlots.length > 0) {
-                    toast.info(`Trainer có ${bookedSlots.length} khung giờ đã bận vào ngày này. Các slot màu đỏ không thể chọn.`, { autoClose: 3000 });
-                }
-            } else {
-                setBookedTimes(new Set());
-            }
-        } catch {
-            setBookedTimes(new Set());
-        } finally {
-            setLoadingSlots(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (selectedTrainer && startDate) {
-            loadBookedSlots(selectedTrainer.id, startDate);
-        }
-    }, [selectedTrainer, startDate, loadBookedSlots]);
-
     const endDate = useMemo(() => {
         if (!startDate) return '';
         return calcEndDate(startDate.format('YYYY-MM-DD'), service.duration || 30);
     }, [startDate, service.duration]);
-
     const minDate = dayjs().add(1, 'day');
 
-    /* ── Validate time slot selection ──────────────────────────────────────── */
     const handleSlotSelect = async (slot: TimeSlotOption | null) => {
         if (!slot || !startDate) {
             setSelectedSlot(slot);
@@ -151,23 +119,19 @@ export default function TrainerBookingSetupModal({
         try {
             await validateBooking(userId, {
                 trainerId: selectedTrainer?.id,
-                serviceRegistrationId: 0, // Dummy value for validation (not used in backend)
+                serviceRegistrationId: 0,
                 bookingDate: startDate.format('YYYY-MM-DD'),
                 startTime: slot.startTime,
                 endTime: slot.endTime,
             });
-            
-            // If validation passes, select the slot
             setSelectedSlot(slot);
         } catch (error: any) {
-            // Show error message from API
             const errorMsg = error?.response?.data?.message || 'This time slot is not available';
             toast.error(errorMsg, { autoClose: 4000 });
             setSelectedSlot(null);
         }
     };
 
-    /* ── Navigation ──────────────────────────────────────────────────────── */
     const handleNext = () => {
         if (step === 0) {
             setStep(1);
@@ -189,7 +153,7 @@ export default function TrainerBookingSetupModal({
     };
 
     const canNext = () => {
-        if (step === 0) return true; // trainer is optional
+        if (step === 0) return true;
         if (step === 1) return !!startDate && !!selectedSlot;
         return true;
     };
@@ -212,7 +176,6 @@ export default function TrainerBookingSetupModal({
                 },
             }}
         >
-            {/* ── Header ── */}
             <DialogTitle sx={{ p: 0 }}>
                 <Box sx={{
                     background: BRAND,
@@ -269,8 +232,6 @@ export default function TrainerBookingSetupModal({
                     </Stepper>
                 </Box>
             </DialogTitle>
-
-            {/* ── Body ── */}
             <DialogContent sx={{
                 p: 0,
                 overflow: 'auto',
@@ -298,7 +259,8 @@ export default function TrainerBookingSetupModal({
                         selectedSlot={selectedSlot}
                         onSlotSelect={handleSlotSelect}
                         bookedTimes={bookedTimes}
-                        loading={loadingSlots}
+                        bookedDates={bookedDates}
+
                     />
                 )}
                 {step === 2 && (
@@ -331,8 +293,6 @@ export default function TrainerBookingSetupModal({
                 >
                     Back
                 </Button>
-
-                {/* Step indicator dots */}
                 <Box sx={{ display: 'flex', gap: 0.8 }}>
                     {STEPS.map((_, i) => (
                         <Box

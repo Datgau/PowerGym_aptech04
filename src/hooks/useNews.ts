@@ -29,8 +29,6 @@ export const useNews = (): UseNewsReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unable to load news';
       setError(errorMessage);
-      console.error('Error fetching news:', err);
-      
       // Try to load fallback data
       try {
         const fallbackResponse = await newsService.getNews();

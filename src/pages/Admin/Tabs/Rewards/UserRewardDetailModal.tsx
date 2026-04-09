@@ -78,7 +78,7 @@ const UserRewardDetailModal: React.FC<UserRewardDetailModalProps> = ({
               <EmojiEvents sx={{ fontSize: 20 }} />
             </Box>
             <Typography variant="h6" fontWeight={700}>
-              User #{userId} - Reward Transactions
+              UserId: #{userId} - Reward Transactions
             </Typography>
           </Box>
           <IconButton onClick={onClose} size="small">

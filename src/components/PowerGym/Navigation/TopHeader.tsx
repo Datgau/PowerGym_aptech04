@@ -4,9 +4,14 @@ import styles from './TopHeader.module.css';
 import {useAuth} from "../../../hooks/useAuth.ts";
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import { Badge } from '@mui/material';
+import { useCart } from '../../../context/CartContext';
 
 const TopHeader: React.FC = () => {
   const { user, logout } = useAuth();
+  const { getItemCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,10 +61,10 @@ const TopHeader: React.FC = () => {
     { label: 'ABOUT', path: '/about' },
     { label: 'SERVICES', path: '/service' },
     { label: 'PRICING', path: '/pricing' },
+    { label: 'PRODUCTS', path: '/products' },
     { label: 'PROMOTIONS', path: '/promotions' },
     { label: 'REWARDS', path: '/rewards' },
     { label: 'NEWS', path: '/news' },
-
   ];
 
   const handleMenuClick = (path: string) => {
@@ -136,6 +141,20 @@ const TopHeader: React.FC = () => {
                         </span>
                             Profile
                           </button>
+                          
+                          <button
+                              className={styles.dropdownItem}
+                              onClick={() => {
+                                navigate('/orders');
+                                setIsAvatarMenuOpen(false);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                          >
+                        <span className={styles.dropdownIcon}>
+                          <ReceiptIcon fontSize="small"/>
+                        </span>
+                            My Orders
+                          </button>
 
                           <div className={styles.dropdownDivider}></div>
 
@@ -151,6 +170,21 @@ const TopHeader: React.FC = () => {
                         </div>
                     )}
                   </div>
+                  
+                  {/* Cart Icon */}
+                  {!isAdmin && (
+                    <button 
+                      className={styles.cartButton}
+                      onClick={() => {
+                        navigate('/cart');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
+                      <Badge badgeContent={getItemCount()} color="error">
+                        <ShoppingCartIcon />
+                      </Badge>
+                    </button>
+                  )}
                 </>
             ) : (
                 // Display login button when not logged in
