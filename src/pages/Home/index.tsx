@@ -23,7 +23,7 @@ const Home: React.FC = () => {
         );
     }
 
-    const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN';
+    const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'STAFF' || user?.role === 'staff';
     if (user && isAdmin) {
         return <AdminDashboard />;
     }

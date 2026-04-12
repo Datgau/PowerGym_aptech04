@@ -29,7 +29,7 @@ const PricingFields: React.FC<PricingFieldsProps> = ({
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box display="flex" gap={2}>
           <TextField
-            label="Price (USD)"
+            label="Price (VND)"
             name="price"
             type="number"
             value={price}

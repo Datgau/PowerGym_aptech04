@@ -158,7 +158,7 @@ const Profile: React.FC = () => {
   const itemsPerPage = 2; // Hiển thị 2 services mỗi trang
 
   const isTrainer = user?.role === 'TRAINER';
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'admin';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'admin' || user?.role === 'STAFF' || user?.role === 'staff';
 
   useEffect(() => {
     loadUserData();

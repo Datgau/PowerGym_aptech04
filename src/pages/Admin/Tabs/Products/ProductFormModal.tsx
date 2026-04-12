@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   Button,
   TextField,
   Box,
-  Alert,
   CircularProgress,
-  Avatar,
   IconButton,
+  Typography,
+  Stack,
+  Divider,
 } from '@mui/material';
-import { PhotoCamera, Close } from '@mui/icons-material';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
+import { PhotoCamera, Close, Image as ImageIcon } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 import { createProduct, updateProduct, uploadProductImage } from '../../../../services/productService';
 import type { Product, CreateProductRequest, UpdateProductRequest } from '../../../../types/product';
 
@@ -25,108 +23,114 @@ interface ProductFormModalProps {
   onSuccess: () => void;
 }
 
-const validationSchema = Yup.object({
-  name: Yup.string()
-    .required('Product name is required')
-    .max(255, 'Name must be at most 255 characters'),
-  description: Yup.string()
-    .max(1000, 'Description must be at most 1000 characters'),
-  price: Yup.number()
-    .required('Price is required')
-    .positive('Price must be positive')
-    .min(0.01, 'Price must be at least 0.01'),
-  stock: Yup.number()
-    .required('Stock is required')
-    .integer('Stock must be an integer')
-    .min(0, 'Stock cannot be negative'),
-  lowStockThreshold: Yup.number()
-    .integer('Threshold must be an integer')
-    .min(0, 'Threshold cannot be negative'),
-});
-
 const ProductFormModal: React.FC<ProductFormModalProps> = ({
   open,
   product,
   onClose,
   onSuccess,
 }) => {
-  const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.imageUrl || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  
+  // Form fields
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('');
 
   const isEditMode = !!product;
 
-  const initialValues = {
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price || 0,
-    stock: product?.stock || 0,
-    lowStockThreshold: product?.lowStockThreshold || 10,
-  };
+  // Update form when product changes
+  useEffect(() => {
+    if (product) {
+      setName(product.name || '');
+      setDescription(product.description || '');
+      setPrice(product.price?.toString() || '');
+      setStock(product.stock?.toString() || '');
+      setLowStockThreshold(product.lowStockThreshold?.toString() || '');
+      setImagePreview(product.imageUrl || null);
+    } else {
+      setName('');
+      setDescription('');
+      setPrice('');
+      setStock('');
+      setLowStockThreshold('');
+      setImagePreview(null);
+    }
+    setImageFile(null);
+  }, [product, open]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
-        setError('Please select an image file');
+        toast.error('Please select an image file');
         return;
       }
-      
-      // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image size must not exceed 5MB');
+        toast.error('Image size must not exceed 5MB');
         return;
       }
       
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
-      setError('');
     }
   };
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting }: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!name.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
+    if (!price || parseFloat(price) <= 0) {
+      toast.error('Valid price is required');
+      return;
+    }
+    if (!isEditMode && (!stock || parseInt(stock) < 0)) {
+      toast.error('Valid initial stock is required');
+      return;
+    }
+    
+    setSubmitting(true);
     try {
-      setError('');
-      
       let savedProduct: Product;
       
       if (isEditMode && product) {
-        // Update existing product
         const updateData: UpdateProductRequest = {
-          name: values.name,
-          description: values.description,
-          price: values.price,
-          lowStockThreshold: values.lowStockThreshold,
+          name: name.trim(),
+          description: description.trim(),
+          price: parseFloat(price),
+          lowStockThreshold: lowStockThreshold ? parseInt(lowStockThreshold) : undefined,
           imageUrl: product.imageUrl,
         };
         savedProduct = await updateProduct(product.id, updateData);
       } else {
         // Create new product
         const createData: CreateProductRequest = {
-          name: values.name,
-          description: values.description,
-          price: values.price,
-          stock: values.stock,
-          lowStockThreshold: values.lowStockThreshold,
+          name: name.trim(),
+          description: description.trim(),
+          price: parseFloat(price),
+          stock: parseInt(stock),
+          lowStockThreshold: lowStockThreshold ? parseInt(lowStockThreshold) : undefined,
         };
         savedProduct = await createProduct(createData);
       }
       
-      // Upload image if selected
       if (imageFile) {
         setUploading(true);
         await uploadProductImage(savedProduct.id, imageFile);
       }
       
+      toast.success(isEditMode ? 'Product updated successfully' : 'Product created successfully');
       onSuccess();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to save product');
-      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to save product');
     } finally {
       setSubmitting(false);
       setUploading(false);
@@ -134,141 +138,296 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
 
   const handleClose = () => {
-    setError('');
-    setImageFile(null);
-    setImagePreview(product?.imageUrl || null);
-    onClose();
+    if (!submitting && !uploading) {
+      onClose();
+    }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          {isEditMode ? 'Edit Product' : 'Create Product'}
-          <IconButton onClick={handleClose} size="small">
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+        }
+      }}
+    >
+      <form onSubmit={handleSubmit}>
+        {/* Header */}
+        <Box
+          sx={{
+            p: 3,
+            background: 'linear-gradient(135deg, #0066ff 0%, #0052cc 100%)',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Box>
+            <Typography variant="h5" fontWeight={700}>
+              {isEditMode ? 'Edit Product' : 'Create New Product'}
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+              {isEditMode ? 'Update product information' : 'Add a new product to your inventory'}
+            </Typography>
+          </Box>
+          <IconButton 
+            onClick={handleClose} 
+            disabled={submitting || uploading}
+            sx={{ 
+              color: 'white',
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+            }}
+          >
             <Close />
           </IconButton>
         </Box>
-      </DialogTitle>
-      
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize
-      >
-        {({ errors, touched, isSubmitting, values }) => (
-          <Form>
-            <DialogContent>
-              {error && (
-                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-                  {error}
-                </Alert>
-              )}
 
-              <Box display="flex" flexDirection="column" gap={2}>
-                {/* Image Upload */}
-                <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-                  <Avatar
-                    src={imagePreview || undefined}
-                    sx={{ width: 120, height: 120 }}
-                    variant="rounded"
-                  >
-                    {values.name.charAt(0)}
-                  </Avatar>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    startIcon={<PhotoCamera />}
-                  >
-                    Upload Image
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                  </Button>
+        <DialogContent sx={{ p: 4 }}>
+          <Stack spacing={3}>
+                {/* Image Upload Section */}
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2} color="#0f172a">
+                    Product Image
+                  </Typography>
+                  
+                  {imagePreview ? (
+                    <Stack spacing={2} alignItems="center">
+                      <Box
+                        component="img"
+                        src={imagePreview}
+                        alt="Preview"
+                        sx={{
+                          width: '100%',
+                          maxWidth: 400,
+                          height: 250,
+                          objectFit: 'cover',
+                          borderRadius: 2,
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        }}
+                      />
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        startIcon={<PhotoCamera />}
+                        size="medium"
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Change Image
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </Button>
+                      <Typography variant="caption" color="text.secondary">
+                        Supported: JPG, PNG, GIF (Max 5MB)
+                      </Typography>
+                    </Stack>
+                  ) : (
+                    <Box
+                      sx={{
+                        backgroundColor: '#f8fafc',
+                        borderRadius: 2,
+                        p: 4,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Stack spacing={2} alignItems="center">
+                        <Box
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: '50%',
+                            backgroundColor: '#e2e8f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <ImageIcon sx={{ fontSize: 40, color: '#64748b' }} />
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" mb={1.5}>
+                            No image selected
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            component="label"
+                            startIcon={<PhotoCamera />}
+                            sx={{
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Upload Image
+                            <input
+                              type="file"
+                              hidden
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </Button>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Supported: JPG, PNG, GIF (Max 5MB)
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  )}
                 </Box>
 
-                {/* Name */}
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Product Name"
-                  fullWidth
-                  required
-                  error={touched.name && !!errors.name}
-                  helperText={touched.name && errors.name}
-                />
+                <Divider />
 
-                {/* Description */}
-                <Field
-                  as={TextField}
-                  name="description"
-                  label="Description"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  error={touched.description && !!errors.description}
-                  helperText={touched.description && errors.description}
-                />
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2} color="#0f172a">
+                    Product Information
+                  </Typography>
+                  <Stack spacing={2.5}>
+                    <TextField
+                      name="name"
+                      label="Product Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      fullWidth
+                      required
+                      disabled={submitting || uploading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        }
+                      }}
+                    />
 
-                {/* Price */}
-                <Field
-                  as={TextField}
-                  name="price"
-                  label="Price (VNĐ)"
-                  type="number"
-                  fullWidth
-                  required
-                  error={touched.price && !!errors.price}
-                  helperText={touched.price && errors.price}
-                />
+                    <TextField
+                      name="description"
+                      label="Description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      fullWidth
+                      multiline
+                      rows={3}
+                      disabled={submitting || uploading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        }
+                      }}
+                    />
 
-                {/* Stock (only for create mode) */}
-                {!isEditMode && (
-                  <Field
-                    as={TextField}
-                    name="stock"
-                    label="Initial Stock"
-                    type="number"
-                    fullWidth
-                    required
-                    error={touched.stock && !!errors.stock}
-                    helperText={touched.stock && errors.stock}
-                  />
-                )}
+                    <Stack direction="row" spacing={2}>
+                      <TextField
+                        name="price"
+                        label="Price (VNĐ)"
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        fullWidth
+                        required
+                        placeholder="Enter price..."
+                        disabled={submitting || uploading}
+                        inputProps={{ min: 0, step: 0.01 }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          }
+                        }}
+                      />
 
-                {/* Low Stock Threshold */}
-                <Field
-                  as={TextField}
-                  name="lowStockThreshold"
-                  label="Low Stock Threshold"
-                  type="number"
-                  fullWidth
-                  error={touched.lowStockThreshold && !!errors.lowStockThreshold}
-                  helperText={touched.lowStockThreshold && errors.lowStockThreshold}
-                />
-              </Box>
+                      {!isEditMode && (
+                        <TextField
+                          name="stock"
+                          label="Initial Stock"
+                          type="number"
+                          value={stock}
+                          onChange={(e) => setStock(e.target.value)}
+                          fullWidth
+                          required
+                          disabled={submitting || uploading}
+                          inputProps={{ min: 0 }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                            }
+                          }}
+                        />
+                      )}
+
+                      <TextField
+                        name="lowStockThreshold"
+                        label="Low Stock Alert"
+                        type="number"
+                        value={lowStockThreshold}
+                        onChange={(e) => setLowStockThreshold(e.target.value)}
+                        fullWidth
+                        disabled={submitting || uploading}
+                        inputProps={{ min: 0 }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          }
+                        }}
+                      />
+                    </Stack>
+                  </Stack>
+                </Box>
+              </Stack>
             </DialogContent>
 
-            <DialogActions>
-              <Button onClick={handleClose} disabled={isSubmitting || uploading}>
+            {/* Footer */}
+            <Box
+              sx={{
+                p: 3,
+                backgroundColor: '#f8fafc',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+              }}
+            >
+              <Button 
+                onClick={handleClose} 
+                disabled={submitting || uploading}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                }}
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting || uploading}
-                startIcon={isSubmitting || uploading ? <CircularProgress size={20} /> : null}
+                disabled={submitting || uploading}
+                startIcon={submitting || uploading ? <CircularProgress size={20} /> : null}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 4,
+                  background: 'linear-gradient(135deg, #0066ff 0%, #0052cc 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #0052cc 0%, #003d99 100%)',
+                  }
+                }}
               >
-                {isEditMode ? 'Update' : 'Create'}
+                {isEditMode ? 'Update Product' : 'Create Product'}
               </Button>
-            </DialogActions>
-          </Form>
-        )}
-      </Formik>
+            </Box>
+          </form>
     </Dialog>
   );
 };

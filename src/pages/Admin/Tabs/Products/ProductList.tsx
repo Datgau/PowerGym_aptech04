@@ -12,7 +12,6 @@ import {
   Chip,
   IconButton,
   CircularProgress,
-  Alert,
   Avatar,
   TextField,
   InputAdornment,
@@ -23,6 +22,7 @@ import {
   Stack,
 } from '@mui/material';
 import { Add, Edit, Delete, Search, Inventory, Clear } from '@mui/icons-material';
+import { toast } from 'react-toastify';
 import { getProducts, deleteProduct } from '../../../../services/productService';
 import type { Product, StockStatus } from '../../../../types/product';
 import TablePagination from '../../../../components/Common/TablePagination';
@@ -99,7 +99,6 @@ SearchInput.displayName = 'SearchInput';
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [stockStatus, setStockStatus] = useState<StockStatus>('all');
@@ -130,7 +129,6 @@ const ProductList: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      setError('');
       const response = await getProducts(
         paginationState.page,
         paginationState.rowsPerPage,
@@ -141,11 +139,8 @@ const ProductList: React.FC = () => {
       setProducts(response.content);
       setPaginationData(response.totalPages, response.totalElements);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to load products');
-      }
+      console.error('Failed to load products:', err);
+      // Error toast will be shown by axios interceptor
     } finally {
       setLoading(false);
     }
@@ -180,15 +175,13 @@ const ProductList: React.FC = () => {
     
     try {
       await deleteProduct(selectedProduct.id);
+      toast.success(`Product "${selectedProduct.name}" deleted successfully`);
       setDeleteModalOpen(false);
       setSelectedProduct(null);
       loadData();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to delete product');
-      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete product');
+      setDeleteModalOpen(false);
     }
   };
 
@@ -239,12 +232,6 @@ const ProductList: React.FC = () => {
           Add Product
         </AddButton>
       </HeaderSection>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: 3, fontSize: 13.5 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
 
       <ContentSection>
         <Box display="flex" gap={2} mb={3} flexWrap="wrap">

@@ -45,6 +45,9 @@ import GlobalNotification from '../../Notification/GlobalNotification.tsx';
 import { useTokenRefresh } from '../../../hooks/useTokenRefresh.ts';
 import { useAuth } from '../../../hooks/useAuth.ts';
 import { useNavigate } from 'react-router-dom';
+import { getCurrentProfile } from '../../../services/userService';
+import type { UserResponse } from '../../../types/user';
+import {toast} from "react-toastify";
 
 const DRAWER_WIDTH = 260;
 
@@ -59,7 +62,6 @@ const menuGroups = [
         title: 'Dashboard',
         items: [
             { text: 'Overview', icon: <AnalyticsIcon /> },
-            { text: 'Inventory Dashboard', icon: <AnalyticsIcon /> },
         ],
     },
     {
@@ -96,23 +98,31 @@ const menuGroups = [
             { text: 'Rewards', icon: <EmojiEvents /> },
         ],
     },
-    {
-        title: 'System',
-        items: [
-            { text: 'Settings', icon: <Settings /> },
-        ],
-    },
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTabChange }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [userProfile, setUserProfile] = useState<UserResponse | null>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { logout, user } = useAuth();
     const navigate = useNavigate();
     const [openGroups, setOpenGroups] = useState<{ [key: string]: boolean }>({});
     useTokenRefresh();
+
+    // Load user profile
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                const profile = await getCurrentProfile();
+                setUserProfile(profile);
+            } catch (error) {
+                toast.error('Failed to load user profile !');
+            }
+        };
+        loadProfile();
+    }, []);
 
     const handleToggleGroup = (title: string) => {
         setOpenGroups((prev) => ({
@@ -144,8 +154,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     const handleLogout = async () => {
         try {
             await logout();
-        } catch (error:any) {
-            console.error('Logout failed:', error);
+        } catch (e :any) {
+            toast.error('Logout failed !', e);
         }
         navigate('/login', { replace: true });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -289,6 +299,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                         }}
                     >
                         <Avatar
+                            src={userProfile?.avatar || undefined}
                             sx={{
                                 width: 34,
                                 height: 34,
@@ -297,17 +308,28 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                                 background: 'linear-gradient(135deg, #00b4ff, #0066ff)',
                             }}
                         >
-                            A
+                            {!userProfile?.avatar && userProfile?.fullName?.charAt(0)}
                         </Avatar>
+
                         <Box flex={1} minWidth={0}>
                             <Typography variant="body2" fontWeight={700} noWrap>
-                                Admin
+                                {userProfile?.fullName || 'Admin User'}
                             </Typography>
+
                             <Typography variant="caption" color="text.secondary" noWrap>
-                                admin@gmail.com
+                                {userProfile?.email || 'admin@gmail.com'}
                             </Typography>
                         </Box>
-                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#22c55e', flexShrink: 0 }} />
+
+                        <Box
+                            sx={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                bgcolor: '#22c55e',
+                                flexShrink: 0,
+                            }}
+                        />
                     </Box>
                 </Tooltip>
             </Box>
@@ -318,7 +340,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>
 
-            {/* Mobile drawer */}
             <Drawer
                 variant="temporary"
                 open={mobileOpen}
@@ -405,8 +426,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                             </Typography>
                         </Box>
                     </Box>
-
-                    {/* Right: notifications */}
                     <GlobalNotification 
                         userId={user?.id}
                     />
@@ -417,8 +436,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                     {children}
                 </Box>
             </Box>
-
-            {/* Profile dropdown */}
             <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -437,11 +454,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                 }}
             >
                 <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography variant="body2" fontWeight={700}>Admin User</Typography>
-                    <Typography variant="caption" color="text.secondary">admin@powergym.com</Typography>
+                    <Typography variant="body2" fontWeight={700}>
+                        {userProfile?.fullName || 'Admin User'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {userProfile?.email || 'admin@gmail.com'}
+                    </Typography>
                 </Box>
                 <Divider />
-                <MenuItem onClick={() => setAnchorEl(null)} sx={{ gap: 1.5, py: 1 }}>
+                <MenuItem
+                    onClick={() => {
+                        setAnchorEl(null);
+                        onTabChange?.(15);
+                    }}
+                    sx={{ gap: 1.5, py: 1 }}
+                >
                     <AccountCircle fontSize="small" sx={{ color: 'text.secondary' }} />
                     <Typography variant="body2" fontWeight={500}>Profile</Typography>
                 </MenuItem>

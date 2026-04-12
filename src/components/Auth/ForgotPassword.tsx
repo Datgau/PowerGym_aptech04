@@ -11,6 +11,7 @@ const ForgotPassword = () => {
     const [email, setEmail] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | undefined>();
+    const [sent, setSent] = useState(false);
 
     const [snackbar, setSnackbar] = useState<{
         open: boolean;
@@ -42,12 +43,7 @@ const ForgotPassword = () => {
             const res = await AuthService.forgotPassword(email);
 
             if (res.success) {
-                setSnackbar({
-                    open: true,
-                    type: "success",
-                    message: "A password reset link has been sent to your email.",
-                });
-                setTimeout(() => navigate("/login"), 2000);
+                setSent(true);
             } else {
                 setSnackbar({
                     open: true,
@@ -66,13 +62,52 @@ const ForgotPassword = () => {
         }
     };
 
+    // Success state
+    if (sent) {
+        return (
+            <AuthLayout
+                activeTab="login"
+                title="Check your email"
+                subtitle="We've sent you a password reset link"
+            >
+                <div className={styles.forgotHeader}>
+                    <div className={styles.forgotIcon}>📬</div>
+                    <h2 className={styles.forgotTitle}>Email sent!</h2>
+                    <p className={styles.forgotSubtitle}>
+                        We sent a reset link to <strong>{email}</strong>.<br />
+                        The link expires in <strong>10 minutes</strong>.
+                    </p>
+                </div>
+
+                <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
+                    <button
+                        className={styles.authSubmit}
+                        onClick={() => navigate("/login")}
+                    >
+                        Back to Login
+                    </button>
+                    <button
+                        className={styles.authSubmit}
+                        style={{ background: 'transparent', color: '#64748b', border: '2px solid #e4e7ec', boxShadow: 'none' }}
+                        onClick={() => setSent(false)}
+                    >
+                        Try another email
+                    </button>
+                </div>
+
+                <p className={styles.authFooter} style={{ marginTop: '1rem' }}>
+                    Didn't receive it? Check your spam folder.
+                </p>
+            </AuthLayout>
+        );
+    }
+
     return (
         <AuthLayout
             activeTab="login"
             title="Forgot Password"
             subtitle="Enter your email to receive a password reset link"
         >
-            {/* Header icon + description */}
             <div className={styles.forgotHeader}>
                 <div className={styles.forgotIcon}>🔑</div>
                 <h2 className={styles.forgotTitle}>Reset your password</h2>
@@ -128,7 +163,7 @@ const ForgotPassword = () => {
 
             <Snackbar
                 open={snackbar.open}
-                autoHideDuration={4000}
+                autoHideDuration={5000}
                 onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
                 anchorOrigin={{ vertical: "top", horizontal: "center" }}
             >

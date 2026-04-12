@@ -48,15 +48,9 @@ const TopHeader: React.FC = () => {
     });
   };
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'admin' || user?.role === 'ADMIN' || user?.role === 'STAFF' || user?.role === 'staff';
 
   const menuItems = isAdmin ? [
-    { label: 'DASHBOARD', path: '/admin/dashboard' },
-    { label: 'ADMIN HOME', path: '/admin' },
-    { label: 'MEMBERS', path: '/admin/members' },
-    { label: 'PACKAGES', path: '/admin/packages' },
-    { label: 'REPORTS', path: '/admin/reports' },
-    { label: 'SETTINGS', path: '/admin/settings' }
   ] : [
     { label: 'ABOUT', path: '/about' },
     { label: 'SERVICES', path: '/service' },

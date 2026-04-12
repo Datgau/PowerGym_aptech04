@@ -27,7 +27,7 @@ const AuthRedirect = () => {
   if (isLoggedIn && user) {
     const role = user.role.toUpperCase();
     
-    if (role === 'ADMIN' || role === 'EMPLOYEE') {
+    if (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'STAFF') {
       return <Navigate to="/admin/dashboard" replace />;
     } else {
       return <Navigate to="/home" replace />;

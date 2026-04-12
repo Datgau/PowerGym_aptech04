@@ -412,7 +412,7 @@ const ServicesManagement: React.FC = () => {
                     </TableCell>
 
                     <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                      {service.price?.toLocaleString('en-US')} $
+                      {service.price?.toLocaleString('en-US')} đ
                     </TableCell>
 
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, fontSize: { xs: '0.875rem', md: '1rem' } }}>

@@ -14,8 +14,8 @@ const AuthRedirectHandler: React.FC = () => {
         // User is authenticated, redirect based on role
         const role = user.role.toUpperCase();
         
-        if (role === 'ADMIN' || role === 'EMPLOYEE') {
-          // Admin/Employee goes to admin dashboard
+        if (role === 'ADMIN' || role === 'EMPLOYEE' || role === 'STAFF') {
+          // Admin/Employee/Staff goes to admin dashboard
           navigate('/admin/dashboard', { replace: true });
         } else {
           // Regular user goes to home

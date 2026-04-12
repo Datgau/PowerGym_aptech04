@@ -32,7 +32,7 @@ const Login = () => {
   const redirectBasedOnRole = (role: string) => {
     const normalizedRole = role.toUpperCase();
     
-    if (normalizedRole === 'ADMIN' || normalizedRole === 'EMPLOYEE') {
+    if (normalizedRole === 'ADMIN' || normalizedRole === 'EMPLOYEE' || normalizedRole === 'STAFF') {
       navigate('/admin/dashboard', { replace: true });
     } else {
       navigate('/home', { replace: true });

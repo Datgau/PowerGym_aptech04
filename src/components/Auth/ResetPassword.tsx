@@ -18,6 +18,7 @@ const ResetPassword = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [touched, setTouched] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const [snackbar, setSnackbar] = useState<{
         open: boolean;
@@ -29,15 +30,55 @@ const ResetPassword = () => {
         type: "success",
     });
 
-    useEffect(() => {
-        if (!token) {
-            setSnackbar({
-                open: true,
-                type: "error",
-                message: "Missing reset token. Please check your email and try the link again.",
-            });
-        }
-    }, [token]);
+    // No token → show error immediately
+    if (!token) {
+        return (
+            <AuthLayout title="Invalid Link" subtitle="This reset link is not valid">
+                <div className={styles.resetHeader}>
+                    <div className={styles.resetIcon}>⚠️</div>
+                    <h2 className={styles.resetTitle}>Link expired or invalid</h2>
+                    <p className={styles.resetSubtitle}>
+                        This password reset link is invalid or has already been used.
+                        Please request a new one.
+                    </p>
+                </div>
+                <div style={{ marginTop: '1.5rem' }}>
+                    <button
+                        className={styles.authSubmit}
+                        onClick={() => navigate("/forgot-password")}
+                    >
+                        Request New Link
+                    </button>
+                </div>
+                <p className={styles.authFooter} style={{ marginTop: '1rem' }}>
+                    <Link to="/login" className={styles.link}>← Back to Login</Link>
+                </p>
+            </AuthLayout>
+        );
+    }
+
+    // Success state
+    if (success) {
+        return (
+            <AuthLayout title="Password Updated" subtitle="Your password has been reset successfully">
+                <div className={styles.resetHeader}>
+                    <div className={styles.resetIcon}>✅</div>
+                    <h2 className={styles.resetTitle}>All done!</h2>
+                    <p className={styles.resetSubtitle}>
+                        Your password has been updated. You can now log in with your new password.
+                    </p>
+                </div>
+                <div style={{ marginTop: '1.5rem' }}>
+                    <button
+                        className={styles.authSubmit}
+                        onClick={() => navigate("/login")}
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </AuthLayout>
+        );
+    }
 
     const isLengthValid = password.length >= 6;
     const isMatch = password === confirmPassword;
@@ -46,12 +87,6 @@ const ResetPassword = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setTouched(true);
-
-        if (!token) {
-            setSnackbar({ open: true, message: "Invalid or missing token.", type: "error" });
-            return;
-        }
-
         if (!isValid) return;
 
         setSubmitting(true);
@@ -63,17 +98,12 @@ const ResetPassword = () => {
             });
 
             if (res.success) {
-                setSnackbar({
-                    open: true,
-                    type: "success",
-                    message: "🎉 Password reset successful! You can now log in with your new password.",
-                });
-                setTimeout(() => navigate("/login"), 3000);
+                setSuccess(true);
             } else {
                 setSnackbar({
                     open: true,
                     type: "error",
-                    message: res.message || "Failed to reset password. Please try again.",
+                    message: res.message || "Failed to reset password. The link may have expired.",
                 });
             }
         } catch (err) {
@@ -92,12 +122,12 @@ const ResetPassword = () => {
             title="Reset Password"
             subtitle="Create a new password for your account"
         >
-            {/* Header */}
             <div className={styles.resetHeader}>
                 <div className={styles.resetIcon}>🔒</div>
                 <h2 className={styles.resetTitle}>Set a new password</h2>
                 <p className={styles.resetSubtitle}>
                     Your new password must be at least 6 characters long.
+                    The reset link expires in <strong>10 minutes</strong>.
                 </p>
             </div>
 
@@ -177,11 +207,7 @@ const ResetPassword = () => {
                             />
                         </div>
                         <span className={styles.strengthLabel}>
-                            {password.length < 6
-                                ? "Weak"
-                                : password.length < 10
-                                    ? "Fair"
-                                    : "Strong"}
+                            {password.length < 6 ? "Weak" : password.length < 10 ? "Fair" : "Strong"}
                         </span>
                     </div>
                 )}
@@ -203,9 +229,7 @@ const ResetPassword = () => {
             </form>
 
             <p className={styles.authFooter}>
-                <Link to="/login" className={styles.link}>
-                    ← Back to Login
-                </Link>
+                <Link to="/login" className={styles.link}>← Back to Login</Link>
             </p>
 
             <Snackbar

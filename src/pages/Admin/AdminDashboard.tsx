@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
-import DashboardOverview from './Tabs/Overview/DashboardOverview.tsx';
+import { Box } from '@mui/material';
+import UnifiedDashboard from './Tabs/Dashboard/UnifiedDashboard.tsx';
 import MembersTable from './Tabs/Members/MembersTable.tsx';
 import StaffTable from './Tabs/Staff/StaffTable.tsx';
 import TrainersGrid from './Tabs/Trainer/TrainersGrid.tsx';
@@ -11,23 +11,15 @@ import ServiceRegistrationsGrid from './Tabs/ServiceRegistrations/ServiceRegistr
 import MembershipPackagesPage from './Tabs/MembershipPackages/MembershipPackagesPage.tsx';
 import PromotionsPage from './Tabs/Promotions/PromotionsPage.tsx';
 import RewardsPage from './Tabs/Rewards/RewardsPage.tsx';
-import AdminLayout from "../../components/PowerGym/Layout/AdminLayout.tsx";
+import AdminLayout from '../../components/PowerGym/Layout/AdminLayout.tsx';
 import ProductList from './Tabs/Products/ProductList.tsx';
 import ImportReceiptList from './Tabs/ImportReceipts/ImportReceiptList.tsx';
 import { OrderList } from './Tabs/Orders';
-import InventoryDashboard from './Tabs/Dashboard/InventoryDashboard.tsx';
 import FinancialPage from './Tabs/Financial/FinancialPage.tsx';
+import Settings from './Tabs/Settings/Settings.tsx';
 
-// Format currency helper
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(amount);
-};
-
-// Tab Components - Defined outside to avoid re-creation on each render
-const DashboardTab: React.FC = () => <DashboardOverview formatCurrency={formatCurrency} />;
+// Tab Components
+const DashboardTab: React.FC = () => <UnifiedDashboard />;
 const MembersTab: React.FC = () => <MembersTable />;
 const StaffTab: React.FC = () => <StaffTable />;
 const TrainersTab: React.FC = () => <TrainersGrid />;
@@ -41,54 +33,43 @@ const RewardsTab: React.FC = () => <RewardsPage />;
 const ProductsTab: React.FC = () => <ProductList />;
 const ImportReceiptsTab: React.FC = () => <ImportReceiptList />;
 const OrdersTab: React.FC = () => <OrderList />;
-const InventoryDashboardTab: React.FC = () => <InventoryDashboard />;
 const FinancialTab: React.FC = () => <FinancialPage />;
-
-const SettingsTab: React.FC = () => (
-  <Box>
-    <Typography variant="h5" fontWeight={600} mb={2}>System Settings</Typography>
-    <Typography color="text.secondary">Coming Soon</Typography>
-  </Box>
-);
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [settingsInitialTab, setSettingsInitialTab] = useState(0);
 
-  const handleTabChange = (newValue: number) => {
+  const handleTabChange = (newValue: number, settingsTab?: number) => {
     setActiveTab(newValue);
+    if (settingsTab !== undefined) {
+      setSettingsInitialTab(settingsTab);
+    }
   };
 
+  const SettingsTab: React.FC = () => <Settings initialTab={settingsInitialTab} />;
+
   const tabComponents = [
-    <DashboardTab key="dashboard" />,              // 0 - Overview
-    <InventoryDashboardTab key="inventory-dashboard" />, // 1 - Inventory Dashboard
-    <MembersTab key="members" />,                  // 2 - Members
-    <StaffTab key="staff" />,                      // 3 - Staff
-    <TrainersTab key="trainers" />,                // 4 - Trainers
-    <CategoriesTab key="categories" />,            // 5 - Categories
-    <ServicesTab key="services" />,                // 6 - Services
-    <ServiceRegistrationsTab key="service-registrations" />, // 7 - Service Registrations
-    <MembershipTab key="membership" />,            // 8 - Membership
-    <ProductsTab key="products" />,                // 9 - Products
-    <ImportReceiptsTab key="import-receipts" />,   // 10 - Import Receipts
-    <OrdersTab key="orders" />,                    // 11 - Orders
-    <FinancialTab key="financial" />,              // 12 - Financial
-    <StoriesTab key="stories" />,                  // 13 - Stories
-    <PromotionsTab key="promotions" />,            // 14 - Promotions
-    <RewardsTab key="rewards" />,                  // 15 - Rewards
-    <SettingsTab key="settings" />                 // 16 - Settings
+    <DashboardTab key="dashboard" />,                                        // 0
+    <MembersTab key="members" />,                                            // 1
+    <StaffTab key="staff" />,                                                // 2
+    <TrainersTab key="trainers" />,                                          // 3
+    <CategoriesTab key="categories" />,                                      // 4
+    <ServicesTab key="services" />,                                          // 5
+    <ServiceRegistrationsTab key="service-registrations" />,                 // 6
+    <MembershipTab key="membership" />,                                      // 7
+    <ProductsTab key="products" />,                                          // 8
+    <ImportReceiptsTab key="import-receipts" />,                             // 9
+    <OrdersTab key="orders" />,                                              // 10
+    <FinancialTab key="financial" />,                                        // 11
+    <StoriesTab key="stories" />,                                            // 12
+    <PromotionsTab key="promotions" />,                                      // 13
+    <RewardsTab key="rewards" />,                                            // 14
+    <SettingsTab key="settings" />,                                          // 15
   ];
 
   return (
     <AdminLayout activeTab={activeTab} onTabChange={handleTabChange}>
-      <Box sx={{ 
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        p: 3,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-        minHeight: '500px'
-      }}>
-        {tabComponents[activeTab]}
-      </Box>
+      {tabComponents[activeTab]}
     </AdminLayout>
   );
 };
