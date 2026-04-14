@@ -21,7 +21,6 @@ import {
   Email,
   Phone,
   CalendarToday,
-  Badge,
   FitnessCenter,
   CardMembership,
   School,
@@ -220,7 +219,7 @@ const Profile: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-    setPage(1); // Reset page when changing tabs
+    setPage(1);
   };
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
@@ -228,7 +227,6 @@ const Profile: React.FC = () => {
   };
 
   const handleEditProfileSuccess = (updatedUser: any) => {
-    // Update AuthContext with new user data
     const session = loadAuthSession();
     if (session && user) {
       const updatedAuthUser = {
@@ -241,10 +239,8 @@ const Profile: React.FC = () => {
         avatar: updatedUser.avatar,
       };
       persistAuthSession(updatedAuthUser, session.remember);
-      // Refresh auth context to pick up new data
       checkAuthStatus();
     }
-    // Reload user data after successful update
     loadUserData();
   };
 
@@ -341,16 +337,6 @@ const Profile: React.FC = () => {
                   >
                     {user?.email || 'No bio available'}
                   </Typography>
-
-                  <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      mb={3}
-                      sx={{ fontStyle: user?.phoneNumber ? 'normal' : 'italic', px: 2 }}
-                  >
-                    {user?.phoneNumber || 'No bio available'}
-                  </Typography>
-
                   <Stack direction="row" spacing={1} mb={2} flexWrap="wrap" justifyContent="center">
                     <Chip
                       label={isTrainer ? 'Trainer' : isAdmin ? 'Administrator' : 'Member'}
@@ -464,7 +450,7 @@ const Profile: React.FC = () => {
                             Phone Number
                           </Typography>
                           <Typography variant="body1" fontWeight={600} color="text.primary">
-                            Not provided
+                            {user?.phoneNumber || 'N/A'}
                           </Typography>
                         </Box>
                       </InfoItem>
@@ -478,21 +464,7 @@ const Profile: React.FC = () => {
                             Date of Birth
                           </Typography>
                           <Typography variant="body1" fontWeight={600} color="text.primary">
-                            N/A
-                          </Typography>
-                        </Box>
-                      </InfoItem>
-
-                      <InfoItem>
-                        <IconBox>
-                          <Badge />
-                        </IconBox>
-                        <Box flex={1}>
-                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                            Member Since
-                          </Typography>
-                          <Typography variant="body1" fontWeight={600} color="text.primary">
-                            {formatDate(new Date().toISOString())}
+                            {user?.dateOfBirth || 'N/A'}
                           </Typography>
                         </Box>
                       </InfoItem>
