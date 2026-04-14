@@ -114,8 +114,7 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
         }
       }
 
-      const payload = {
-        code: formData.code,
+      const basePayload = {
         title: formData.title,
         description: formData.description,
         type: formData.type,
@@ -130,9 +129,9 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
       };
 
       if (promotion) {
-        await promotionService.updatePromotion(promotion.id, payload);
+        await promotionService.updatePromotion(promotion.id, basePayload);
       } else {
-        await promotionService.createPromotion(payload);
+        await promotionService.createPromotion({ ...basePayload, code: formData.code });
       }
 
       onSubmit();
