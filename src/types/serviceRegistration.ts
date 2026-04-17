@@ -113,6 +113,7 @@ export interface ServiceRegistrationResponse {
   cancellationReason: string | null;
   paymentStatus: PaymentStatus | null;
   trainerName: string | null;
+  trainerId: number | null;
   registrationType: RegistrationType;
   paymentOrderId: string | null;
 }

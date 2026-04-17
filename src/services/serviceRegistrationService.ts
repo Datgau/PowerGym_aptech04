@@ -149,18 +149,46 @@ export const getAvailableTrainers = async (
  * 
  * @param registrationId - Service registration ID
  * @param amount - Payment amount
+ * @param bookingDate - Selected booking date (YYYY-MM-DD), optional if no trainer
+ * @param startTime - Selected start time (HH:mm), optional if no trainer
+ * @param endTime - Selected end time (HH:mm), optional if no trainer
  * @returns Promise with void response
  */
 export const confirmCounterPayment = async (
   registrationId: number,
-  amount: number
+  amount: number,
+  bookingDate?: string,
+  startTime?: string,
+  endTime?: string,
 ): Promise<ApiResponse<void>> => {
+  const params: Record<string, any> = { amount };
+  if (bookingDate) params.bookingDate = bookingDate;
+  if (startTime)   params.startTime   = startTime;
+  if (endTime)     params.endTime     = endTime;
+
   const response = await privateClient.post(
     `/service-registrations/${registrationId}/confirm-payment`,
     null,
-    {
-      params: { amount }
-    }
+    { params }
+  );
+  return response.data;
+};
+
+/**
+ * Get booked time slots for a trainer on a specific date
+ * Used by admin to show availability when scheduling a booking
+ *
+ * @param trainerId - Trainer user ID
+ * @param date - Date in YYYY-MM-DD format
+ * @returns Map with "bookedSlots" array of "HH:mm-HH:mm" strings
+ */
+export const getTrainerBookedSlots = async (
+  trainerId: number,
+  date: string,
+): Promise<ApiResponse<{ bookedSlots: string[] }>> => {
+  const response = await privateClient.get(
+    `/service-registrations/trainer/${trainerId}/schedule`,
+    { params: { date } }
   );
   return response.data;
 };

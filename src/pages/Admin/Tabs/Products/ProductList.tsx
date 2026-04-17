@@ -20,8 +20,9 @@ import {
   FormControl,
   InputLabel,
   Stack,
+  Button,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, Inventory, Clear } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, Inventory, Clear, PointOfSale } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getProducts, deleteProduct } from '../../../../services/productService';
 import type { Product, StockStatus } from '../../../../types/product';
@@ -29,6 +30,7 @@ import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 import ProductFormModal from './ProductFormModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
+import CounterSaleModal from './CounterSaleModal';
 import {
   PageWrapper,
   HeaderSection,
@@ -105,6 +107,7 @@ const ProductList: React.FC = () => {
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [counterSaleOpen, setCounterSaleOpen] = useState(false);
   
   const {
     paginationState,
@@ -228,9 +231,26 @@ const ProductList: React.FC = () => {
             </Typography>
           </Box>
         </HeaderLeft>
-        <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleCreate}>
-          Add Product
-        </AddButton>
+        <Box display="flex" gap={1.5}>
+          <Button
+            variant="outlined"
+            startIcon={<PointOfSale sx={{ fontSize: 18 }} />}
+            onClick={() => setCounterSaleOpen(true)}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              borderColor: '#0066ff',
+              color: '#0066ff',
+              '&:hover': { background: '#f0f7ff', borderColor: '#0066ff' },
+            }}
+          >
+            Counter sale
+          </Button>
+          <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleCreate}>
+            Add Product
+          </AddButton>
+        </Box>
       </HeaderSection>
 
       <ContentSection>
@@ -395,6 +415,14 @@ const ProductList: React.FC = () => {
           setSelectedProduct(null);
         }}
         onConfirm={handleDeleteConfirm}
+      />
+
+      <CounterSaleModal
+        open={counterSaleOpen}
+        onClose={() => setCounterSaleOpen(false)}
+        onOrderCreated={() => {
+          loadData();
+        }}
       />
     </PageWrapper>
   );

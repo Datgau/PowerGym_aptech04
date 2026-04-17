@@ -1,72 +1,158 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, X, MessageCircle, Loader2 } from "lucide-react";
+import { Send, X, MessageCircle, Loader2, RotateCcw } from "lucide-react";
 import { aiChatService } from "../../services/aiChatService";
-import type { ChatMessage } from "../../services/aiChatService";
+import type {
+  ChatMessage,
+  ChatApiResponse,
+  ServiceCard,
+  MembershipCard,
+  TrainerCard,
+} from "../../services/aiChatService";
 import "./AiChatPopup.css";
+
+// ==================== CARD COMPONENTS ====================
+
+const ServiceCardItem: React.FC<{ s: ServiceCard }> = ({ s }) => (
+  <div className="ai-card">
+    {s.thumbnail && (
+      <img src={s.thumbnail} alt={s.name} className="ai-card-img"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+    )}
+    <div className="ai-card-body">
+      <h4 className="ai-card-name">{s.name}</h4>
+      {s.category && <span className="ai-card-badge">{s.category}</span>}
+      {s.description && <p className="ai-card-desc">{s.description}</p>}
+      <div className="ai-card-meta">
+        {s.priceFormatted && <span className="ai-card-price">{s.priceFormatted}</span>}
+        {s.duration && <span className="ai-card-sub">{s.duration} phút</span>}
+        {s.maxParticipants && <span className="ai-card-sub">Tối đa {s.maxParticipants} người</span>}
+      </div>
+      <a href="/services" className="ai-card-btn">Đăng ký ngay →</a>
+    </div>
+  </div>
+);
+
+const MembershipCardItem: React.FC<{ m: MembershipCard }> = ({ m }) => (
+  <div className="ai-card ai-card--membership" style={{ borderTop: m.color ? `3px solid ${m.color}` : undefined }}>
+    <div className="ai-card-body">
+      <div className="ai-card-header-row">
+        <h4 className="ai-card-name">{m.name}</h4>
+        {m.isPopular && <span className="ai-card-badge ai-card-badge--popular">Phổ biến</span>}
+      </div>
+      {m.discount && m.discount > 0 && (
+        <span className="ai-card-badge ai-card-badge--discount">Giảm {m.discount}%</span>
+      )}
+      {m.description && <p className="ai-card-desc">{m.description}</p>}
+      <div className="ai-card-meta">
+        <span className="ai-card-price">{m.priceFormatted}</span>
+        {m.originalPriceFormatted && (
+          <span className="ai-card-original-price">{m.originalPriceFormatted}</span>
+        )}
+        <span className="ai-card-sub">{m.duration} ngày</span>
+      </div>
+      {m.features && m.features.length > 0 && (
+        <ul className="ai-card-features">
+          {m.features.slice(0, 3).map((f, i) => <li key={i}>✓ {f}</li>)}
+          {m.features.length > 3 && <li className="ai-card-more">+{m.features.length - 3} ưu đãi khác</li>}
+        </ul>
+      )}
+      <a href="/membership" className="ai-card-btn">Đăng ký gói →</a>
+    </div>
+  </div>
+);
+
+const TrainerCardItem: React.FC<{ t: TrainerCard }> = ({ t }) => (
+  <div className="ai-card ai-card--trainer">
+    <div className="ai-card-trainer-top">
+      {t.avatar
+        ? <img src={t.avatar} alt={t.fullName} className="ai-card-avatar"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        : <div className="ai-card-avatar-placeholder">{t.fullName.charAt(0)}</div>
+      }
+      <div>
+        <h4 className="ai-card-name">{t.fullName}</h4>
+        {t.totalExperienceYears != null && (
+          <span className="ai-card-sub">{t.totalExperienceYears} năm kinh nghiệm</span>
+        )}
+      </div>
+    </div>
+    {t.specialties && t.specialties.length > 0 && (
+      <div className="ai-card-specialties">
+        {t.specialties.map((sp, i) => (
+          <span key={i} className="ai-card-badge">{sp.name}</span>
+        ))}
+      </div>
+    )}
+    {t.bio && <p className="ai-card-desc">{t.bio}</p>}
+    <a href="/trainers" className="ai-card-btn">Đặt lịch →</a>
+  </div>
+);
+
+// ==================== MAIN COMPONENT ====================
+
+const WELCOME_MESSAGE: ChatMessage = {
+  role: "assistant",
+  content: "Xin chào! Tôi là trợ lý AI của PowerGym. Tôi có thể giúp bạn tìm gói membership, dịch vụ gym, huấn luyện viên và đặt lịch tập. Bạn cần hỗ trợ gì?",
+  timestamp: new Date(),
+};
+
+interface MessageWithCards {
+  message: ChatMessage;
+  services?: ServiceCard[];
+  memberships?: MembershipCard[];
+  trainers?: TrainerCard[];
+}
 
 export const AiChatPopup: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      content:
-          "Hello! I'm the AI assistant of PowerGym. I can help you explore membership plans, gym services, trainers, and book workout sessions. How can I assist you?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [items, setItems] = useState<MessageWithCards[]>([{ message: WELCOME_MESSAGE }]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [items]);
 
-  // Focus input when chat opens
   useEffect(() => {
-    if (isOpen) {
-      inputRef.current?.focus();
-    }
+    if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = {
-      role: "user",
-      content: inputMessage.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const userText = inputMessage.trim();
+    setItems((prev) => [...prev, { message: { role: "user", content: userText, timestamp: new Date() } }]);
     setInputMessage("");
     setIsLoading(true);
 
     try {
-      const response = await aiChatService.sendMessage(userMessage.content);
+      const res: ChatApiResponse = await aiChatService.sendMessage(userText);
 
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: response,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      setItems((prev) => [
+        ...prev,
+        {
+          message: { role: "assistant", content: res.text, timestamp: new Date() },
+          services: res.services ?? undefined,
+          memberships: res.memberships ?? undefined,
+          trainers: res.trainers ?? undefined,
+        },
+      ]);
     } catch (error: any) {
-      const errorMessage: ChatMessage = {
-        role: "assistant",
-        content:
-            error.message ||
-            "Sorry, something went wrong. Please try again later.",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
+      setItems((prev) => [
+        ...prev,
+        { message: { role: "assistant", content: error.message || "Xin lỗi, đã có lỗi xảy ra.", timestamp: new Date() } },
+      ]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNewChat = () => {
+    aiChatService.resetSession();
+    setItems([{ message: { ...WELCOME_MESSAGE, timestamp: new Date() } }]);
+    setInputMessage("");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -76,110 +162,117 @@ export const AiChatPopup: React.FC = () => {
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 
   return (
-      <>
-        {/* Chat Button */}
-        {!isOpen && (
-            <button
-                className="ai-chat-button"
-                onClick={() => setIsOpen(true)}
-                aria-label="Open AI chat"
-            >
-              <MessageCircle size={24} />
-              <span className="ai-chat-button-badge">Power-AI</span>
-            </button>
-        )}
+    <>
+      {!isOpen && (
+        <button className="ai-chat-button" onClick={() => setIsOpen(true)} aria-label="Open AI chat">
+          <MessageCircle size={24} />
+          <span className="ai-chat-button-badge">Power-AI</span>
+        </button>
+      )}
 
-        {/* Chat Window */}
-        {isOpen && (
-            <div className="ai-chat-window">
-              {/* Header */}
-              <div className="ai-chat-header">
-                <div className="ai-chat-header-content">
-                  <div className="ai-chat-avatar">
-                    <MessageCircle size={20} />
-                  </div>
-                  <div className="ai-chat-header-text">
-                    <h3>PowerGym AI Assistant</h3>
-                    <span className="ai-chat-status">
-                  <span className="ai-chat-status-dot"></span>
-                  Active
+      {isOpen && (
+        <div className="ai-chat-window">
+          {/* Header */}
+          <div className="ai-chat-header">
+            <div className="ai-chat-header-content">
+              <div className="ai-chat-avatar"><MessageCircle size={20} /></div>
+              <div className="ai-chat-header-text">
+                <h3>PowerGym AI Assistant</h3>
+                <span className="ai-chat-status">
+                  <span className="ai-chat-status-dot"></span>Active
                 </span>
-                  </div>
-                </div>
-                <button
-                    className="ai-chat-close-button"
-                    onClick={() => setIsOpen(false)}
-                    aria-label="Close chat"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Messages */}
-              <div className="ai-chat-messages">
-                {messages.map((message, index) => (
-                    <div
-                        key={index}
-                        className={`ai-chat-message ${
-                            message.role === "user"
-                                ? "ai-chat-message-user"
-                                : "ai-chat-message-assistant"
-                        }`}
-                    >
-                      <div className="ai-chat-message-content">
-                        <p>{message.content}</p>
-                        <span className="ai-chat-message-time">
-                    {formatTime(message.timestamp)}
-                  </span>
-                      </div>
-                    </div>
-                ))}
-
-                {isLoading && (
-                    <div className="ai-chat-message ai-chat-message-assistant">
-                      <div className="ai-chat-message-content">
-                        <div className="ai-chat-loading">
-                          <Loader2 size={16} className="ai-chat-loading-spinner" />
-                          <span>Thinking...</span>
-                        </div>
-                      </div>
-                    </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input */}
-              <div className="ai-chat-input-container">
-            <textarea
-                ref={inputRef}
-                className="ai-chat-input"
-                placeholder="Type a message..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                rows={1}
-                disabled={isLoading}
-            />
-                <button
-                    className="ai-chat-send-button"
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    aria-label="Send message"
-                >
-                  <Send size={20} />
-                </button>
               </div>
             </div>
-        )}
-      </>
+            <div className="ai-chat-header-actions">
+              <button className="ai-chat-new-button" onClick={handleNewChat} title="Cuộc hội thoại mới">
+                <RotateCcw size={16} />
+              </button>
+              <button className="ai-chat-close-button" onClick={() => setIsOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="ai-chat-messages">
+            {items.map((item, index) => (
+              <div key={index}>
+                {/* Message bubble */}
+                <div className={`ai-chat-message ${item.message.role === "user" ? "ai-chat-message-user" : "ai-chat-message-assistant"}`}>
+                  <div className="ai-chat-message-content">
+                    <p>{item.message.content}</p>
+                    <span className="ai-chat-message-time">{formatTime(item.message.timestamp)}</span>
+                  </div>
+                </div>
+
+                {/* Service cards */}
+                {item.services && item.services.length > 0 && (
+                  <div className="ai-cards-section">
+                    <p className="ai-cards-label">🏋️ Dịch vụ phù hợp</p>
+                    <div className="ai-cards-list">
+                      {item.services.map((s) => <ServiceCardItem key={s.id} s={s} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Membership cards */}
+                {item.memberships && item.memberships.length > 0 && (
+                  <div className="ai-cards-section">
+                    <p className="ai-cards-label">🎫 Gói tập phù hợp</p>
+                    <div className="ai-cards-list">
+                      {item.memberships.map((m) => <MembershipCardItem key={m.id} m={m} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Trainer cards */}
+                {item.trainers && item.trainers.length > 0 && (
+                  <div className="ai-cards-section">
+                    <p className="ai-cards-label">👤 Huấn luyện viên</p>
+                    <div className="ai-cards-list">
+                      {item.trainers.map((t) => <TrainerCardItem key={t.id} t={t} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="ai-chat-message ai-chat-message-assistant">
+                <div className="ai-chat-message-content">
+                  <div className="ai-chat-loading">
+                    <Loader2 size={16} className="ai-chat-loading-spinner" />
+                    <span>Đang xử lý...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="ai-chat-input-container">
+            <textarea
+              ref={inputRef}
+              className="ai-chat-input"
+              placeholder="Nhập tin nhắn..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              rows={1}
+              disabled={isLoading}
+            />
+            <button className="ai-chat-send-button" onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isLoading}>
+              <Send size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

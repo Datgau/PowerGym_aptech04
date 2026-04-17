@@ -374,7 +374,7 @@ const Service: React.FC = () => {
                                         Price
                                     </Typography>
                                     <Typography variant="inherit" fontWeight={500} lineHeight={1}>
-                                        ${service.price.toLocaleString()}
+                                       {service.price.toLocaleString()} đ
                                     </Typography>
                                 </Box>
                             </Box>

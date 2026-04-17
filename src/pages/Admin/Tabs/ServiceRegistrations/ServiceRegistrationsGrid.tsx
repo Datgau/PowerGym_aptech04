@@ -35,6 +35,8 @@ import FilterSection from './components/FilterSection';
 import SearchBox from './components/SearchBox';
 import TrainerAssignmentModal from './components/TrainerAssignmentModal';
 import ConfirmPaymentModal from './components/ConfirmPaymentModal';
+import type { AssignmentResult } from './components/TrainerAssignmentModal';
+import type { ScheduleSelection } from './components/TrainerSchedulePicker';
 
 const PageWrapper = styled(Box)({
   minHeight: '100%',
@@ -137,6 +139,8 @@ const ServiceRegistrationsGrid: React.FC = () => {
   const [openTrainerModal, setOpenTrainerModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [printingInvoice, setPrintingInvoice] = useState<number | null>(null);
+  // Stores the trainer + schedule chosen in TrainerAssignmentModal so ConfirmPaymentModal can skip the picker
+  const [lastAssignment, setLastAssignment] = useState<AssignmentResult | null>(null);
 
   const {
     paginationState,
@@ -218,15 +222,18 @@ const ServiceRegistrationsGrid: React.FC = () => {
     setOpenPaymentModal(true);
   };
 
-  const handleAssignmentSuccess = () => {
+  const handleAssignmentSuccess = (result: AssignmentResult) => {
+    setLastAssignment(result);
     setOpenTrainerModal(false);
-    setSelectedRegistration(null);
+    // Keep selectedRegistration so ConfirmPaymentModal can open right after
     loadRegistrations();
+    // Auto-open payment modal so admin can confirm payment immediately
+    setOpenPaymentModal(true);
   };
-
   const handlePaymentSuccess = () => {
     setOpenPaymentModal(false);
     setSelectedRegistration(null);
+    setLastAssignment(null);
     loadRegistrations();
   };
 
@@ -526,11 +533,15 @@ const ServiceRegistrationsGrid: React.FC = () => {
           onClose={() => {
             setOpenPaymentModal(false);
             setSelectedRegistration(null);
+            setLastAssignment(null);
           }}
           registrationId={selectedRegistration.id}
           memberName={selectedRegistration.user.fullName}
           serviceName={selectedRegistration.service.name}
           amount={selectedRegistration.service.price}
+          trainerId={lastAssignment?.trainerId ?? selectedRegistration.trainerId ?? undefined}
+          trainerName={lastAssignment?.trainerName ?? selectedRegistration.trainerName ?? undefined}
+          preselectedSchedule={lastAssignment?.schedule ?? null}
           onSuccess={handlePaymentSuccess}
         />
       )}

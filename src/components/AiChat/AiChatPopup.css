@@ -139,6 +139,30 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.ai-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-chat-new-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ai-chat-new-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Messages Container */
 .ai-chat-messages {
   flex: 1;
@@ -338,4 +362,277 @@
   .ai-chat-input-container {
     border-radius: 0;
   }
+}
+
+/* ===== Service Cards ===== */
+.ai-service-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 8px;
+}
+
+.ai-service-card {
+  display: flex;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.ai-service-card-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ai-service-card-body {
+  padding: 8px 10px 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-service-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-service-card-category {
+  font-size: 11px;
+  color: #fff;
+  background: #045668;
+  border-radius: 4px;
+  padding: 1px 6px;
+  width: fit-content;
+}
+
+.ai-service-card-desc {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ai-service-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ai-service-card-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.ai-service-card-duration {
+  font-size: 11px;
+  color: #888;
+}
+
+.ai-service-card-btn {
+  font-size: 11px;
+  color: #045668;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.ai-service-card-btn:hover {
+  text-decoration: underline;
+}
+
+/* ===== Cards Section ===== */
+.ai-cards-section {
+  padding: 4px 8px 8px;
+}
+
+.ai-cards-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== Base Card ===== */
+.ai-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.ai-card-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+}
+
+.ai-card-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ai-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.ai-card-badge {
+  font-size: 10px;
+  color: #fff;
+  background: #045668;
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.ai-card-badge--popular {
+  background: #e74c3c;
+}
+
+.ai-card-badge--discount {
+  background: #f39c12;
+}
+
+.ai-card-desc {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ai-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ai-card-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.ai-card-original-price {
+  font-size: 11px;
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+.ai-card-sub {
+  font-size: 11px;
+  color: #888;
+}
+
+.ai-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #555;
+}
+
+.ai-card-features li {
+  padding: 1px 0;
+}
+
+.ai-card-more {
+  color: #045668;
+  font-style: italic;
+}
+
+.ai-card-btn {
+  font-size: 11px;
+  color: #045668;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.ai-card-btn:hover {
+  text-decoration: underline;
+}
+
+/* ===== Trainer Card ===== */
+.ai-card--trainer .ai-card-body {
+  gap: 6px;
+}
+
+.ai-card-trainer-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ai-card-avatar-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #045668;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ai-card-specialties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ===== Membership Card ===== */
+.ai-card--membership {
+  border-top-width: 3px;
 }
