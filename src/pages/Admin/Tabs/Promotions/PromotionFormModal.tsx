@@ -51,6 +51,27 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Format number with dots as thousand separators (e.g. 1000000 → "1.000.000")
+  const formatNumber = (val: string | number | undefined | null): string => {
+    if (val === '' || val === null || val === undefined) return '';
+    const num = typeof val === 'string' ? val.replace(/\./g, '') : String(val);
+    if (!num || isNaN(Number(num))) return '';
+    return Number(num).toLocaleString('de-DE'); // de-DE uses dots as thousand sep
+  };
+
+  const parseNumber = (formatted: string): string => {
+    return formatted.replace(/\./g, '');
+  };
+
+  const handleNumberChange = (field: string, raw: string) => {
+    // Strip non-digits
+    const digits = raw.replace(/[^\d]/g, '');
+    // Format with dots
+    const formatted = digits ? Number(digits).toLocaleString('de-DE') : '';
+    setFormData(prev => ({ ...prev, [field]: formatted }));
+    setError('');
+  };
+
   useEffect(() => {
     if (promotion) {
       setFormData({
@@ -58,11 +79,11 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
         title: promotion.title,
         description: promotion.description || '',
         type: promotion.type,
-        discountValue: promotion.type === 'PERCENTAGE_DISCOUNT' 
+        discountValue: promotion.type === 'PERCENTAGE_DISCOUNT'
           ? promotion.discountPercentage?.toString() || ''
-          : promotion.discountAmount?.toString() || '',
-        minOrderAmount: promotion.minPurchaseAmount?.toString() || '',
-        maxDiscountAmount: promotion.maxDiscountAmount?.toString() || '',
+          : formatNumber(promotion.discountAmount),
+        minOrderAmount: formatNumber(promotion.minPurchaseAmount),
+        maxDiscountAmount: formatNumber(promotion.maxDiscountAmount),
         validFrom: promotion.validFrom ? new Date(promotion.validFrom).toISOString().slice(0, 16) : '',
         validUntil: promotion.validUntil ? new Date(promotion.validUntil).toISOString().slice(0, 16) : '',
         usageLimit: promotion.usageLimit?.toString() || '',
@@ -118,9 +139,9 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
         title: formData.title,
         description: formData.description,
         type: formData.type,
-        discountValue: parseFloat(formData.discountValue),
-        minOrderAmount: formData.minOrderAmount ? parseFloat(formData.minOrderAmount) : null,
-        maxDiscountAmount: formData.maxDiscountAmount ? parseFloat(formData.maxDiscountAmount) : null,
+        discountValue: parseFloat(formData.type === 'PERCENTAGE_DISCOUNT' ? formData.discountValue : parseNumber(formData.discountValue)),
+        minOrderAmount: formData.minOrderAmount ? parseFloat(parseNumber(formData.minOrderAmount)) : null,
+        maxDiscountAmount: formData.maxDiscountAmount ? parseFloat(parseNumber(formData.maxDiscountAmount)) : null,
         validFrom: formData.validFrom ? new Date(formData.validFrom).toISOString() : null,
         validUntil: formData.validUntil ? new Date(formData.validUntil).toISOString() : null,
         usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
@@ -225,10 +246,17 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           <TextField
             label={formData.type === 'PERCENTAGE_DISCOUNT' ? 'Discount Percentage' : 'Discount Amount'}
             value={formData.discountValue}
-            onChange={(e) => handleChange('discountValue', e.target.value)}
+            onChange={(e) => {
+              if (formData.type === 'PERCENTAGE_DISCOUNT') {
+                handleChange('discountValue', e.target.value);
+              } else {
+                handleNumberChange('discountValue', e.target.value);
+              }
+            }}
             required
             fullWidth
-            type="number"
+            type={formData.type === 'PERCENTAGE_DISCOUNT' ? 'number' : 'text'}
+            placeholder={formData.type === 'PERCENTAGE_DISCOUNT' ? '10' : '100.000'}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -242,9 +270,10 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
           <TextField
             label="Minimum Order Amount"
             value={formData.minOrderAmount}
-            onChange={(e) => handleChange('minOrderAmount', e.target.value)}
+            onChange={(e) => handleNumberChange('minOrderAmount', e.target.value)}
             fullWidth
-            type="number"
+            type="text"
+            placeholder="500.000"
             InputProps={{
               endAdornment: <InputAdornment position="end">VND</InputAdornment>,
             }}
@@ -256,9 +285,10 @@ const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
             <TextField
               label="Maximum Discount Amount"
               value={formData.maxDiscountAmount}
-              onChange={(e) => handleChange('maxDiscountAmount', e.target.value)}
+              onChange={(e) => handleNumberChange('maxDiscountAmount', e.target.value)}
               fullWidth
-              type="number"
+              type="text"
+              placeholder="200.000"
               InputProps={{
                 endAdornment: <InputAdornment position="end">VND</InputAdornment>,
               }}

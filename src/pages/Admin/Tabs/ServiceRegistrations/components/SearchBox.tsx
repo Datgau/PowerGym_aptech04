@@ -34,13 +34,9 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   debounceMs = 300,
 }) => {
   const [localValue, setLocalValue] = useState(value);
-
-  // Sync local value with prop value
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
-
-  // Debounced onChange
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localValue !== value) {

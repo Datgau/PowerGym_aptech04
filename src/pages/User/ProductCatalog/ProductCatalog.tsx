@@ -17,7 +17,7 @@ import {
   Container,
   Stack,
 } from '@mui/material';
-import { Search, ShoppingCart, Add, Inventory, Clear } from '@mui/icons-material';
+import { Search, ShoppingCart, Add, Inventory, Clear, FlashOn } from '@mui/icons-material';
 import PowerGymLayout from '../../../components/PowerGym/Layout/PowerGymLayout';
 import { getProducts } from '../../../services/productService';
 import type { Product } from '../../../types/product';
@@ -25,6 +25,7 @@ import { useCart } from '../../../context/CartContext';
 import TablePagination from '../../../components/Common/TablePagination';
 import { usePagination } from '../../../hooks/usePagination';
 import ProductDetailModal from './ProductDetailModal';
+import { useNavigate } from 'react-router-dom';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -39,6 +40,7 @@ const ProductCatalog: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<string>('');
   
   const { addToCart, getItemQuantity, getItemCount } = useCart();
+  const navigate = useNavigate();
   
   const {
     paginationState,
@@ -103,6 +105,23 @@ const ProductCatalog: React.FC = () => {
         imageUrl: product.imageUrl,
         stock: product.stock,
       });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const handleBuyNow = (product: Product) => {
+    try {
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        stock: product.stock,
+      });
+      navigate('/cart', { state: { buyNowProductId: product.id } });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -554,35 +573,60 @@ const ProductCatalog: React.FC = () => {
                             </Button>
                           </>
                         ) : (
-                          <Button
-                            variant="contained"
-                            fullWidth
-                            startIcon={<ShoppingCart />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCart(product);
-                            }}
-                            disabled={product.outOfStock}
-                            sx={{
-                              background: BRAND_GRADIENT,
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                              py: 1.2,
-                              boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
-                              '&:hover': {
-                                boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                                background: BRAND_GRADIENT,
-                              },
-                              '&.Mui-disabled': {
-                                background: '#ccc',
-                                boxShadow: 'none',
-                              },
-                            }}
-                          >
-                            Add to Cart
-                          </Button>
+                          <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                            <Button
+                              variant="outlined"
+                              startIcon={<ShoppingCart />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              disabled={product.outOfStock}
+                              sx={{
+                                flex: 1,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                py: 1.2,
+                                borderColor: '#045668',
+                                color: '#045668',
+                                '&:hover': {
+                                  borderColor: '#045668',
+                                  background: 'rgba(4,86,104,0.05)',
+                                },
+                                '&.Mui-disabled': { borderColor: '#ccc', color: '#ccc' },
+                              }}
+                            >
+                              Add to Cart
+                            </Button>
+                            <Button
+                              variant="contained"
+                              startIcon={<FlashOn />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBuyNow(product);
+                              }}
+                              disabled={product.outOfStock}
+                              sx={{
+                                flex: 1,
+                                background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.82rem',
+                                py: 1.2,
+                                boxShadow: '0 4px 12px rgba(239,68,68,0.3)',
+                                '&:hover': {
+                                  boxShadow: '0 6px 20px rgba(239,68,68,0.45)',
+                                  background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+                                },
+                                '&.Mui-disabled': { background: '#ccc', boxShadow: 'none' },
+                              }}
+                            >
+                              Buy Now
+                            </Button>
+                          </Box>
                         )}
                       </CardActions>
                     </Card>

@@ -1,7 +1,4 @@
-/**
- * Shared schedule picker used by both TrainerAssignmentModal and ConfirmPaymentModal.
- * Shows a week-view calendar + time-slot grid for a given trainer.
- */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
@@ -14,11 +11,9 @@ import {
 import { ChevronLeft, ChevronRight, CalendarMonth, AccessTime, CheckCircle } from '@mui/icons-material';
 import { getTrainerBookedSlots } from '../../../../../services/serviceRegistrationService';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface TimeSlot {
-  start: string; // HH:mm
-  end: string;   // HH:mm
+  start: string;
+  end: string;
   label: string;
 }
 
@@ -33,23 +28,17 @@ interface TrainerSchedulePickerProps {
   value: ScheduleSelection | null;
   onChange: (sel: ScheduleSelection | null) => void;
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 export const ALL_SLOTS: TimeSlot[] = (() => {
   const slots: TimeSlot[] = [];
-  for (let h = 8; h < 21; h++) {
+  for (let h = 8; h < 22; h+=2) {
     const start = `${String(h).padStart(2, '0')}:00`;
-    const end   = `${String(h + 1).padStart(2, '0')}:00`;
+    const end   = `${String(h + 2).padStart(2, '0')}:00`;
     slots.push({ start, end, label: `${start} – ${end}` });
   }
   return slots;
 })();
 
 const DAYS_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 export const toDateStr = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -66,9 +55,6 @@ const getMonday = (d: Date) => {
   mon.setHours(0, 0, 0, 0);
   return mon;
 };
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 const TrainerSchedulePicker: React.FC<TrainerSchedulePickerProps> = ({
   trainerId,
   trainerName,

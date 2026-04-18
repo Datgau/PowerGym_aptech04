@@ -20,13 +20,12 @@ import {
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StoreIcon from '@mui/icons-material/Store';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
-import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
+import PromoCodeModal from '../../components/Payment/PromoCodeModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
 import { useAuth } from "../../hooks/useAuth.ts";
 import RichTextDisplay from "../../components/Common/RichTextDisplay.tsx";
@@ -35,9 +34,6 @@ import {gymServiceApi} from "../../services/gymService.ts";
 import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFlow';
 import TrainerBookingSetupModal from '../../components/Booking/TrainerBookingSetupModal.tsx';
 import { loadAuthSession } from '../../services/authStorage';
-import { registerService } from '../../services/serviceRegistrationService';
-import {toast} from "react-toastify";
-import {RegistrationType} from "../../types";
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -54,7 +50,6 @@ const Service: React.FC = () => {
   } = useGymServicesPaginated(6);
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedServiceForFlow, setSelectedServiceForFlow] = useState<any>(null);
-  const [counterRegistering, setCounterRegistering] = useState(false);
   const { requireAuth } = useAuth();
   const { id } = useParams();
   const [snackbar, setSnackbar] = useState({
@@ -64,6 +59,7 @@ const Service: React.FC = () => {
   });
 
   const flow = useServiceRegistrationFlow(selectedServiceForFlow?.id);
+  const [promoData, setPromoData] = React.useState<import('../../@type/reward').ApplyPromotionResponse | null>(null);
 
   const finalAmount = React.useMemo(() => {
     if (flow.pendingBookingData?.promotionData?.finalAmount) {
@@ -72,47 +68,22 @@ const Service: React.FC = () => {
     return selectedServiceForFlow?.price || 0;
   }, [flow.pendingBookingData?.promotionData, selectedServiceForFlow?.price]);
 
-  const orderInfo = React.useMemo(() => {
-    const baseInfo = selectedServiceForFlow ? `PowerGym Service - ${selectedServiceForFlow.name}` : '';
-    if (flow.pendingBookingData?.promotionData?.promotionCode) {
-      return `${baseInfo} (Promo: ${flow.pendingBookingData.promotionData.promotionCode})`;
-    }
-    return baseInfo;
-  }, [selectedServiceForFlow, flow.pendingBookingData?.promotionData]);
-
   const getServiceImage = useCallback((service: any) =>
       service.images?.[0] || '/images/default-service.jpg', []);
+
+  // Trigger booking setup flow when a service is selected (both online and counter go through booking setup)
   useEffect(() => {
     if (selectedServiceForFlow) {
       flow.handleRegisterNow();
     }
-  }, [selectedServiceForFlow?.id, flow.handleRegisterNow]);
+  }, [selectedServiceForFlow?.id]);
 
   const handleRegisterNow = useCallback((service: any) => {
     if (!requireAuth()) return;
     setSelectedServiceForFlow(service);
   }, [requireAuth]);
-  
-  const handleRegisterAtCounter = useCallback(async (service: any) => {
-      if (!requireAuth()) return;
 
-      setCounterRegistering(true);
-      try {
-          const regRes = await registerService({
-              serviceId: Number(service.id),
-              registrationType: RegistrationType.COUNTER
-          });
-
-          if (!regRes.success) {
-              toast.error("Registration failed !")
-          }
-          toast.success(`Registration successful! Please go to the counter to complete payment and schedule a session with a trainer for the service "${service.name}".`);      } catch (err: any) {
-          toast.error("You have already registered for this service")
-      } finally {
-          setCounterRegistering(false);
-      }
-  }, [requireAuth]);
-    useEffect(() => {
+  useEffect(() => {
         if (!id) return;
 
         const fetchService = async () => {
@@ -418,12 +389,12 @@ const Service: React.FC = () => {
                                 </Box>
                             </Box>
                         </Stack>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Stack direction="row" spacing={2.5} alignItems="center">
                         <Tooltip title="View Details" arrow>
                           <IconButton
                             onClick={() => setSelectedService(service)}
                             sx={{
-                              width: 40,
+                              width: 80,
                               height: 40,
                               borderRadius: 2,
                               color: '#02cbf8',
@@ -439,29 +410,6 @@ const Service: React.FC = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                          <Button
-                              fullWidth
-                              variant="outlined"
-                              disabled={!service.isActive || counterRegistering}
-                              startIcon={<StorefrontIcon fontSize="small" />}
-                              onClick={() => handleRegisterAtCounter(service)}
-                              sx={{
-                                  borderRadius: 2,
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.82rem',
-                                  borderColor: '#045668',
-                                  color: '#045668',
-                                  '&:hover': {
-                                      borderColor: '#00b4ff',
-                                      color: '#00b4ff',
-                                      background: 'rgba(0,180,255,0.05)',
-                                  },
-                                  '&.Mui-disabled': { borderColor: '#ccc', color: '#ccc' },
-                              }}
-                          >
-                              Register at Counter
-                          </Button>
                         <Button
                             fullWidth
                             variant="contained"
@@ -536,29 +484,31 @@ const Service: React.FC = () => {
         <PaymentMethodSelectionModal
             open={flow.showPaymentMethodSelection}
             onClose={() => flow.setShowPaymentMethodSelection(false)}
-            onSelectMoMo={flow.handleSelectMoMo}
+            onSelectCounter={() => flow.handleSelectCounter(selectedServiceForFlow?.name)}
             onSelectBankTransfer={flow.handleSelectBankTransfer}
             serviceName={selectedServiceForFlow?.name}
             amount={finalAmount}
         />
-        <MoMoPaymentModal
-            open={flow.showMoMoPayment}
-            onClose={() => flow.setShowMoMoPayment(false)}
-            onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
-            defaultAmount={finalAmount}
-            defaultOrderInfo={orderInfo}
-            itemType="SERVICE"
-            itemId={selectedServiceForFlow?.id?.toString()}
-            itemName={selectedServiceForFlow?.name}
+        <PromoCodeModal
+            open={flow.showPromoModal}
+            onClose={() => flow.setShowPromoModal(false)}
+            orderAmount={finalAmount}
+            serviceName={selectedServiceForFlow?.name}
+            onConfirm={(promo) => {
+              setPromoData(promo);
+              flow.setShowPromoModal(false);
+              flow.setShowBankPayment(true);
+            }}
         />
           <BankPaymentModal
               open={flow.showBankPayment}
               onClose={() => flow.setShowBankPayment(false)}
               onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
               serviceName={selectedServiceForFlow?.name}
-              amount={finalAmount}
+              amount={promoData?.finalAmount ?? finalAmount}
               serviceId={selectedServiceForFlow?.id?.toString()}
-              promotionCode={flow.pendingBookingData?.promotionData?.promotionCode}
+              promotionCode={promoData ? undefined : flow.pendingBookingData?.promotionData?.promotionCode}
+              registrationId={flow.pendingRegistrationId}
           />
         <Snackbar
             open={snackbar.open}

@@ -24,6 +24,7 @@ import type { ProductOrder } from '../../../types/productOrder';
 import { PaymentStatus, DeliveryStatus } from '../../../types/productOrder';
 import TablePagination from '../../../components/Common/TablePagination';
 import { usePagination } from '../../../hooks/usePagination';
+import OrderDetailModal from './OrderDetailModal';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -33,6 +34,7 @@ const OrderHistory: React.FC = () => {
   const [error, setError] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | ''>('');
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState<DeliveryStatus | ''>('');
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   
   const {
     paginationState,
@@ -79,7 +81,7 @@ const OrderHistory: React.FC = () => {
   };
 
   const handleOrderClick = (order: ProductOrder) => {
-    window.location.href = `/orders/${order.id}`;
+    setSelectedOrderId(order.id);
   };
 
   const getPaymentStatusColor = (status: PaymentStatus) => {
@@ -404,6 +406,11 @@ const OrderHistory: React.FC = () => {
           )}
         </Container>
       </Box>
+      <OrderDetailModal
+        open={selectedOrderId !== null}
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </PowerGymLayout>
   );
 };

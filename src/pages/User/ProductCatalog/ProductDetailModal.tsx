@@ -11,9 +11,10 @@ import {
   Alert,
   Divider,
 } from '@mui/material';
-import { Close, Add, Remove, ShoppingCart, Inventory2 } from '@mui/icons-material';
+import { Close, Add, Remove, ShoppingCart, Inventory2, FlashOn } from '@mui/icons-material';
 import type { Product } from '../../../types/product';
 import { useCart } from '../../../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -31,6 +32,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
   const { addToCart, getItemQuantity } = useCart();
+  const navigate = useNavigate();
 
   if (!product) return null;
 
@@ -61,6 +63,25 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       }, quantity);
       
       onClose();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
+    }
+  };
+
+  const handleBuyNow = () => {
+    try {
+      setError('');
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        stock: product.stock,
+      }, quantity);
+      onClose();
+      navigate('/cart', { state: { buyNowProductId: product.id } });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -401,29 +422,48 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 Close
               </Button>
               <Button
-                variant="contained"
+                variant="outlined"
                 startIcon={<ShoppingCart />}
                 onClick={handleAddToCart}
                 disabled={product.outOfStock || maxQuantity === 0}
                 sx={{
                   flex: 2,
-                  background: BRAND_GRADIENT,
                   borderRadius: 2,
                   textTransform: 'none',
                   fontWeight: 700,
                   py: 1.5,
-                  boxShadow: '0 4px 16px rgba(4,86,104,0.3)',
+                  borderColor: '#045668',
+                  color: '#045668',
                   '&:hover': {
-                    boxShadow: '0 8px 24px rgba(4,86,104,0.45)',
-                    background: BRAND_GRADIENT,
+                    borderColor: '#045668',
+                    background: 'rgba(4,86,104,0.05)',
                   },
-                  '&.Mui-disabled': {
-                    background: '#ccc',
-                    boxShadow: 'none',
-                  },
+                  '&.Mui-disabled': { borderColor: '#ccc', color: '#ccc' },
                 }}
               >
-                Add {quantity > 1 ? `${quantity} items` : ''} to Cart
+                Add to Cart
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<FlashOn />}
+                onClick={handleBuyNow}
+                disabled={product.outOfStock || maxQuantity === 0}
+                sx={{
+                  flex: 2,
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  py: 1.5,
+                  boxShadow: '0 4px 16px rgba(239,68,68,0.3)',
+                  '&:hover': {
+                    boxShadow: '0 8px 24px rgba(239,68,68,0.45)',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+                  },
+                  '&.Mui-disabled': { background: '#ccc', boxShadow: 'none' },
+                }}
+              >
+                Buy Now
               </Button>
             </Box>
           </Box>

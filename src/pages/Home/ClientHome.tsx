@@ -17,7 +17,6 @@ import BMISection from "./BMISection/BMISection.tsx";
 import HeroBanner from "./HeroBanner/HeroBanner.tsx";
 import {MembershipPackagesSection} from "../../components/PowerGym";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
-import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
 import { toast } from 'react-toastify';
 
@@ -146,21 +145,9 @@ const ClientHome: React.FC = () => {
       <PaymentMethodSelectionModal
         open={flow.showPaymentMethodSelection}
         onClose={() => flow.setShowPaymentMethodSelection(false)}
-        onSelectMoMo={flow.handleSelectMoMo}
         onSelectBankTransfer={flow.handleSelectBankTransfer}
         serviceName={selectedPackage?.name}
         amount={selectedPackage?.price}
-      />
-
-      <MoMoPaymentModal
-        open={flow.showMoMoPayment && !!selectedPackage}
-        onClose={() => flow.setShowMoMoPayment(false)}
-        onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
-        defaultAmount={selectedPackage?.numericPrice || 0}
-        defaultOrderInfo={selectedPackage ? `PowerGym Membership - ${selectedPackage.name}` : ''}
-        itemType="MEMBERSHIP"
-        itemId={selectedPackage?.id?.toString()}
-        itemName={selectedPackage?.name}
       />
 
       <BankPaymentModal

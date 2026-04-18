@@ -9,14 +9,14 @@ import {
 import { toast } from 'react-toastify';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout.tsx';
 import PaymentPackageCard from './PaymentPackageCard.tsx';
-import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
-import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
+import PromoCodeModal from '../../components/Payment/PromoCodeModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
 import { useMembershipPaginated } from '../../hooks/useMembershipPaginated.ts';
 import { useAuth } from '../../hooks/useAuth.ts';
 import { useMembershipRegistrationFlow } from '../../hooks/useMembershipRegistrationFlow.ts';
 import membershipPackageService from '../../services/membershipPackageService.ts';
+import type { ApplyPromotionResponse } from '../../@type/reward';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -32,6 +32,12 @@ const Pricing: React.FC = () => {
     const [selectedPackage, setSelectedPackage] = useState<any>(null);
     const [activePackageIds, setActivePackageIds] = useState<number[]>([]);
     const flow = useMembershipRegistrationFlow(selectedPackage?.packageId);
+
+    // Promo state — set after PromoCodeModal confirms
+    const [promoData, setPromoData] = useState<ApplyPromotionResponse | null>(null);
+    const [showPromoModal, setShowPromoModal] = useState(false);
+
+    const finalAmount = promoData?.finalAmount ?? selectedPackage?.numericPrice;
 
     useEffect(() => {
         if (user?.id) {
@@ -52,7 +58,9 @@ const Pricing: React.FC = () => {
     const handlePackageSelect = (pkg: any) => {
         if (!requireAuth()) return;
         setSelectedPackage(pkg);
-        flow.handleRegisterNow();
+        setPromoData(null);
+        // Skip payment method selection — open promo modal directly
+        setShowPromoModal(true);
     };
 
     const handlePaymentSuccess = () => {
@@ -266,24 +274,16 @@ const Pricing: React.FC = () => {
                 </Container>
             </Box>
 
-            <PaymentMethodSelectionModal
-                open={flow.showPaymentMethodSelection}
-                onClose={() => flow.setShowPaymentMethodSelection(false)}
-                onSelectMoMo={flow.handleSelectMoMo}
-                onSelectBankTransfer={flow.handleSelectBankTransfer}
+            <PromoCodeModal
+                open={showPromoModal}
+                onClose={() => setShowPromoModal(false)}
+                orderAmount={selectedPackage?.numericPrice ?? 0}
                 serviceName={selectedPackage?.name}
-                amount={selectedPackage?.numericPrice}
-            />
-
-            <MoMoPaymentModal
-                open={flow.showMoMoPayment && !!selectedPackage}
-                onClose={() => flow.setShowMoMoPayment(false)}
-                onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
-                defaultAmount={selectedPackage?.numericPrice || 0}
-                defaultOrderInfo={selectedPackage ? `PowerGym Membership - ${selectedPackage.name}` : ''}
-                itemType="MEMBERSHIP"
-                itemId={selectedPackage?.id?.toString()}
-                itemName={selectedPackage?.name}
+                onConfirm={(promo) => {
+                    setPromoData(promo);
+                    setShowPromoModal(false);
+                    flow.setShowBankPayment(true);
+                }}
             />
 
             <BankPaymentModal
@@ -291,7 +291,7 @@ const Pricing: React.FC = () => {
                 onClose={() => flow.setShowBankPayment(false)}
                 onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
                 serviceName={selectedPackage?.name}
-                amount={selectedPackage?.numericPrice}
+                amount={finalAmount}
                 serviceId={selectedPackage?.id?.toString()}
                 itemType="MEMBERSHIP"
             />

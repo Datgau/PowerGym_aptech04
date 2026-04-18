@@ -35,6 +35,8 @@ interface BankPaymentModalProps {
   itemType?: 'SERVICE' | 'MEMBERSHIP' | 'PRODUCT';
   promotionCode?: string;
   itemName?: string;
+  /** Link payment to a specific ServiceRegistration to avoid ambiguity */
+  registrationId?: number | null;
   deliveryInfo?: {
     customerName: string;
     customerPhone: string;
@@ -57,6 +59,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   promotionCode,
   amount,
   itemName,
+  registrationId,
   deliveryInfo,
   cartItems
 }) => {
@@ -100,6 +103,8 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
           
           if (itemType === 'MEMBERSHIP') {
             request.packageId = Number(serviceId);
+            // Send pre-calculated amount (with discount) as override
+            if (amount && amount > 0) request.amount = amount;
           } else if (itemType === 'PRODUCT') {
             // For PRODUCT, send amount and itemName
             if (!amount || amount <= 0) {
@@ -110,11 +115,18 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
             request.serviceId = serviceId ? Number(serviceId) : 0;
           } else {
             request.serviceId = Number(serviceId);
+            // Send pre-calculated amount (with discount) as override
+            if (amount && amount > 0) request.amount = amount;
           }
           
           // Add promotion code if available
           if (promotionCode) {
             request.promotionCode = promotionCode;
+          }
+
+          // Link to specific registration to avoid ambiguity
+          if (registrationId) {
+            request.registrationId = registrationId;
           }
           
           console.log('[BankPaymentModal] Creating payment with request:', request);

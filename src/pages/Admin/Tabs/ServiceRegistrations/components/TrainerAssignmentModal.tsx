@@ -23,8 +23,6 @@ import { enhancedServiceRegistrationService } from '../../../../../services/enha
 import type { AvailableTrainerResponse } from '../../../../../types/serviceRegistration';
 import TrainerSchedulePicker, { type ScheduleSelection } from './TrainerSchedulePicker';
 
-// ─── Styled ───────────────────────────────────────────────────────────────────
-
 const StyledDialog = styled(Dialog)({
   '& .MuiDialog-paper': {
     borderRadius: 20,
@@ -75,8 +73,6 @@ const PrimaryButton = styled(Button)({
   '&:disabled': { background: '#cbd5e1', color: '#94a3b8', boxShadow: 'none' },
 });
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 export interface AssignmentResult {
   trainerId: number;
   trainerName: string;
@@ -88,22 +84,19 @@ interface TrainerAssignmentModalProps {
   onClose: () => void;
   registrationId: number;
   serviceName: string;
-  /** Called after trainer is assigned. Passes back the selected trainer + schedule. */
   onSuccess: (result: AssignmentResult) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
-  open,
-  onClose,
-  registrationId,
-  serviceName,
-  onSuccess,
-}) => {
+                                                                         open,
+                                                                         onClose,
+                                                                         registrationId,
+                                                                         serviceName,
+                                                                         onSuccess,
+                                                                       }) => {
   type Step = 'trainer' | 'schedule';
-  const [step, setStep] = useState<Step>('trainer');
 
+  const [step, setStep] = useState<Step>('trainer');
   const [availableTrainers, setAvailableTrainers] = useState<AvailableTrainerResponse[]>([]);
   const [selectedTrainerId, setSelectedTrainerId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
@@ -113,7 +106,6 @@ const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState('');
 
-  // Reset on open
   useEffect(() => {
     if (open) {
       setStep('trainer');
@@ -132,12 +124,12 @@ const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
       const response = await getAvailableTrainers(registrationId);
       if (response.success) {
         setAvailableTrainers(response.data);
-        if (response.data.length === 0) setError('Không có trainer phù hợp với dịch vụ này');
+        if (response.data.length === 0) setError('No trainers available for this service');
       } else {
-        setError(response.message || 'Không thể tải danh sách trainer');
+        setError(response.message || 'Failed to load trainers');
       }
     } catch (err: any) {
-      setError(err.message || 'Không thể tải danh sách trainer');
+      setError(err.message || 'Failed to load trainers');
     } finally {
       setLoadingTrainers(false);
     }
@@ -151,20 +143,24 @@ const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
       setError('');
 
       const response = await enhancedServiceRegistrationService.assignTrainer(
-        registrationId,
-        selectedTrainerId,
-        notes || undefined,
+          registrationId,
+          selectedTrainerId,
+          notes || undefined
       );
 
       if (response.success) {
         const trainer = availableTrainers.find((t) => t.id === selectedTrainerId)!;
-        onSuccess({ trainerId: selectedTrainerId, trainerName: trainer.fullName, schedule });
+        onSuccess({
+          trainerId: selectedTrainerId,
+          trainerName: trainer.fullName,
+          schedule,
+        });
         onClose();
       } else {
-        setError(response.message || 'Không thể gán trainer');
+        setError(response.message || 'Failed to assign trainer');
       }
     } catch (err: any) {
-      setError(err.message || 'Không thể gán trainer');
+      setError(err.message || 'Failed to assign trainer');
     } finally {
       setAssigning(false);
     }
@@ -173,160 +169,176 @@ const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
   const selectedTrainer = availableTrainers.find((t) => t.id === selectedTrainerId);
 
   return (
-    <StyledDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      {/* ── Title ── */}
-      <StyledDialogTitle>
-        <Box display="flex" alignItems="center" gap={2}>
-          <Box sx={{
-            width: 40, height: 40, borderRadius: 10,
-            background: 'linear-gradient(135deg, #00b4ff22, #0066ff22)',
-            border: '1px solid #0066ff33',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0066ff',
-          }}>
-            {step === 'trainer' ? <PersonAdd /> : <CalendarMonth />}
+      <StyledDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <StyledDialogTitle>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #00b4ff22, #0066ff22)',
+                  border: '1px solid #0066ff33',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#0066ff',
+                }}
+            >
+              {step === 'trainer' ? <PersonAdd /> : <CalendarMonth />}
+            </Box>
+            <Box>
+              <Typography fontWeight={700} fontSize={18} color="#0f172a">
+                {step === 'trainer' ? 'Select Trainer' : 'Select Schedule'}
+              </Typography>
+              <Typography fontSize={13} color="#64748b">
+                {serviceName} · Step {step === 'trainer' ? '1' : '2'} / 2
+              </Typography>
+            </Box>
           </Box>
-          <Box>
-            <Typography fontWeight={700} fontSize={18} color="#0f172a">
-              {step === 'trainer' ? 'Chọn Trainer' : 'Chọn lịch hẹn'}
-            </Typography>
-            <Typography fontSize={13} color="#64748b">
-              {serviceName} · Bước {step === 'trainer' ? '1' : '2'} / 2
-            </Typography>
-          </Box>
-        </Box>
-        <Button onClick={onClose} sx={{ minWidth: 'auto', color: '#64748b' }}>
-          <Close />
-        </Button>
-      </StyledDialogTitle>
+          <Button onClick={onClose} sx={{ minWidth: 'auto', color: '#64748b' }}>
+            <Close />
+          </Button>
+        </StyledDialogTitle>
 
-      {/* ── Content ── */}
-      <StyledDialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
+        <StyledDialogContent>
+          {error && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError('')}>
+                {error}
+              </Alert>
+          )}
 
-        {/* Step 1 — Trainer list */}
-        {step === 'trainer' && (
-          <>
-            {loadingTrainers ? (
-              <Box display="flex" justifyContent="center" alignItems="center" py={4}>
-                <Stack alignItems="center" spacing={2}>
-                  <CircularProgress size={40} thickness={3} sx={{ color: '#0066ff' }} />
-                  <Typography color="text.secondary" fontSize={14}>Đang tải danh sách trainer...</Typography>
-                </Stack>
-              </Box>
-            ) : (
+          {step === 'trainer' && (
               <>
-                <Typography fontWeight={600} fontSize={14} color="#0f172a" mb={2}>
-                  Chọn trainer:
-                </Typography>
-                <Stack spacing={2}>
-                  {availableTrainers.map((trainer) => (
-                    <TrainerCard
-                      key={trainer.id}
-                      selected={selectedTrainerId === trainer.id}
-                      onClick={() => setSelectedTrainerId(trainer.id)}
-                    >
-                      <Avatar src={trainer.avatar || undefined} sx={{ width: 48, height: 48 }}>
-                        {trainer.fullName.charAt(0)}
-                      </Avatar>
-                      <Box flex={1}>
-                        <Typography fontWeight={600} fontSize={15} color="#0f172a">
-                          {trainer.fullName}
+                {loadingTrainers ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                      <Stack alignItems="center" spacing={2}>
+                        <CircularProgress size={40} thickness={3} sx={{ color: '#0066ff' }} />
+                        <Typography color="text.secondary" fontSize={14}>
+                          Loading trainers...
                         </Typography>
-                        <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
-                          {trainer.specialtyNames.slice(0, 3).map((s, i) => (
-                            <Chip key={i} label={s} size="small" sx={{
-                              fontSize: 11, height: 20,
-                              background: '#f0f7ff', color: '#0066ff', border: '1px solid #0066ff33',
-                            }} />
-                          ))}
-                        </Box>
-                        <Typography fontSize={12} color="#64748b" mt={0.5}>
-                          {trainer.totalExperienceYears} năm kinh nghiệm
-                        </Typography>
-                      </Box>
-                    </TrainerCard>
-                  ))}
-                </Stack>
+                      </Stack>
+                    </Box>
+                ) : (
+                    <>
+                      <Typography fontWeight={600} fontSize={14} color="#0f172a" mb={2}>
+                        Select a trainer:
+                      </Typography>
+                      <Stack spacing={2}>
+                        {availableTrainers.map((trainer) => (
+                            <TrainerCard
+                                key={trainer.id}
+                                selected={selectedTrainerId === trainer.id}
+                                onClick={() => setSelectedTrainerId(trainer.id)}
+                            >
+                              <Avatar src={trainer.avatar || undefined} sx={{ width: 48, height: 48 }}>
+                                {trainer.fullName.charAt(0)}
+                              </Avatar>
+                              <Box flex={1}>
+                                <Typography fontWeight={600} fontSize={15} color="#0f172a">
+                                  {trainer.fullName}
+                                </Typography>
+                                <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
+                                  {trainer.specialtyNames.slice(0, 3).map((s, i) => (
+                                      <Chip
+                                          key={i}
+                                          label={s}
+                                          size="small"
+                                          sx={{
+                                            fontSize: 11,
+                                            height: 20,
+                                            background: '#f0f7ff',
+                                            color: '#0066ff',
+                                            border: '1px solid #0066ff33',
+                                          }}
+                                      />
+                                  ))}
+                                </Box>
+                                <Typography fontSize={12} color="#64748b" mt={0.5}>
+                                  {trainer.totalExperienceYears} years of experience
+                                </Typography>
+                              </Box>
+                            </TrainerCard>
+                        ))}
+                      </Stack>
 
-                {availableTrainers.length > 0 && (
-                  <>
-                    <Divider sx={{ my: 3 }} />
-                    <TextField
-                      fullWidth multiline rows={2}
-                      label="Ghi chú (tuỳ chọn)"
-                      placeholder="Ghi chú về việc gán trainer này..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                    />
-                  </>
+                      {availableTrainers.length > 0 && (
+                          <>
+                            <Divider sx={{ my: 3 }} />
+                            <TextField
+                                fullWidth
+                                multiline
+                                rows={2}
+                                label="Notes (optional)"
+                                placeholder="Add notes for this trainer assignment..."
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            />
+                          </>
+                      )}
+                    </>
                 )}
               </>
-            )}
-          </>
-        )}
+          )}
 
-        {/* Step 2 — Schedule picker */}
-        {step === 'schedule' && selectedTrainer && (
-          <TrainerSchedulePicker
-            trainerId={selectedTrainer.id}
-            trainerName={selectedTrainer.fullName}
-            value={schedule}
-            onChange={setSchedule}
-          />
-        )}
-      </StyledDialogContent>
+          {step === 'schedule' && selectedTrainer && (
+              <TrainerSchedulePicker
+                  trainerId={selectedTrainer.id}
+                  trainerName={selectedTrainer.fullName}
+                  value={schedule}
+                  onChange={setSchedule}
+              />
+          )}
+        </StyledDialogContent>
 
-      {/* ── Actions ── */}
-      <DialogActions sx={{ padding: '16px 32px 24px', gap: 1 }}>
-        <Button
-          onClick={onClose}
-          sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: '#64748b' }}
-        >
-          Hủy
-        </Button>
-
-        {step === 'schedule' && (
+        <DialogActions sx={{ padding: '16px 32px 24px', gap: 1 }}>
           <Button
-            onClick={() => setStep('trainer')}
-            variant="outlined"
-            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              onClick={onClose}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: '#64748b' }}
           >
-            Quay lại
+            Cancel
           </Button>
-        )}
 
-        {step === 'trainer' ? (
-          <Tooltip title={!selectedTrainerId ? 'Vui lòng chọn trainer' : ''}>
+          {step === 'schedule' && (
+              <Button
+                  onClick={() => setStep('trainer')}
+                  variant="outlined"
+                  sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              >
+                Back
+              </Button>
+          )}
+
+          {step === 'trainer' ? (
+              <Tooltip title={!selectedTrainerId ? 'Please select a trainer' : ''}>
             <span>
               <PrimaryButton
-                onClick={() => setStep('schedule')}
-                disabled={!selectedTrainerId || loadingTrainers}
-                startIcon={<CalendarMonth />}
+                  onClick={() => setStep('schedule')}
+                  disabled={!selectedTrainerId || loadingTrainers}
+                  startIcon={<CalendarMonth />}
               >
-                Chọn lịch hẹn
+                Select Schedule
               </PrimaryButton>
             </span>
-          </Tooltip>
-        ) : (
-          <Tooltip title={!schedule ? 'Vui lòng chọn ngày và khung giờ' : ''}>
+              </Tooltip>
+          ) : (
+              <Tooltip title={!schedule ? 'Please select date and time' : ''}>
             <span>
               <PrimaryButton
-                onClick={handleAssign}
-                disabled={!schedule || assigning}
-                startIcon={assigning ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />}
+                  onClick={handleAssign}
+                  disabled={!schedule || assigning}
+                  startIcon={
+                    assigning ? <CircularProgress size={16} color="inherit" /> : <PersonAdd />
+                  }
               >
-                {assigning ? 'Đang gán...' : 'Xác nhận gán trainer'}
+                {assigning ? 'Assigning...' : 'Confirm Assignment'}
               </PrimaryButton>
             </span>
-          </Tooltip>
-        )}
-      </DialogActions>
-    </StyledDialog>
+              </Tooltip>
+          )}
+        </DialogActions>
+      </StyledDialog>
   );
 };
 

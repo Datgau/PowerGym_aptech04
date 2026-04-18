@@ -11,39 +11,53 @@ import {
   Container,
   Stack,
   Checkbox,
+  Chip,
+  CircularProgress,
 } from '@mui/material';
-import { Add, Remove, Delete, ShoppingCart as CartIcon, ShoppingBag, ArrowBack } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { Add, Remove, Delete, ShoppingCart as CartIcon, ShoppingBag, ArrowBack, LocalOffer, Check } from '@mui/icons-material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import PowerGymLayout from '../../../components/PowerGym/Layout/PowerGymLayout';
 import { useCart } from '../../../context/CartContext';
-import PaymentMethodSelectionModal from '../../../components/Payment/PaymentMethodSelectionModal';
-import MoMoPaymentModal from '../../../components/Payment/MoMoPaymentModal';
 import BankPaymentModal from '../../../components/Payment/BankPaymentModal';
 import { useAuth } from '../../../hooks/useAuth';
+import TablePagination from '../../../components/Common/TablePagination';
+import promotionService from '../../../services/promotionService';
+import type { ApplyPromotionResponse } from '../../../@type/reward';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
 const ShoppingCart: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { items, updateQuantity, removeFromCart, clearCart } = useCart();
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [momoPaymentModalOpen, setMomoPaymentModalOpen] = useState(false);
   const [bankPaymentModalOpen, setBankPaymentModalOpen] = useState(false);
+  // If navigated via "Buy Now", pre-select only that product; otherwise select all
+  const buyNowProductId: number | undefined = (location.state as any)?.buyNowProductId;
   const [selectedItems, setSelectedItems] = useState<Set<number>>(
-    new Set(items.map(item => item.productId))
+    buyNowProductId
+      ? new Set([buyNowProductId])
+      : new Set(items.map(item => item.productId))
   );
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'checkout'>('cart');
+  const [cartPage, setCartPage] = useState(0);
+  const CART_PAGE_SIZE = 5;
+
+  // Promotion code
+  const [promoCode, setPromoCode] = useState('');
+  const [applyingPromo, setApplyingPromo] = useState(false);
+  const [promoData, setPromoData] = useState<ApplyPromotionResponse | null>(null);
+  const [promoError, setPromoError] = useState('');
   const [deliveryInfo, setDeliveryInfo] = useState({
-    customerName: '',
-    customerPhone: '',
+    customerName: user?.fullName ?? '',
+    customerPhone: user?.phoneNumber ?? '',
     customerAddress: '',
     notes: ''
   });
   const [deliveryErrors, setDeliveryErrors] = useState({
-    customerName: '',
-    customerPhone: '',
-    customerAddress: ''
+    customerName: !user?.fullName ? 'Customer name is required' : '',
+    customerPhone: !user?.phoneNumber ? 'Phone number is required' : '',
+    customerAddress: 'Delivery address is required'
   });
 
   const handleQuantityChange = (productId: number, newQuantity: number, stock: number) => {
@@ -94,6 +108,44 @@ const ShoppingCart: React.FC = () => {
       .reduce((sum, item) => sum + item.quantity, 0);
   }, [items, selectedItems]);
 
+  const pagedItems = useMemo(() => {
+    const sorted = [...items].sort((a, b) => (b.addedAt ?? 0) - (a.addedAt ?? 0));
+    const start = cartPage * CART_PAGE_SIZE;
+    return sorted.slice(start, start + CART_PAGE_SIZE);
+  }, [items, cartPage]);
+
+  const discountAmount = promoData?.discountAmount ?? 0;
+  const finalTotal = promoData?.finalAmount ?? selectedTotal;
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) { setPromoError('Please enter a promotion code'); return; }
+    setApplyingPromo(true);
+    setPromoError('');
+    try {
+      const res = await promotionService.applyPromotion({
+        promotionCode: promoCode.trim().toUpperCase(),
+        orderAmount: selectedTotal,
+      });
+      if (res.success) {
+        setPromoData(res);
+      } else {
+        setPromoError(res.message || 'Invalid promotion code');
+        setPromoData(null);
+      }
+    } catch (err: any) {
+      setPromoError(err?.response?.data?.message || 'Failed to apply promotion code');
+      setPromoData(null);
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoData(null);
+    setPromoError('');
+  };
+
   const selectedCartItems = useMemo(() => {
     return items
       .filter(item => selectedItems.has(item.productId))
@@ -120,6 +172,19 @@ const ShoppingCart: React.FC = () => {
       navigate('/login');
       return;
     }
+    // Sync delivery info from current session
+    const name = user.fullName ?? '';
+    const phone = user.phoneNumber ?? '';
+    setDeliveryInfo(prev => ({
+      ...prev,
+      customerName: prev.customerName || name,
+      customerPhone: prev.customerPhone || phone,
+    }));
+    setDeliveryErrors({
+      customerName: !name && !deliveryInfo.customerName ? 'Customer name is required' : '',
+      customerPhone: !phone && !deliveryInfo.customerPhone ? 'Phone number is required' : '',
+      customerAddress: !deliveryInfo.customerAddress ? 'Delivery address is required' : '',
+    });
     setCheckoutStep('checkout');
   };
 
@@ -161,30 +226,12 @@ const ShoppingCart: React.FC = () => {
     if (!validateDeliveryInfo()) {
       return;
     }
-    setPaymentModalOpen(true);
+    // Skip payment method selection — go straight to bank payment (QR)
+    setBankPaymentModalOpen(true);
   };
 
   const handleContinueShopping = () => {
     navigate('/products');
-  };
-
-  const handleSelectMoMo = () => {
-    setPaymentModalOpen(false);
-    setMomoPaymentModalOpen(true);
-  };
-
-  const handleSelectBankTransfer = () => {
-    setPaymentModalOpen(false);
-    setBankPaymentModalOpen(true);
-  };
-
-  const handleMoMoPaymentSuccess = () => {
-    const selectedProductIds = Array.from(selectedItems);
-    selectedProductIds.forEach(productId => {
-      removeFromCart(productId);
-    });
-    setSelectedItems(new Set());
-    setMomoPaymentModalOpen(false);
   };
 
   const handleBankPaymentSuccess = () => {
@@ -425,7 +472,7 @@ const ShoppingCart: React.FC = () => {
             {/* Cart Items */}
             <Box flex={1}>
               <Stack spacing={2}>
-                {items.map((item, idx) => (
+                {pagedItems.map((item, idx) => (
                   <Card
                     key={item.productId}
                     sx={{
@@ -613,6 +660,22 @@ const ShoppingCart: React.FC = () => {
                   </Card>
                 ))}
               </Stack>
+
+              {/* Pagination */}
+              {items.length > CART_PAGE_SIZE && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                  <TablePagination
+                    count={items.length}
+                    page={cartPage}
+                    rowsPerPage={CART_PAGE_SIZE}
+                    onPageChange={(_e, newPage) => setCartPage(newPage)}
+                    onRowsPerPageChange={() => {}}
+                    rowsPerPageOptions={[]}
+                    labelRowsPerPage=""
+                    labelDisplayedRows={({ from, to, count }) => `${from}–${to} of ${count} items`}
+                  />
+                </Box>
+              )}
             </Box>
 
             {/* Order Summary */}
@@ -648,11 +711,9 @@ const ShoppingCart: React.FC = () => {
                   </Box>
                   
                   <Divider sx={{ my: 2 }} />
-                  
+
                   <Box display="flex" justifyContent="space-between" mb={3}>
-                    <Typography variant="h6" fontWeight={700}>
-                      Total:
-                    </Typography>
+                    <Typography variant="h6" fontWeight={700}>Total:</Typography>
                     <Typography variant="h5" fontWeight={700} sx={{
                       background: BRAND_GRADIENT,
                       WebkitBackgroundClip: 'text',
@@ -874,6 +935,86 @@ const ShoppingCart: React.FC = () => {
                       </Box>
                       
                       <Divider sx={{ my: 2 }} />
+
+                      {/* Promotion Code — shown in checkout step */}
+                      <Box mb={2}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <LocalOffer sx={{ color: '#00b4ff', fontSize: 18 }} />
+                          <Typography variant="body2" fontWeight={700} color="#045668">
+                            Promotion Code
+                          </Typography>
+                        </Box>
+                        {!promoData ? (
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                              size="small"
+                              placeholder="Enter code"
+                              value={promoCode}
+                              onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                              onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
+                              disabled={applyingPromo}
+                              error={!!promoError}
+                              helperText={promoError}
+                              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: '0.85rem' } }}
+                            />
+                            <Button
+                              variant="contained"
+                              onClick={handleApplyPromo}
+                              disabled={applyingPromo || !promoCode.trim()}
+                              sx={{
+                                textTransform: 'none', fontWeight: 600, borderRadius: 2,
+                                background: 'linear-gradient(135deg, #045668 0%, #00b4ff 100%)',
+                                minWidth: 72,
+                              }}
+                            >
+                              {applyingPromo ? <CircularProgress size={18} color="inherit" /> : 'Apply'}
+                            </Button>
+                          </Box>
+                        ) : (
+                          <Box sx={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            p: 1.5, borderRadius: 2,
+                            background: 'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
+                            border: '1px solid #81c784',
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Chip
+                                icon={<Check sx={{ fontSize: '14px !important' }} />}
+                                label={promoData.promotionCode}
+                                size="small"
+                                sx={{ background: '#4caf50', color: '#fff', fontWeight: 700, fontSize: '0.72rem' }}
+                              />
+                              <Typography fontSize="0.78rem" fontWeight={600} color="#2e7d32">
+                                {promoData.promotionName}
+                              </Typography>
+                            </Box>
+                            <Button size="small" onClick={handleRemovePromo}
+                              sx={{ textTransform: 'none', fontSize: '0.72rem', color: '#d32f2f', fontWeight: 600, minWidth: 0 }}>
+                              Remove
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Divider sx={{ my: 2 }} />
+
+                      {/* Price breakdown */}
+                      {promoData && discountAmount > 0 && (
+                        <>
+                          <Box display="flex" justifyContent="space-between" mb={1}>
+                            <Typography variant="body2" color="text.secondary">Subtotal:</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
+                              {selectedTotal.toLocaleString()} VNĐ
+                            </Typography>
+                          </Box>
+                          <Box display="flex" justifyContent="space-between" mb={1}>
+                            <Typography variant="body2" color="#4caf50" fontWeight={600}>Discount:</Typography>
+                            <Typography variant="body2" color="#4caf50" fontWeight={700}>
+                              -{discountAmount.toLocaleString()} VNĐ
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
                       
                       <Box display="flex" justifyContent="space-between" mb={3}>
                         <Typography variant="h6" fontWeight={700}>
@@ -885,7 +1026,7 @@ const ShoppingCart: React.FC = () => {
                           WebkitTextFillColor: 'transparent',
                           backgroundClip: 'text',
                         }}>
-                          {selectedTotal.toLocaleString()} VNĐ
+                          {finalTotal.toLocaleString()} VNĐ
                         </Typography>
                       </Box>
 
@@ -920,37 +1061,13 @@ const ShoppingCart: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Payment Method Selection Modal */}
-      <PaymentMethodSelectionModal
-        open={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        onSelectMoMo={handleSelectMoMo}
-        onSelectBankTransfer={handleSelectBankTransfer}
-        serviceName={`Shopping Cart (${selectedItems.size} ${selectedItems.size === 1 ? 'item' : 'items'})`}
-        amount={selectedTotal}
-      />
-
-      {/* MoMo Payment Modal */}
-      <MoMoPaymentModal
-        open={momoPaymentModalOpen}
-        onClose={() => setMomoPaymentModalOpen(false)}
-        onSuccess={handleMoMoPaymentSuccess}
-        defaultAmount={selectedTotal}
-        defaultOrderInfo={`PowerGym - Products: ${selectedProductsInfo}`}
-        itemType="PRODUCT"
-        itemId={Array.from(selectedItems).join(',')}
-        itemName={selectedProductsInfo}
-        deliveryInfo={deliveryInfo}
-        cartItems={selectedCartItems}
-      />
-
       {/* Bank Payment Modal */}
       <BankPaymentModal
         open={bankPaymentModalOpen}
         onClose={() => setBankPaymentModalOpen(false)}
         onSuccess={handleBankPaymentSuccess}
         serviceName={`Products: ${selectedProductsInfo}`}
-        amount={selectedTotal}
+        amount={finalTotal}
         serviceId={Array.from(selectedItems).join(',')}
         itemType="PRODUCT"
         itemName={selectedProductsInfo}

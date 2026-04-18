@@ -18,7 +18,7 @@ import InfoRow from './components/InfoRow';
 import ProfileTab from './components/ProfileTab';
 import ScheduleTab from './components/ScheduleTab';
 import PendingRequestsTab from './components/PendingRequestsTab';
-import StatisticsTab from './components/StatisticsTab';
+// import StatisticsTab from './components/StatisticsTab';
 import SalaryTab from './components/SalaryTab';
 
 const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, trainerId }) => {
@@ -78,20 +78,20 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
     }
   };
 
-  const loadStatistics = async () => {
-    if (!trainerId) return;
-    try {
-      set({ loadingStats: true });
-      const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      const toDate = new Date().toISOString().split('T')[0];
-      const response = await trainerManagementService.getTrainerStatistics(trainerId, fromDate, toDate);
-      if (response.success) set({ statistics: response.data });
-    } catch (err) {
-      console.error('Failed to load statistics:', err);
-    } finally {
-      set({ loadingStats: false });
-    }
-  };
+  // const loadStatistics = async () => {
+  //   if (!trainerId) return;
+  //   try {
+  //     set({ loadingStats: true });
+  //     const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  //     const toDate = new Date().toISOString().split('T')[0];
+  //     const response = await trainerManagementService.getTrainerStatistics(trainerId, fromDate, toDate);
+  //     if (response.success) set({ statistics: response.data });
+  //   } catch (err) {
+  //     console.error('Failed to load statistics:', err);
+  //   } finally {
+  //     set({ loadingStats: false });
+  //   }
+  // };
 
   const loadSalary = async () => {
     if (!trainerId) return;
@@ -118,8 +118,8 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
       loadTrainerDetail();
       if (activeTab === 1) loadSchedule();
       if (activeTab === 2) loadPendingRequests();
-      if (activeTab === 3) loadStatistics();
-      if (activeTab === 4) loadSalary();
+      // if (activeTab === 3) loadStatistics();
+      if (activeTab === 3) loadSalary();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, trainerId, activeTab]);
@@ -238,7 +238,7 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
               <Tab icon={<Schedule />} label="Schedule" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
               <Tab icon={<Badge badgeContent={pendingRequests.length} color="error"><PendingActions /></Badge>}
                 label="Requests" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
-              <Tab icon={<Assessment />} label="Statistics" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
+              {/*<Tab icon={<Assessment />} label="Statistics" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />*/}
               <Tab icon={<AttachMoney />} label="Salary" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
             </Tabs>
           </Box>
@@ -246,8 +246,8 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
           {activeTab === 0 && trainer && <ProfileTab trainer={trainer} onVerifyDocument={handleVerifyDocument} />}
           {activeTab === 1 && <ScheduleTab loading={loadingSchedule} schedule={schedule} />}
           {activeTab === 2 && <PendingRequestsTab loading={loadingRequests} pendingRequests={pendingRequests} />}
-          {activeTab === 3 && <StatisticsTab loading={loadingStats} statistics={statistics} />}
-          {activeTab === 4 && <SalaryTab loading={loadingSalary} salaryData={salaryData} currentBalance={trainer?.salaryBalance} />}
+          {/*{activeTab === 3 && <StatisticsTab loading={loadingStats} statistics={statistics} />}*/}
+          {activeTab === 3 && <SalaryTab loading={loadingSalary} salaryData={salaryData} currentBalance={trainer?.salaryBalance} />}
         </Box>
       </DialogContent>
 

@@ -502,7 +502,6 @@ const Rewards: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    {/* All Active Promotions */}
                     {promotionsLoading ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                         <CircularProgress />
@@ -511,9 +510,8 @@ const Rewards: React.FC = () => {
                       <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.07)' }}>
                         <CardContent sx={{ p: 3 }}>
                           <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-                            Chương trình khuyến mãi
+                              Redeem points
                           </Typography>
-
                           <Box
                             sx={{
                               display: 'grid',

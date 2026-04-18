@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -28,8 +28,8 @@ import type { ServiceRegistrationWithTrainerSelectionResponse } from '../../serv
 import { loadAuthSession } from '../../services/authStorage';
 import { toast } from "react-toastify";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal';
-import MoMoPaymentModal from '../../components/Payment/MoMoPaymentModal';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal';
+import PromoCodeModal from '../../components/Payment/PromoCodeModal';
 import TrainerBookingSetupModalVersion from '../../components/Booking/TrainerBookingSetupModal.tsx';
 import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFlow';
 
@@ -55,19 +55,23 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
         showBookingSetup,
         pendingBookingData,
         showPaymentMethodSelection,
-        showMoMoPayment,
         showBankPayment,
+        isCounterRegistering,
+        pendingRegistrationId,
+        showPromoModal,
         handleRegisterNow,
         handleBookingSetupComplete,
-        handleSelectMoMo,
+        handleSelectCounter,
         handleSelectBankTransfer,
         handlePaymentSuccess,
         reset,
         setShowBookingSetup,
         setShowPaymentMethodSelection,
-        setShowMoMoPayment,
         setShowBankPayment,
+        setShowPromoModal,
     } = useServiceRegistrationFlow(service?.id);
+
+    const [promoData, setPromoData] = React.useState<import('../../@type/reward').ApplyPromotionResponse | null>(null);
 
     // Calculate final amount based on promotion data
     const finalAmount = useMemo(() => {
@@ -532,22 +536,23 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
             <PaymentMethodSelectionModal
                 open={showPaymentMethodSelection}
                 onClose={() => setShowPaymentMethodSelection(false)}
-                onSelectMoMo={handleSelectMoMo}
+                onSelectCounter={() => handleSelectCounter(service?.name)}
                 onSelectBankTransfer={handleSelectBankTransfer}
                 serviceName={service?.name}
                 amount={service?.price}
             />
 
-            {/* MoMo Payment Modal */}
-            <MoMoPaymentModal
-                open={showMoMoPayment}
-                onClose={() => setShowMoMoPayment(false)}
-                onSuccess={() => handlePaymentSuccess(onClose)}
-                defaultAmount={finalAmount}
-                defaultOrderInfo={orderInfo}
-                itemType="SERVICE"
-                itemId={service?.id?.toString()}
-                itemName={service?.name}
+            {/* Promo Code Modal */}
+            <PromoCodeModal
+                open={showPromoModal}
+                onClose={() => setShowPromoModal(false)}
+                orderAmount={finalAmount}
+                serviceName={service?.name}
+                onConfirm={(promo) => {
+                    setPromoData(promo);
+                    setShowPromoModal(false);
+                    setShowBankPayment(true);
+                }}
             />
 
             {/* Bank Payment Modal */}
@@ -556,9 +561,9 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                 onClose={() => setShowBankPayment(false)}
                 onSuccess={() => handlePaymentSuccess(onClose)}
                 serviceName={service?.name}
-                amount={finalAmount}
+                amount={promoData?.finalAmount ?? finalAmount}
                 serviceId={service?.id}
-                promotionCode={pendingBookingData?.promotionData?.promotionCode}
+                registrationId={pendingRegistrationId}
             />
         </Dialog>
     );

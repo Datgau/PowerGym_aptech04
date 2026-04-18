@@ -26,7 +26,7 @@ const Promotions: React.FC = () => {
     toast.success(`Copied to clipboard: ${code}`);
   };
 
-  const displayPromotions = tabValue === 0 ? featuredPromotions : promotions;
+  const displayPromotions = tabValue === 0 ? promotions : featuredPromotions;
 
   return (
     <PowerGymLayout>
@@ -147,16 +147,17 @@ const Promotions: React.FC = () => {
                     },
                   }}
                 >
-                  <Tab
-                    icon={<Star />}
-                    iconPosition="start"
-                    label={`Featured (${featuredPromotions.length})`}
-                  />
+
                   <Tab
                     icon={<LocalOffer />}
                     iconPosition="start"
                     label={`All Promotions (${promotions.length})`}
                   />
+                    <Tab
+                        icon={<Star />}
+                        iconPosition="start"
+                        label={`Featured (${featuredPromotions.length})`}
+                    />
                 </Tabs>
               </Box>
 

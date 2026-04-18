@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { loadAuthSession } from '../services/authStorage';
 import { createBooking } from '../services/newBookingService';
+import { registerService } from '../services/serviceRegistrationService';
+import { RegistrationType } from '../types';
 import type { ApplyPromotionResponse } from '../@type/reward';
 
 export interface BookingSetupData {
@@ -22,6 +24,7 @@ export interface ServiceRegistrationFlowState {
   showPaymentMethodSelection: boolean;
   showMoMoPayment: boolean;
   showBankPayment: boolean;
+  isCounterRegistering: boolean;
 }
 
 export function useServiceRegistrationFlow(serviceId: number | string | undefined) {
@@ -31,6 +34,9 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
   const [showPaymentMethodSelection, setShowPaymentMethodSelection] = useState(false);
   const [showMoMoPayment, setShowMoMoPayment] = useState(false);
   const [showBankPayment, setShowBankPayment] = useState(false);
+  const [isCounterRegistering, setIsCounterRegistering] = useState(false);
+  const [pendingRegistrationId, setPendingRegistrationId] = useState<number | null>(null);
+  const [showPromoModal, setShowPromoModal] = useState(false);
 
   const reset = useCallback(() => {
     setIsRegistering(false);
@@ -39,6 +45,9 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
     setShowPaymentMethodSelection(false);
     setShowMoMoPayment(false);
     setShowBankPayment(false);
+    setIsCounterRegistering(false);
+    setPendingRegistrationId(null);
+    setShowPromoModal(false);
   }, []);
 
   const handleRegisterNow = useCallback(async () => {
@@ -48,7 +57,8 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
       const { getMyRegistrations } = await import('../services/serviceRegistrationService');
       const existing = await getMyRegistrations();
       const alreadyRegistered = existing.data?.some(
-          r => r.service.id === Number(serviceId) && r.status === 'ACTIVE'
+          r => r.service.id === Number(serviceId) &&
+               (r.status === 'ACTIVE' || r.status === 'PENDING')
       );
       if (alreadyRegistered) {
         toast.error('You have already registered for this service!');
@@ -74,19 +84,115 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
     setShowMoMoPayment(true);
   }, []);
 
-  const handleSelectBankTransfer = useCallback(() => {
+  const handleSelectBankTransfer = useCallback(async () => {
+    if (!serviceId) return;
     setShowPaymentMethodSelection(false);
-    setShowBankPayment(true);
-  }, []);
+
+    // Create a PENDING ONLINE registration first so the webhook can activate the correct one
+    try {
+      const trainerId = pendingBookingData?.trainerId ?? undefined;
+      const res = await registerService({
+        serviceId: Number(serviceId),
+        registrationType: RegistrationType.ONLINE,
+        ...(trainerId ? { trainerId } : {}),
+      });
+      if (res.success && res.data?.id) {
+        setPendingRegistrationId(res.data.id);
+      }
+    } catch {
+      // Non-fatal — BankPaymentModal will fall back to userId+serviceId lookup
+    }
+
+    // Open promo modal before bank payment
+    setShowPromoModal(true);
+  }, [serviceId, pendingBookingData]);
+
+  const handleSelectCounter = useCallback(async (serviceName?: string) => {
+    if (!serviceId) return;
+    setShowPaymentMethodSelection(false);
+    setIsCounterRegistering(true);
+    try {
+      const trainerId = pendingBookingData?.trainerId ?? undefined;
+      const res = await registerService({
+        serviceId: Number(serviceId),
+        registrationType: RegistrationType.COUNTER,
+        ...(trainerId ? { trainerId } : {}),
+      });
+
+      if (!res.success) {
+        toast.error(res.message || 'Registration failed');
+        setShowPaymentMethodSelection(true);
+        return;
+      }
+
+      const registrationId: number = res.data?.id;
+
+      // If trainer + schedule were selected, create the booking now (PENDING until admin confirms payment).
+      const hasSchedule = !!(
+        registrationId &&
+        pendingBookingData?.trainerId &&
+        pendingBookingData?.bookingDate &&
+        pendingBookingData?.startTime &&
+        pendingBookingData?.endTime
+      );
+
+      if (hasSchedule) {
+        try {
+          const session = loadAuthSession();
+          const userId = session?.user?.id;
+          if (userId) {
+            await createBooking(userId, {
+              trainerId: pendingBookingData!.trainerId!,
+              serviceRegistrationId: registrationId,
+              bookingDate: pendingBookingData!.bookingDate,
+              startTime: pendingBookingData!.startTime,
+              endTime: pendingBookingData!.endTime,
+            });
+          }
+        } catch (bookingErr: any) {
+          // Non-fatal — registration succeeded, admin can assign schedule when confirming payment.
+          console.warn('[handleSelectCounter] Booking creation failed (non-fatal):', bookingErr);
+        }
+      }
+
+      toast.success(
+        `Registration successful! Please visit the counter to complete payment for "${serviceName ?? 'this service'}".`
+      );
+      reset();
+    } catch (err: any) {
+      const msg: string = err?.response?.data?.message ?? err?.message ?? '';
+      if (msg.toLowerCase().includes('already registered')) {
+        toast.error('You have already registered for this service');
+      } else {
+        toast.error(msg || 'Registration failed');
+      }
+      setShowPaymentMethodSelection(true);
+    } finally {
+      setIsCounterRegistering(false);
+    }
+  }, [serviceId, pendingBookingData, reset]);
 
   const handlePaymentSuccess = useCallback(async (onDone?: () => void) => {
-    // Payment successful - webhook has already activated ServiceRegistration
-    // Now just create the TrainerBooking
-    console.log('[handlePaymentSuccess] Starting...', { pendingBookingData, serviceId });
-    
+    // Payment successful — webhook has already activated ServiceRegistration.
+    // Now create a TrainerBooking only if the user selected a trainer + schedule.
     if (!pendingBookingData || !serviceId) {
-      console.error('[handlePaymentSuccess] Missing data:', { pendingBookingData, serviceId });
       toast.error('Booking data not found');
+      return;
+    }
+
+    const hasSchedule = !!(
+      pendingBookingData.trainerId &&
+      pendingBookingData.bookingDate &&
+      pendingBookingData.startTime &&
+      pendingBookingData.endTime
+    );
+
+    if (!hasSchedule) {
+      // User skipped trainer selection — no booking to create.
+      // Admin will assign trainer/schedule later.
+      toast.success('Payment successful! Our staff will assign a trainer and schedule for you.');
+      reset();
+      onDone?.();
       return;
     }
 
@@ -94,59 +200,39 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
       const session = loadAuthSession();
       const userId = session?.user?.id;
       if (!userId) {
-        console.error('[handlePaymentSuccess] No user session');
         toast.error('User session not found');
         return;
       }
 
-      console.log('[handlePaymentSuccess] Fetching registrations for user:', userId);
-      
       // Find the ACTIVE ServiceRegistration (activated by webhook)
       const { getMyRegistrations } = await import('../services/serviceRegistrationService');
       const registrationsRes = await getMyRegistrations();
-      
-      console.log('[handlePaymentSuccess] Registrations response:', registrationsRes);
-      
-      const activeRegistration = registrationsRes.data?.find(
-        r => r.service.id === Number(serviceId) && r.status === 'ACTIVE'
-      );
-      
-      console.log('[handlePaymentSuccess] Active registration found:', activeRegistration);
-      
+      const activeRegistration = pendingRegistrationId
+        ? registrationsRes.data?.find(r => r.id === pendingRegistrationId && r.status === 'ACTIVE')
+        : registrationsRes.data?.find(r => r.service.id === Number(serviceId) && r.status === 'ACTIVE');
+
       if (!activeRegistration) {
-        console.error('[handlePaymentSuccess] No ACTIVE registration found for serviceId:', serviceId);
         toast.error('Service registration not found. Please contact support.');
         return;
       }
 
-      // Create booking with the activated registration
-      const bookingReq = {
-        trainerId: pendingBookingData.trainerId ?? undefined,
+      const bookingRes = await createBooking(userId, {
+        trainerId: pendingBookingData.trainerId!,
         serviceRegistrationId: activeRegistration.id,
         bookingDate: pendingBookingData.bookingDate,
         startTime: pendingBookingData.startTime,
         endTime: pendingBookingData.endTime,
-      };
-      
-      console.log('[handlePaymentSuccess] Creating booking with request:', bookingReq);
-      
-      const bookingRes = await createBooking(userId, bookingReq);
-      
-      console.log('[handlePaymentSuccess] Booking response:', bookingRes);
-      
+      });
+
       if (!bookingRes.success) {
-        console.error('[handlePaymentSuccess] Booking creation failed:', bookingRes.message);
         toast.error(bookingRes.message || 'Failed to create booking');
         return;
       }
 
-      console.log('[handlePaymentSuccess] Booking created successfully!');
       toast.success('Payment successful! Your booking is pending trainer confirmation.');
       reset();
       onDone?.();
-      
     } catch (error: any) {
-      console.error('[handlePaymentSuccess] Error:', error);
       toast.error(error?.response?.data?.message || 'Failed to complete booking');
     }
   }, [pendingBookingData, serviceId, reset]);
@@ -159,11 +245,15 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
     showPaymentMethodSelection,
     showMoMoPayment,
     showBankPayment,
+    isCounterRegistering,
+    pendingRegistrationId,
+    showPromoModal,
     // Actions
     handleRegisterNow,
     handleBookingSetupComplete,
     handleSelectMoMo,
     handleSelectBankTransfer,
+    handleSelectCounter,
     handlePaymentSuccess,
     reset,
     // Setters for close handlers
@@ -171,5 +261,6 @@ export function useServiceRegistrationFlow(serviceId: number | string | undefine
     setShowPaymentMethodSelection,
     setShowMoMoPayment,
     setShowBankPayment,
+    setShowPromoModal,
   };
 }

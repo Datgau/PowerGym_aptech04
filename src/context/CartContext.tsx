@@ -7,6 +7,7 @@ export interface CartItem {
   quantity: number;
   imageUrl?: string;
   stock: number;
+  addedAt?: number; // timestamp ms — newest first
 }
 
 interface CartContextType {
@@ -48,26 +49,21 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const existingItem = prevItems.find((i) => i.productId === item.productId);
       
       if (existingItem) {
-        // Update quantity if item already exists
+        // Update quantity — bump addedAt so it floats to top
         const newQuantity = existingItem.quantity + quantity;
-        
-        // Check stock availability
         if (newQuantity > item.stock) {
           throw new Error(`Cannot add more than ${item.stock} items`);
         }
-        
         return prevItems.map((i) =>
           i.productId === item.productId
-            ? { ...i, quantity: newQuantity }
+            ? { ...i, quantity: newQuantity, addedAt: Date.now() }
             : i
         );
       } else {
-        // Add new item
         if (quantity > item.stock) {
           throw new Error(`Cannot add more than ${item.stock} items`);
         }
-        
-        return [...prevItems, { ...item, quantity }];
+        return [...prevItems, { ...item, quantity, addedAt: Date.now() }];
       }
     });
   };

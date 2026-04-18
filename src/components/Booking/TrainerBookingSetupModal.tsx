@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Dialog, DialogContent, DialogTitle,
     Box, Typography, Button, IconButton,
@@ -134,34 +134,61 @@ export default function TrainerBookingSetupModal({
 
     const handleNext = () => {
         if (step === 0) {
-            setStep(1);
+            if (selectedTrainer) {
+                // Trainer selected → go to schedule step
+                setStep(1);
+            } else {
+                // No trainer → skip schedule, go straight to confirm
+                setStep(2);
+            }
         } else if (step === 1) {
             if (!startDate)    { toast.error('Please select a start date');  return; }
             if (!selectedSlot) { toast.error('Please select a time slot');   return; }
             setStep(2);
         } else {
+            // Step 2: Proceed to payment
+            // If trainer was skipped, bookingDate/startTime/endTime will be empty strings
             onReadyToPay({
                 trainerId:   selectedTrainer?.id ?? null,
                 trainerName: selectedTrainer?.fullName ?? 'Not selected (Admin will assign)',
-                bookingDate: startDate!.format('YYYY-MM-DD'),
-                startTime:   selectedSlot!.startTime,
-                endTime:     selectedSlot!.endTime,
-                endDate,
+                bookingDate: startDate ? startDate.format('YYYY-MM-DD') : '',
+                startTime:   selectedSlot?.startTime ?? '',
+                endTime:     selectedSlot?.endTime   ?? '',
+                endDate:     endDate,
                 promotionData,
             });
         }
     };
 
+    const handleBack = () => {
+        if (step === 2 && !selectedTrainer) {
+            // Came from step 0 (skipped trainer) → go back to step 0
+            setStep(0);
+        } else {
+            setStep(s => s - 1);
+        }
+    };
+
     const canNext = () => {
-        if (step === 0) return true;
+        if (step === 0) return true; // always can proceed (skip or select)
         if (step === 1) return !!startDate && !!selectedSlot;
         return true;
     };
 
+    // Stepper: show which steps are active/completed based on actual path taken
+    const activeStep = step; // 0, 1, or 2
+    const stepCompleted = (i: number) => {
+        if (selectedTrainer) return step > i;          // full path: 0→1→2
+        // skip path: 0→2, step 1 is never visited
+        if (i === 0) return step > 0;
+        if (i === 1) return false; // never completed when skipped
+        return false;
+    };
+
     const nextLabel =
-        step === 0 ? (selectedTrainer ? 'Next' : 'Skip (Admin assigns)') :
-            step === 1 ? 'Next' :
-                'Proceed to Payment';
+        step === 0 ? (selectedTrainer ? 'Next: Schedule' : 'Skip to Payment') :
+        step === 1 ? 'Next: Confirm' :
+                     'Proceed to Payment';
     return (
         <Dialog
             open={open}
@@ -208,9 +235,9 @@ export default function TrainerBookingSetupModal({
                 </Box>
 
                 <Box sx={{ px: 3, pt: 2, pb: 1, background: '#f8fafc' }}>
-                    <Stepper activeStep={step} alternativeLabel>
+                    <Stepper activeStep={activeStep} alternativeLabel>
                         {STEPS.map((label, i) => (
-                            <Step key={label} completed={step > i}>
+                            <Step key={label} completed={stepCompleted(i)}>
                                 <StepLabel
                                     StepIconProps={{
                                         sx: {
@@ -222,7 +249,10 @@ export default function TrainerBookingSetupModal({
                                     <Typography
                                         fontSize="0.72rem"
                                         fontWeight={600}
-                                        color={step >= i ? DARK : '#aaa'}
+                                        color={activeStep >= i ? DARK : '#aaa'}
+                                        sx={i === 1 && !selectedTrainer && step === 2
+                                            ? { textDecoration: 'line-through', opacity: 0.4 }
+                                            : {}}
                                     >
                                         {label}
                                     </Typography>
@@ -252,6 +282,7 @@ export default function TrainerBookingSetupModal({
                 {step === 1 && (
                     <ScheduleStep
                         service={service}
+                        trainerId={selectedTrainer?.id ?? null}
                         startDate={startDate}
                         onDateChange={d => { setStartDate(d); setSelectedSlot(null); }}
                         endDate={endDate}
@@ -260,7 +291,6 @@ export default function TrainerBookingSetupModal({
                         onSlotSelect={handleSlotSelect}
                         bookedTimes={bookedTimes}
                         bookedDates={bookedDates}
-
                     />
                 )}
                 {step === 2 && (
@@ -285,7 +315,7 @@ export default function TrainerBookingSetupModal({
                 <Button
                     startIcon={<NavigateBefore />}
                     disabled={step === 0}
-                    onClick={() => setStep(s => s - 1)}
+                    onClick={handleBack}
                     sx={{
                         textTransform: 'none', fontWeight: 600, color: DARK,
                         '&:hover': { background: 'rgba(4,86,104,0.08)' },

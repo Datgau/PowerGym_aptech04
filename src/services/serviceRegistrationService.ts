@@ -12,6 +12,7 @@ export interface ServiceRegistrationRequest {
   serviceId: number;
   notes?: string;
   registrationType?: RegistrationType; // ONLINE hoặc COUNTER
+  trainerId?: number; // Optional: pre-assign trainer (used for counter registrations)
 }
 
 export interface ServiceRegistrationResponse {
