@@ -44,6 +44,9 @@ export interface TrainerBookingInfo {
   createdAt: string;
   confirmedAt?: string;
   paymentStatus?: 'PAID' | 'UNPAID' | 'PENDING' | 'REFUNDED';
+  rejectedAt?: string;
+  rejectionReason?: string;
+  rejectionMediaUrl?: string;
 }
 
 export interface TimeSlot {

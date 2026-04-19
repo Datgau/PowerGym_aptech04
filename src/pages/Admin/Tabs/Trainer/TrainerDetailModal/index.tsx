@@ -7,17 +7,19 @@ import {
 } from '@mui/material';
 import {
   Close, Email, Phone, School, Work,
-  Person, FiberManualRecord, Schedule, Assessment, PendingActions, AttachMoney,
+  Person, FiberManualRecord, Schedule, Assessment, PendingActions, AttachMoney, EventBusy,
 } from '@mui/icons-material';
 import { getTrainerById, verifyTrainerDocument } from '../../../../../services/trainerService';
 import trainerManagementService from '../../../../../services/trainerManagementService';
 import {trainerSalaryApi, type TrainerSalaryResponse} from '../../../../../services/trainerSalaryService';
+import trainerLeaveRequestService, { type LeaveRequestResponse } from '../../../../../services/trainerLeaveRequestService';
 import type { TrainerDetailModalProps, TrainerDetailState } from './types';
 import { dialogPaper } from './constants';
 import InfoRow from './components/InfoRow';
 import ProfileTab from './components/ProfileTab';
 import ScheduleTab from './components/ScheduleTab';
 import PendingRequestsTab from './components/PendingRequestsTab';
+import LeaveRequestsTab from './components/LeaveRequestsTab';
 // import StatisticsTab from './components/StatisticsTab';
 import SalaryTab from './components/SalaryTab';
 
@@ -33,6 +35,8 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
 
   const [salaryData, setSalaryData] = useState<TrainerSalaryResponse | null>(null);
   const [loadingSalary, setLoadingSalary] = useState(false);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequestResponse[]>([]);
+  const [loadingLeaveRequests, setLoadingLeaveRequests] = useState(false);
 
   const set = (patch: Partial<TrainerDetailState>) => setState(prev => ({ ...prev, ...patch }));
 
@@ -113,13 +117,63 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
     }
   };
 
+  const loadLeaveRequests = async () => {
+    if (!trainerId) return;
+    try {
+      setLoadingLeaveRequests(true);
+      const response = await trainerLeaveRequestService.getTrainerLeaveRequests(trainerId);
+      if (response.success) {
+        setLeaveRequests(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to load leave requests:', err);
+    } finally {
+      setLoadingLeaveRequests(false);
+    }
+  };
+
+  const handleReviewLeaveRequest = async (requestId: number, approved: boolean, notes?: string) => {
+    if (!trainerId) return;
+    try {
+      // Get current user ID from localStorage or context
+      const userStr = localStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      const adminId = currentUser?.id;
+
+      if (!adminId) {
+        alert('Cannot identify admin user');
+        return;
+      }
+
+      const response = await trainerLeaveRequestService.reviewLeaveRequest(
+        requestId,
+        adminId,
+        {
+          status: approved ? 'APPROVED' : 'REJECTED',
+          adminNotes: notes
+        }
+      );
+
+      if (response.success) {
+        // Reload leave requests
+        await loadLeaveRequests();
+        alert(response.message);
+      } else {
+        alert(response.message);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to review leave request');
+    }
+  };
+
   useEffect(() => {
     if (open && trainerId) {
       loadTrainerDetail();
       if (activeTab === 1) loadSchedule();
       if (activeTab === 2) loadPendingRequests();
       // if (activeTab === 3) loadStatistics();
-      if (activeTab === 3) loadSalary();
+      if (activeTab === 3) loadLeaveRequests();
+      if (activeTab === 4) loadSalary();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, trainerId, activeTab]);
@@ -238,6 +292,8 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
               <Tab icon={<Schedule />} label="Schedule" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
               <Tab icon={<Badge badgeContent={pendingRequests.length} color="error"><PendingActions /></Badge>}
                 label="Requests" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
+              <Tab icon={<Badge badgeContent={leaveRequests.filter(r => r.status === 'PENDING').length} color="warning"><EventBusy /></Badge>}
+                label="Leave" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
               {/*<Tab icon={<Assessment />} label="Statistics" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />*/}
               <Tab icon={<AttachMoney />} label="Salary" iconPosition="start" sx={{ textTransform: 'none', fontWeight: 600 }} />
             </Tabs>
@@ -246,8 +302,9 @@ const TrainerDetailModal: React.FC<TrainerDetailModalProps> = ({ open, onClose, 
           {activeTab === 0 && trainer && <ProfileTab trainer={trainer} onVerifyDocument={handleVerifyDocument} />}
           {activeTab === 1 && <ScheduleTab loading={loadingSchedule} schedule={schedule} />}
           {activeTab === 2 && <PendingRequestsTab loading={loadingRequests} pendingRequests={pendingRequests} />}
-          {/*{activeTab === 3 && <StatisticsTab loading={loadingStats} statistics={statistics} />}*/}
-          {activeTab === 3 && <SalaryTab loading={loadingSalary} salaryData={salaryData} currentBalance={trainer?.salaryBalance} />}
+          {activeTab === 3 && <LeaveRequestsTab loading={loadingLeaveRequests} leaveRequests={leaveRequests} onReview={handleReviewLeaveRequest} />}
+          {/*{activeTab === 4 && <StatisticsTab loading={loadingStats} statistics={statistics} />}*/}
+          {activeTab === 4 && <SalaryTab loading={loadingSalary} salaryData={salaryData} currentBalance={trainer?.salaryBalance} />}
         </Box>
       </DialogContent>
 

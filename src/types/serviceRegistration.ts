@@ -127,6 +127,8 @@ export interface AvailableTrainerResponse {
   avatar: string | null;
   specialtyNames: string[];
   totalExperienceYears: number;
+  hasRejected?: boolean; // True if this trainer has previously rejected a booking for this registration
+  rejectionReason?: string; // Reason for rejection if hasRejected is true
 }
 
 /**

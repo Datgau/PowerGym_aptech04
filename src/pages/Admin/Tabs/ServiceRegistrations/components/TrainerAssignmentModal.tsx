@@ -225,41 +225,72 @@ const TrainerAssignmentModal: React.FC<TrainerAssignmentModalProps> = ({
                         Select a trainer:
                       </Typography>
                       <Stack spacing={2}>
-                        {availableTrainers.map((trainer) => (
-                            <TrainerCard
-                                key={trainer.id}
-                                selected={selectedTrainerId === trainer.id}
-                                onClick={() => setSelectedTrainerId(trainer.id)}
-                            >
-                              <Avatar src={trainer.avatar || undefined} sx={{ width: 48, height: 48 }}>
-                                {trainer.fullName.charAt(0)}
-                              </Avatar>
-                              <Box flex={1}>
-                                <Typography fontWeight={600} fontSize={15} color="#0f172a">
-                                  {trainer.fullName}
-                                </Typography>
-                                <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
-                                  {trainer.specialtyNames.slice(0, 3).map((s, i) => (
-                                      <Chip
-                                          key={i}
-                                          label={s}
-                                          size="small"
-                                          sx={{
-                                            fontSize: 11,
-                                            height: 20,
-                                            background: '#f0f7ff',
+                        {availableTrainers.map((trainer) => {
+                          const isRejected = trainer.hasRejected === true;
+                          
+                          return (
+                            <Box key={trainer.id} position="relative">
+                              <TrainerCard
+                                  selected={selectedTrainerId === trainer.id && !isRejected}
+                                  onClick={() => !isRejected && setSelectedTrainerId(trainer.id)}
+                                  sx={{
+                                    opacity: isRejected ? 0.6 : 1,
+                                    cursor: isRejected ? 'not-allowed' : 'pointer',
+                                    pointerEvents: isRejected ? 'none' : 'auto',
+                                  }}
+                              >
+                                <Avatar src={trainer.avatar || undefined} sx={{ width: 48, height: 48 }}>
+                                  {trainer.fullName.charAt(0)}
+                                </Avatar>
+                                <Box flex={1}>
+                                  <Typography fontWeight={600} fontSize={15} color="#0f172a">
+                                    {trainer.fullName}
+                                  </Typography>
+                                  <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
+                                    {trainer.specialtyNames.slice(0, 3).map((s, i) => (
+                                        <Chip
+                                            key={i}
+                                            label={s}
+                                            size="small"
+                                            sx={{
+                                              fontSize: 11,
+                                              height: 20,
+                                              background: '#f0f7ff',
                                             color: '#0066ff',
                                             border: '1px solid #0066ff33',
                                           }}
                                       />
                                   ))}
+                                  {isRejected && (
+                                    <Chip
+                                      label="Previously Rejected"
+                                      size="small"
+                                      sx={{
+                                        fontSize: 11,
+                                        height: 20,
+                                        background: '#ffebee',
+                                        color: '#d32f2f',
+                                        border: '1px solid #ef9a9a',
+                                        fontWeight: 600,
+                                      }}
+                                    />
+                                  )}
                                 </Box>
                                 <Typography fontSize={12} color="#64748b" mt={0.5}>
                                   {trainer.totalExperienceYears} years of experience
                                 </Typography>
+                                {isRejected && trainer.rejectionReason && (
+                                  <Alert severity="error" sx={{ mt: 1, py: 0.5, fontSize: 12 }}>
+                                    <Typography fontSize={11} fontWeight={600}>
+                                      Rejection reason: {trainer.rejectionReason}
+                                    </Typography>
+                                  </Alert>
+                                )}
                               </Box>
                             </TrainerCard>
-                        ))}
+                            </Box>
+                          );
+                        })}
                       </Stack>
 
                       {availableTrainers.length > 0 && (

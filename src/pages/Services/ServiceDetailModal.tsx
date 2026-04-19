@@ -29,7 +29,6 @@ import { loadAuthSession } from '../../services/authStorage';
 import { toast } from "react-toastify";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal';
-import PromoCodeModal from '../../components/Payment/PromoCodeModal';
 import TrainerBookingSetupModalVersion from '../../components/Booking/TrainerBookingSetupModal.tsx';
 import { useServiceRegistrationFlow } from '../../hooks/useServiceRegistrationFlow';
 
@@ -69,7 +68,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
         setShowPaymentMethodSelection,
         setShowBankPayment,
         setShowPromoModal,
-    } = useServiceRegistrationFlow(service?.id);
+    } = useServiceRegistrationFlow();
 
     const [promoData, setPromoData] = React.useState<import('../../@type/reward').ApplyPromotionResponse | null>(null);
 
@@ -461,7 +460,7 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                             fullWidth
                             variant="contained"
                             disabled={!service.isActive || (service.registrationCount || 0) >= (service.maxParticipants || 0) || isRegistering}
-                            onClick={handleRegisterNow}
+                            onClick={() => handleRegisterNow(service.id)}
                             sx={{
                                 py: 1.5,
                                 borderRadius: '12px',
@@ -527,7 +526,10 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
                     open={showBookingSetup}
                     service={service}
                     userId={loadAuthSession()?.user?.id ?? 0}
-                    onClose={() => setShowBookingSetup(false)}
+                    onClose={() => {
+                        setPromoData(null);
+                        reset();
+                    }}
                     onReadyToPay={handleBookingSetupComplete}
                 />
             )}
@@ -535,34 +537,28 @@ const ServiceDetailModal = ({ open, service, onClose }: Props) => {
             {/* Payment Method Selection Modal */}
             <PaymentMethodSelectionModal
                 open={showPaymentMethodSelection}
-                onClose={() => setShowPaymentMethodSelection(false)}
+                onClose={() => {
+                    setPromoData(null);
+                    reset();
+                }}
                 onSelectCounter={() => handleSelectCounter(service?.name)}
                 onSelectBankTransfer={handleSelectBankTransfer}
                 serviceName={service?.name}
                 amount={service?.price}
             />
 
-            {/* Promo Code Modal */}
-            <PromoCodeModal
-                open={showPromoModal}
-                onClose={() => setShowPromoModal(false)}
-                orderAmount={finalAmount}
-                serviceName={service?.name}
-                onConfirm={(promo) => {
-                    setPromoData(promo);
-                    setShowPromoModal(false);
-                    setShowBankPayment(true);
-                }}
-            />
-
             {/* Bank Payment Modal */}
             <BankPaymentModal
                 open={showBankPayment}
-                onClose={() => setShowBankPayment(false)}
+                onClose={() => {
+                    setPromoData(null);
+                    reset();
+                }}
                 onSuccess={() => handlePaymentSuccess(onClose)}
                 serviceName={service?.name}
-                amount={promoData?.finalAmount ?? finalAmount}
+                amount={pendingBookingData?.promotionData?.finalAmount ?? finalAmount}
                 serviceId={service?.id}
+                promotionCode={pendingBookingData?.promotionData?.promotionCode}
                 registrationId={pendingRegistrationId}
             />
         </Dialog>
