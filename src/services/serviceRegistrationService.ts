@@ -36,6 +36,22 @@ export interface ServiceRegistrationResponse {
   expirationDate?: string;
   cancelledDate?: string;
   cancellationReason?: string;
+  trainerName?: string;
+  trainerId?: number;
+  upcomingBookings?: TrainerBooking[]; // Include booking info
+}
+
+export interface TrainerBooking {
+  id: number;
+  bookingId: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW' | 'RESCHEDULED';
+  rejectedAt?: string;
+  rejectionReason?: string;
+  rejectionMediaUrl?: string;
+  notes?: string;
 }
 
 export interface ServiceRegistrationFilters {

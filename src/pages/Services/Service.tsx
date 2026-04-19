@@ -25,7 +25,6 @@ import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
-import PromoCodeModal from '../../components/Payment/PromoCodeModal.tsx';
 import TablePagination from '../../components/Common/TablePagination.tsx';
 import { useAuth } from "../../hooks/useAuth.ts";
 import RichTextDisplay from "../../components/Common/RichTextDisplay.tsx";
@@ -58,7 +57,7 @@ const Service: React.FC = () => {
     severity: 'success' as 'success' | 'error' | 'warning',
   });
 
-  const flow = useServiceRegistrationFlow(selectedServiceForFlow?.id);
+  const flow = useServiceRegistrationFlow();
   const [promoData, setPromoData] = React.useState<import('../../@type/reward').ApplyPromotionResponse | null>(null);
 
   const finalAmount = React.useMemo(() => {
@@ -71,17 +70,11 @@ const Service: React.FC = () => {
   const getServiceImage = useCallback((service: any) =>
       service.images?.[0] || '/images/default-service.jpg', []);
 
-  // Trigger booking setup flow when a service is selected (both online and counter go through booking setup)
-  useEffect(() => {
-    if (selectedServiceForFlow) {
-      flow.handleRegisterNow();
-    }
-  }, [selectedServiceForFlow?.id]);
-
   const handleRegisterNow = useCallback((service: any) => {
     if (!requireAuth()) return;
     setSelectedServiceForFlow(service);
-  }, [requireAuth]);
+    flow.handleRegisterNow(service.id);
+  }, [requireAuth, flow]);
 
   useEffect(() => {
         if (!id) return;
@@ -477,37 +470,38 @@ const Service: React.FC = () => {
                 open={flow.showBookingSetup}
                 service={selectedServiceForFlow}
                 userId={loadAuthSession()?.user?.id ?? 0}
-                onClose={() => flow.setShowBookingSetup(false)}
+                onClose={() => {
+                  setPromoData(null);
+                  setSelectedServiceForFlow(null);
+                  flow.reset();
+                }}
                 onReadyToPay={flow.handleBookingSetupComplete}
             />
         )}
         <PaymentMethodSelectionModal
             open={flow.showPaymentMethodSelection}
-            onClose={() => flow.setShowPaymentMethodSelection(false)}
+            onClose={() => {
+              setPromoData(null);
+              setSelectedServiceForFlow(null);
+              flow.reset();
+            }}
             onSelectCounter={() => flow.handleSelectCounter(selectedServiceForFlow?.name)}
             onSelectBankTransfer={flow.handleSelectBankTransfer}
             serviceName={selectedServiceForFlow?.name}
             amount={finalAmount}
         />
-        <PromoCodeModal
-            open={flow.showPromoModal}
-            onClose={() => flow.setShowPromoModal(false)}
-            orderAmount={finalAmount}
-            serviceName={selectedServiceForFlow?.name}
-            onConfirm={(promo) => {
-              setPromoData(promo);
-              flow.setShowPromoModal(false);
-              flow.setShowBankPayment(true);
-            }}
-        />
           <BankPaymentModal
               open={flow.showBankPayment}
-              onClose={() => flow.setShowBankPayment(false)}
+              onClose={() => {
+                setPromoData(null);
+                setSelectedServiceForFlow(null);
+                flow.reset();
+              }}
               onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
               serviceName={selectedServiceForFlow?.name}
-              amount={promoData?.finalAmount ?? finalAmount}
+              amount={flow.pendingBookingData?.promotionData?.finalAmount ?? finalAmount}
               serviceId={selectedServiceForFlow?.id?.toString()}
-              promotionCode={promoData ? undefined : flow.pendingBookingData?.promotionData?.promotionCode}
+              promotionCode={flow.pendingBookingData?.promotionData?.promotionCode}
               registrationId={flow.pendingRegistrationId}
           />
         <Snackbar

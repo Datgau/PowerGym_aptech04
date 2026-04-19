@@ -15,7 +15,7 @@ import {
   Stack,
   Link as MuiLink, IconButton, Tooltip
 } from '@mui/material';
-import { Assignment, PersonAdd, Payment, Print } from '@mui/icons-material';
+import { Assignment, PersonAdd, Payment, Print, Info } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -29,12 +29,14 @@ import type {
   RegistrationStatus,
   PaymentStatus,
 } from '../../../../types/serviceRegistration';
+import type { TrainerBooking } from '../../../../services/serviceRegistrationService';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 import FilterSection from './components/FilterSection';
 import SearchBox from './components/SearchBox';
 import TrainerAssignmentModal from './components/TrainerAssignmentModal';
 import ConfirmPaymentModal from './components/ConfirmPaymentModal';
+import BookingStatusModal from '../../../../components/ServiceRegistration/BookingStatusModal';
 import type { AssignmentResult } from './components/TrainerAssignmentModal';
 import type { ScheduleSelection } from './components/TrainerSchedulePicker';
 
@@ -124,6 +126,34 @@ const getPaymentStatusColor = (status: PaymentStatus | null): 'success' | 'error
   }
 };
 
+// Get booking status from registration
+const getBookingStatus = (registration: ServiceRegistrationResponse) => {
+  if (!registration.upcomingBookings || registration.upcomingBookings.length === 0) {
+    return { status: 'NO_BOOKING', label: 'No Booking', color: '#9e9e9e', hasBooking: false };
+  }
+  
+  const latestBooking = registration.upcomingBookings[0];
+  
+  switch (latestBooking.status) {
+    case 'PENDING':
+      return { status: 'PENDING', label: 'Pending', color: '#ff9800', hasBooking: true };
+    case 'CONFIRMED':
+      return { status: 'CONFIRMED', label: 'Confirmed', color: '#4caf50', hasBooking: true };
+    case 'REJECTED':
+      return { status: 'REJECTED', label: 'Rejected', color: '#f44336', hasBooking: true };
+    case 'CANCELLED':
+      return { status: 'CANCELLED', label: 'Cancelled', color: '#9e9e9e', hasBooking: true };
+    case 'COMPLETED':
+      return { status: 'COMPLETED', label: 'Completed', color: '#2196f3', hasBooking: true };
+    case 'NO_SHOW':
+      return { status: 'NO_SHOW', label: 'No Show', color: '#d32f2f', hasBooking: true };
+    case 'RESCHEDULED':
+      return { status: 'RESCHEDULED', label: 'Rescheduled', color: '#9c27b0', hasBooking: true };
+    default:
+      return { status: latestBooking.status, label: latestBooking.status, color: '#757575', hasBooking: true };
+  }
+};
+
 const ServiceRegistrationsGrid: React.FC = () => {
   const navigate = useNavigate();
   const [registrations, setRegistrations] = useState<ServiceRegistrationResponse[]>([]);
@@ -138,6 +168,8 @@ const ServiceRegistrationsGrid: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<ServiceRegistrationResponse | null>(null);
   const [openTrainerModal, setOpenTrainerModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [openBookingModal, setOpenBookingModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<TrainerBooking | null>(null);
   const [printingInvoice, setPrintingInvoice] = useState<number | null>(null);
   // Stores the trainer + schedule chosen in TrainerAssignmentModal so ConfirmPaymentModal can skip the picker
   const [lastAssignment, setLastAssignment] = useState<AssignmentResult | null>(null);
@@ -269,6 +301,22 @@ const ServiceRegistrationsGrid: React.FC = () => {
     }
   };
 
+  const handleViewBookingStatus = (registration: ServiceRegistrationResponse) => {
+    if (registration.upcomingBookings && registration.upcomingBookings.length > 0) {
+      setSelectedBooking(registration.upcomingBookings[0]);
+      setSelectedRegistration(registration);
+      setOpenBookingModal(true);
+    }
+  };
+
+  const handleReassignTrainer = () => {
+    // Close booking modal and open trainer assignment modal
+    setOpenBookingModal(false);
+    if (selectedRegistration) {
+      setOpenTrainerModal(true);
+    }
+  };
+
   if (loading && registrations.length === 0) {
     return (
       <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
@@ -333,13 +381,18 @@ const ServiceRegistrationsGrid: React.FC = () => {
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Registration Date</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Expiration Date</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Trainer</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Booking Status</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Type</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Status</TableCell>
                 <TableCell sx={{ fontSize: { xs: '0.875rem', md: '1rem' }, fontWeight: 600, color: '#0f172a' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {registrations.map((registration) => (
+              {registrations.map((registration) => {
+                const bookingStatus = getBookingStatus(registration);
+                const canReassignTrainer = bookingStatus.status === 'REJECTED';
+                
+                return (
                 <TableRow key={registration.id} hover sx={{ '&:hover': { backgroundColor: '#f8faff' } }}>
                   <TableCell>
                     <Box>
@@ -388,6 +441,23 @@ const ServiceRegistrationsGrid: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Chip
+                      label={bookingStatus.label}
+                      size="small"
+                      icon={bookingStatus.hasBooking ? <Info sx={{ fontSize: 16, color: 'white !important' }} /> : undefined}
+                      onClick={() => bookingStatus.hasBooking && handleViewBookingStatus(registration)}
+                      sx={{
+                        fontSize: { xs: '0.75rem', md: '0.8125rem' },
+                        background: bookingStatus.color,
+                        color: 'white',
+                        cursor: bookingStatus.hasBooking ? 'pointer' : 'default',
+                        '&:hover': bookingStatus.hasBooking ? {
+                          opacity: 0.8,
+                        } : {},
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
                       label={registration.registrationType || 'ONLINE'}
                       size="small"
                       variant="outlined"
@@ -405,10 +475,12 @@ const ServiceRegistrationsGrid: React.FC = () => {
                   <TableCell>
                     <Stack direction="row" spacing={1}>
 
-                      {/* Set Trainer */}
+                      {/* Set Trainer / Reassign Trainer */}
                       <Tooltip
                           title={
-                            registration.trainerName
+                            canReassignTrainer
+                                ? 'Reassign trainer (booking rejected)'
+                                : registration.trainerName
                                 ? 'Trainer already assigned'
                                 : 'Assign trainer'
                           }
@@ -417,8 +489,8 @@ const ServiceRegistrationsGrid: React.FC = () => {
                         <IconButton
                             size="small"
                             onClick={() => handleOpenTrainerModal(registration)}
-                            disabled={!!registration.trainerName}
-                            color={registration.trainerName ? 'default' : 'primary'}
+                            disabled={!!registration.trainerName && !canReassignTrainer}
+                            color={canReassignTrainer ? 'error' : registration.trainerName ? 'default' : 'primary'}
                         >
                           <PersonAdd fontSize="small" />
                         </IconButton>
@@ -478,7 +550,8 @@ const ServiceRegistrationsGrid: React.FC = () => {
                     </Stack>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -541,8 +614,35 @@ const ServiceRegistrationsGrid: React.FC = () => {
           amount={selectedRegistration.service.price}
           trainerId={lastAssignment?.trainerId ?? selectedRegistration.trainerId ?? undefined}
           trainerName={lastAssignment?.trainerName ?? selectedRegistration.trainerName ?? undefined}
-          preselectedSchedule={lastAssignment?.schedule ?? null}
+          preselectedSchedule={
+            lastAssignment?.schedule ?? 
+            (selectedRegistration.upcomingBookings && selectedRegistration.upcomingBookings.length > 0
+              ? {
+                  date: new Date(selectedRegistration.upcomingBookings[0].bookingDate),
+                  slot: {
+                    start: selectedRegistration.upcomingBookings[0].startTime,
+                    end: selectedRegistration.upcomingBookings[0].endTime,
+                    label: `${selectedRegistration.upcomingBookings[0].startTime} - ${selectedRegistration.upcomingBookings[0].endTime}`
+                  }
+                }
+              : null)
+          }
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* ── Booking Status Modal ── */}
+      {selectedRegistration && selectedBooking && (
+        <BookingStatusModal
+          open={openBookingModal}
+          onClose={() => {
+            setOpenBookingModal(false);
+            setSelectedBooking(null);
+            setSelectedRegistration(null);
+          }}
+          booking={selectedBooking}
+          registrationId={selectedRegistration.id}
+          onSelectNewTrainer={handleReassignTrainer}
         />
       )}
     </PageWrapper>

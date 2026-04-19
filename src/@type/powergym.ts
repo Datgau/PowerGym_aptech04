@@ -53,7 +53,7 @@ export interface BannerFeature {
 
 // gói hội viên
 export interface PackageOption {
-  readonly id: string;
+  readonly id: number;
   readonly packageId?: string;
   readonly name: string;
   readonly duration: string;

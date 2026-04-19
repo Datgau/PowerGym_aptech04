@@ -27,16 +27,18 @@ import {
   VerifiedUser,
   Edit,
   Work,
+  Info,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useAuth } from '../../hooks/useAuth';
 import { loadAuthSession, persistAuthSession } from '../../services/authStorage';
 import { getMyRegistrations } from '../../services/serviceRegistrationService';
-import type { ServiceRegistrationResponse } from '../../services/serviceRegistrationService';
+import type { ServiceRegistrationResponse, TrainerBooking } from '../../services/serviceRegistrationService';
 import { getCurrentTrainerProfile } from '../../services/trainerService';
 import type { TrainerResponse } from '../../services/trainerService';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
 import EditProfileModal from '../../components/Profile/EditProfileModal';
+import BookingStatusModal from '../../components/ServiceRegistration/BookingStatusModal';
 
 const BRAND_GRADIENT = 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)';
 
@@ -154,6 +156,9 @@ const Profile: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(1);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<TrainerBooking | null>(null);
+  const [selectedRegistrationId, setSelectedRegistrationId] = useState<number | null>(null);
   const itemsPerPage = 2; // Hiển thị 2 services mỗi trang
 
   const isTrainer = user?.role === 'TRAINER';
@@ -242,6 +247,48 @@ const Profile: React.FC = () => {
       checkAuthStatus();
     }
     loadUserData();
+  };
+
+  const getBookingStatus = (registration: ServiceRegistrationResponse) => {
+    if (!registration.upcomingBookings || registration.upcomingBookings.length === 0) {
+      return { status: 'NO_BOOKING', label: 'No booking', color: '#9e9e9e' };
+    }
+    
+    const latestBooking = registration.upcomingBookings[0];
+
+    switch (latestBooking.status) {
+      case 'PENDING':
+        return { status: 'PENDING', label: 'Pending', color: '#ff9800' };
+      case 'CONFIRMED':
+        return { status: 'CONFIRMED', label: 'Confirmed', color: '#4caf50' };
+      case 'REJECTED':
+        return { status: 'REJECTED', label: 'Rejected', color: '#f44336' };
+      case 'CANCELLED':
+        return { status: 'CANCELLED', label: 'Cancelled', color: '#9e9e9e' };
+      case 'COMPLETED':
+        return { status: 'COMPLETED', label: 'Completed', color: '#2196f3' };
+      case 'NO_SHOW':
+        return { status: 'NO_SHOW', label: 'No Show', color: '#d32f2f' };
+      case 'RESCHEDULED':
+        return { status: 'RESCHEDULED', label: 'Rescheduled', color: '#9c27b0' };
+      default:
+        return { status: latestBooking.status, label: latestBooking.status, color: '#757575' };
+    }
+  };
+
+  const handleViewBookingStatus = (registration: ServiceRegistrationResponse) => {
+    if (registration.upcomingBookings && registration.upcomingBookings.length > 0) {
+      setSelectedBooking(registration.upcomingBookings[0]);
+      setSelectedRegistrationId(registration.id);
+      setBookingModalOpen(true);
+    }
+  };
+
+  const handleSelectNewTrainer = () => {
+    // TODO: Navigate to trainer selection page with registrationId
+    console.log('Select new trainer for registration:', selectedRegistrationId);
+    // You can implement navigation to trainer selection here
+    // For example: navigate(`/services/${registration.service.id}/select-trainer?registrationId=${selectedRegistrationId}`);
   };
 
   if (loading) {
@@ -643,7 +690,11 @@ const Profile: React.FC = () => {
                       ) : (
                         <>
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {getPaginatedRegistrations().map((registration) => (
+                            {getPaginatedRegistrations().map((registration) => {
+                              const bookingStatus = getBookingStatus(registration);
+                              const hasBooking = registration.upcomingBookings && registration.upcomingBookings.length > 0;
+                              
+                              return (
                               <ServiceCard key={registration.id}>
                                 <Box display="flex" alignItems="flex-start" gap={2}>
                                   <Box
@@ -675,6 +726,32 @@ const Profile: React.FC = () => {
                                           fontWeight: 600,
                                         }}
                                       />
+                                      {registration.trainerName && (
+                                        <Chip
+                                          label={`PT: ${registration.trainerName}`}
+                                          size="small"
+                                          sx={{
+                                            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                            color: 'white',
+                                            fontWeight: 600,
+                                          }}
+                                        />
+                                      )}
+                                      <Chip
+                                        label={bookingStatus.label}
+                                        size="small"
+                                        icon={hasBooking ? <Info sx={{ fontSize: 16, color: 'white !important' }} /> : undefined}
+                                        onClick={() => hasBooking && handleViewBookingStatus(registration)}
+                                        sx={{
+                                          background: bookingStatus.color,
+                                          color: 'white',
+                                          fontWeight: 600,
+                                          cursor: hasBooking ? 'pointer' : 'default',
+                                          '&:hover': hasBooking ? {
+                                            opacity: 0.8,
+                                          } : {},
+                                        }}
+                                      />
                                     </Stack>
                                     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                                       <Box sx={{ flex: '1 1 50%', minWidth: '150px' }}>
@@ -699,7 +776,8 @@ const Profile: React.FC = () => {
                                   </Box>
                                 </Box>
                               </ServiceCard>
-                            ))}
+                              );
+                            })}
                           </Box>
 
                           {/* Pagination */}
@@ -754,6 +832,15 @@ const Profile: React.FC = () => {
             onSuccess={handleEditProfileSuccess}
           />
         )}
+
+        {/* Booking Status Modal */}
+        <BookingStatusModal
+          open={bookingModalOpen}
+          onClose={() => setBookingModalOpen(false)}
+          booking={selectedBooking}
+          registrationId={selectedRegistrationId || 0}
+          onSelectNewTrainer={handleSelectNewTrainer}
+        />
       </PageWrapper>
     </PowerGymLayout>
   );

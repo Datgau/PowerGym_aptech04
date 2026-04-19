@@ -34,7 +34,7 @@ const AuthRedirect = () => {
     }
   }
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/home" replace />;
 };
 
 export default AuthRedirect;
