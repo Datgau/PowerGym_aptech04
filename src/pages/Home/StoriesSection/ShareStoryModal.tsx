@@ -34,12 +34,33 @@ interface ShareStoryModalProps {
 }
 
 const STORY_TAGS = [
-  { value: 'workout', label: 'Workout' },
-  { value: 'achievement', label: 'Achievement' },
+  // ===== STORY TYPE =====
+  { value: 'transformation', label: 'Transformation Story' },
+  { value: 'success_story', label: 'Success Story' },
   { value: 'motivation', label: 'Motivation' },
-  { value: 'nutrition', label: 'Nutrition' },
-  { value: 'progress', label: 'Progress' },
-  { value: 'tips', label: 'Tips' }
+  { value: 'inspiration', label: 'Inspiration' },
+  { value: 'journey', label: 'Fitness Journey' },
+  { value: 'discipline', label: 'Discipline & Consistency' },
+  { value: 'mindset', label: 'Mindset Growth' },
+  { value: 'lifestyle', label: 'Fitness Lifestyle' },
+
+  // ===== LEVEL =====
+  { value: 'beginner_story', label: 'Beginner Story' },
+  { value: 'athlete_story', label: 'Athlete / Advanced Story' },
+
+  // ===== WORKOUT TYPES =====
+  { value: 'gym', label: 'Gym Training' },
+  { value: 'cardio', label: 'Cardio' },
+  { value: 'yoga', label: 'Yoga' },
+  { value: 'muay_thai', label: 'Muay Thai' },
+
+  // ===== CONTENT STYLE =====
+  { value: 'training_life', label: 'Gym Life' },
+  { value: 'progress_update', label: 'Progress Update' },
+  { value: 'personal_record', label: 'Personal Record (PR)' },
+  { value: 'comeback', label: 'Comeback Story' },
+  { value: 'fat_loss', label: 'Fat Loss Journey' },
+  { value: 'muscle_gain', label: 'Muscle Gain Journey' }
 ];
 
 const ShareStoryModal: React.FC<ShareStoryModalProps> = ({ open, onClose, onSuccess, story }) => {

@@ -259,16 +259,22 @@ const ServicesManagement: React.FC = () => {
     } else if (category && typeof category === 'object') {
       categoryName = category.name;
     }
-    
+
     const colors: Record<string, any> = {
-      PERSONAL_TRAINER: 'primary',
+      PERSONAL_TRAINER: 'error',
+      PERSONAL_TRAINING: 'error',
       BOXING: 'error',
+      CLIMBING: 'error',
       YOGA: 'success',
+      PILATES: 'success',
+      AQUA: 'success',
       CARDIO: 'warning',
-      OTHER: 'default'
+      CLASS: 'warning',
+      OTHER: 'default',
     };
+
     return colors[categoryName] || 'default';
-  };
+  }
 
   if (loading) {
     return (

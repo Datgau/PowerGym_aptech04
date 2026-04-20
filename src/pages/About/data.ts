@@ -6,7 +6,6 @@ import {
   Groups,
 } from '@mui/icons-material';
 import type { ValueItem, TeamMember, StatItemData, ImageData } from './types';
-import datImg from '../../../public/images/dat1.png';
 
 
 export const valuesData: ValueItem[] = [
@@ -40,25 +39,25 @@ export const teamData: TeamMember[] = [
   {
     name: 'Nguyen Tien Dat',
     role: 'Chief Executive Officer',
-    image: datImg,
+    image: 'https://static.wixstatic.com/media/cc8074_dd40faad422b46e29f5dc6a1a73d43a0~mv2.jpg/v1/fill/w_980,h_1470,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/k-4777_JPG.jpg',
     description: '15 years of experience in the fitness industry',
   },
   {
     name: 'Tran Ngoc Anh',
     role: 'Head of Training',
-    image: 'https://i.pravatar.cc/300?img=45',
+    image: 'https://images.ctfassets.net/qw8ps43tg2ux/1LPfI8kPATAzojZMBalhli/7dbdddba786444110a762b75977a8fd8/how-it-works-issa-certified-personal-trainer.webp?fm=webp&w=1440&q=75',
     description: 'International certified PT and nutrition expert',
   },
   {
     name: 'Tran Cong Nghia',
     role: 'Head Coach',
-    image: 'https://i.pravatar.cc/300?img=33',
+    image: 'https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/3332412.png&w=350&h=254',
     description: 'Vietnam Bodybuilding Champion 2020',
   },
   {
     name: 'Truong Trung Dung',
     role: 'Yoga & Pilates Specialist',
-    image: 'https://i.pravatar.cc/300?img=47',
+    image: 'https://image.sggp.org.vn/w1000/Uploaded/2026/ldfnyrykxq/2023_01_07/makhachev-03-1310.jpg.webp',
     description: '10 years of professional yoga teaching experience',
   },
 ];

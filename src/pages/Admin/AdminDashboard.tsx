@@ -15,7 +15,6 @@ import AdminLayout from '../../components/PowerGym/Layout/AdminLayout.tsx';
 import ProductList from './Tabs/Products/ProductList.tsx';
 import ImportReceiptList from './Tabs/ImportReceipts/ImportReceiptList.tsx';
 import { OrderList } from './Tabs/Orders';
-import FinancialPage from './Tabs/Financial/FinancialPage.tsx';
 import Settings from './Tabs/Settings/Settings.tsx';
 
 // Tab Components
@@ -33,7 +32,6 @@ const RewardsTab: React.FC = () => <RewardsPage />;
 const ProductsTab: React.FC = () => <ProductList />;
 const ImportReceiptsTab: React.FC = () => <ImportReceiptList />;
 const OrdersTab: React.FC = () => <OrderList />;
-const FinancialTab: React.FC = () => <FinancialPage />;
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -60,11 +58,10 @@ const AdminDashboard: React.FC = () => {
     <ProductsTab key="products" />,                                          // 8
     <ImportReceiptsTab key="import-receipts" />,                             // 9
     <OrdersTab key="orders" />,                                              // 10
-    <FinancialTab key="financial" />,                                        // 11
-    <StoriesTab key="stories" />,                                            // 12
-    <PromotionsTab key="promotions" />,                                      // 13
-    <RewardsTab key="rewards" />,                                            // 14
-    <SettingsTab key="settings" />,                                          // 15
+    <StoriesTab key="stories" />,                                            // 11
+    <PromotionsTab key="promotions" />,                                      // 12
+    <RewardsTab key="rewards" />,                                            // 13
+    <SettingsTab key="settings" />,                                          // 14
   ];
 
   return (

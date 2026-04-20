@@ -34,6 +34,7 @@ import {
   type ServiceCategoryResponse
 } from '../../../../services/serviceCategoryService';
 import CreateServiceCategoryModal from './CreateServiceCategoryModal';
+import UpdateServiceCategoryModal from './UpdateServiceCategoryModal';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 
@@ -202,6 +203,8 @@ const ServiceCategoryGrid: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategoryResponse | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
   const {
@@ -266,6 +269,11 @@ const ServiceCategoryGrid: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Failed to delete category');
     }
+  };
+
+  const handleEdit = (category: ServiceCategoryResponse) => {
+    setSelectedCategory(category);
+    setUpdateModalOpen(true);
   };
 
   const handleFilterChange = (_event: React.MouseEvent<HTMLElement>, newFilter: string | null) => {
@@ -485,7 +493,11 @@ const ServiceCategoryGrid: React.FC = () => {
                               </ActionButton>
                             </Tooltip>
                             <Tooltip title="Edit" arrow>
-                              <ActionButton size="small" actiontype="edit">
+                              <ActionButton 
+                                size="small" 
+                                actiontype="edit"
+                                onClick={() => handleEdit(category)}
+                              >
                                 <Edit sx={{ fontSize: 16 }} />
                               </ActionButton>
                             </Tooltip>
@@ -569,6 +581,21 @@ const ServiceCategoryGrid: React.FC = () => {
               setCreateModalOpen(false);
               loadCategories();
             }}
+        />
+
+        {/* ── Update Modal ── */}
+        <UpdateServiceCategoryModal
+            open={updateModalOpen}
+            onClose={() => {
+              setUpdateModalOpen(false);
+              setSelectedCategory(null);
+            }}
+            onSuccess={() => {
+              setUpdateModalOpen(false);
+              setSelectedCategory(null);
+              loadCategories();
+            }}
+            category={selectedCategory}
         />
       </PageWrapper>
   );

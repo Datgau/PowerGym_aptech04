@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   Button,
   TextField,
   Box,
@@ -19,6 +17,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Divider,
 } from '@mui/material';
 import { Close, Add, Delete, Visibility, VisibilityOff } from '@mui/icons-material';
 import { InputAdornment } from '@mui/material';
@@ -195,18 +194,50 @@ const ImportReceiptFormModal: React.FC<ImportReceiptFormModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          {isEditMode ? 'Edit Import Receipt' : 'Create Import Receipt'}
-          <IconButton onClick={onClose} size="small">
-            <Close />
-          </IconButton>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+        }
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          p: 3,
+          background: 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box>
+          <Typography variant="h5" fontWeight={700}>
+            {isEditMode ? 'Edit Import Receipt' : 'Create Import Receipt'}
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+            {isEditMode ? 'Update import receipt information' : 'Add new products to inventory'}
+          </Typography>
         </Box>
-      </DialogTitle>
+        <IconButton 
+          onClick={onClose}
+          sx={{ 
+            color: 'white',
+            '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+          }}
+        >
+          <Close />
+        </IconButton>
+      </Box>
       
       {loadingReceipt ? (
-        <DialogContent>
+        <DialogContent sx={{ p: 4 }}>
           <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress />
           </Box>
@@ -220,82 +251,84 @@ const ImportReceiptFormModal: React.FC<ImportReceiptFormModalProps> = ({
         >
         {({ errors, touched, isSubmitting, values, setFieldValue }) => (
           <Form>
-            <DialogContent>
+            <DialogContent sx={{ p: 4 }}>
               {error && (
-                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+                <Alert 
+                  severity="error" 
+                  sx={{ mb: 3, borderRadius: 2 }} 
+                  onClose={() => setError('')}
+                >
                   {error}
                 </Alert>
               )}
 
-              <Box display="flex" flexDirection="column" gap={2}>
-                {/* Supplier Name */}
-                <Field
-                  as={TextField}
-                  name="supplierName"
-                  label="Supplier Name"
-                  fullWidth
-                  required
-                  error={touched.supplierName && !!errors.supplierName}
-                  helperText={touched.supplierName && errors.supplierName}
-                />
-
-                {/* Notes */}
-                <Field
-                  as={TextField}
-                  name="notes"
-                  label="Notes"
-                  fullWidth
-                  multiline
-                  rows={2}
-                  error={touched.notes && !!errors.notes}
-                  helperText={touched.notes && errors.notes}
-                />
-
-                {/* Password field for edit mode */}
-                {isEditMode && (
-                  <Field
-                    as={TextField}
-                    name="password"
-                    label="Password"
-                    type={showPassword ? 'text' : 'password'}
-                    fullWidth
-                    required
-                    error={touched.password && !!errors.password}
-                    helperText={touched.password && errors.password ? errors.password : 'Enter your password to confirm update'}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              edge="end"
-                            >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-                )}
-
-                {/* Items */}
+              <Box display="flex" flexDirection="column" gap={3}>
+                {/* Supplier Information Section */}
                 <Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="h6">Items</Typography>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2} color="#0f172a">
+                    Supplier Information
+                  </Typography>
+                  <Box display="flex" flexDirection="column" gap={2.5}>
+                    <Field
+                      as={TextField}
+                      name="supplierName"
+                      label="Supplier Name"
+                      fullWidth
+                      required
+                      error={touched.supplierName && !!errors.supplierName}
+                      helperText={touched.supplierName && errors.supplierName}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        }
+                      }}
+                    />
+
+                    <Field
+                      as={TextField}
+                      name="notes"
+                      label="Notes"
+                      fullWidth
+                      multiline
+                      rows={2}
+                      placeholder="Add any additional notes..."
+                      error={touched.notes && !!errors.notes}
+                      helperText={touched.notes && errors.notes}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        }
+                      }}
+                    />
                   </Box>
+                </Box>
+
+                <Divider />
+
+                {/* Items Section */}
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600} mb={2} color="#0f172a">
+                    Import Items
+                  </Typography>
 
                   <FieldArray name="items">
                     {({ push, remove }) => (
                       <>
-                        <TableContainer component={Paper} variant="outlined">
+                        <TableContainer 
+                          component={Paper} 
+                          sx={{ 
+                            borderRadius: 2,
+                            border: '1px solid #e2e8f0',
+                            boxShadow: 'none'
+                          }}
+                        >
                           <Table size="small">
                             <TableHead>
-                              <TableRow>
-                                <TableCell>Product</TableCell>
-                                <TableCell width={100}>Quantity</TableCell>
-                                <TableCell width={120}>Unit Price</TableCell>
-                                <TableCell width={120}>Subtotal</TableCell>
+                              <TableRow sx={{ backgroundColor: '#f8faff' }}>
+                                <TableCell sx={{ fontWeight: 600, color: '#0f172a' }}>Product</TableCell>
+                                <TableCell width={100} sx={{ fontWeight: 600, color: '#0f172a' }}>Quantity</TableCell>
+                                <TableCell width={120} sx={{ fontWeight: 600, color: '#0f172a' }}>Unit Price</TableCell>
+                                <TableCell width={120} sx={{ fontWeight: 600, color: '#0f172a' }}>Subtotal</TableCell>
                                 <TableCell width={50}></TableCell>
                               </TableRow>
                             </TableHead>
@@ -376,13 +409,27 @@ const ImportReceiptFormModal: React.FC<ImportReceiptFormModalProps> = ({
                         <Button
                           startIcon={<Add />}
                           onClick={() => push({ productId: 0, quantity: 1, unitPrice: 0 })}
-                          sx={{ mt: 1 }}
+                          sx={{ 
+                            mt: 2,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                          }}
                         >
                           Add Item
                         </Button>
 
-                        <Box display="flex" justifyContent="flex-end" mt={2}>
-                          <Typography variant="h6">
+                        <Box 
+                          display="flex" 
+                          justifyContent="flex-end" 
+                          mt={3}
+                          p={2}
+                          sx={{
+                            backgroundColor: '#f8faff',
+                            borderRadius: 2,
+                          }}
+                        >
+                          <Typography variant="h6" fontWeight={700} color="primary">
                             Total: {calculateTotal(values.items).toLocaleString()} VNĐ
                           </Typography>
                         </Box>
@@ -390,11 +437,71 @@ const ImportReceiptFormModal: React.FC<ImportReceiptFormModalProps> = ({
                     )}
                   </FieldArray>
                 </Box>
+
+                {/* Password field for edit mode */}
+                {isEditMode && (
+                  <>
+                    <Divider />
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={600} mb={2} color="#0f172a">
+                        Confirm Update
+                      </Typography>
+                      <Field
+                        as={TextField}
+                        name="password"
+                        label="Password"
+                        type={showPassword ? 'text' : 'password'}
+                        fullWidth
+                        required
+                        error={touched.password && !!errors.password}
+                        helperText={touched.password && errors.password ? errors.password : 'Enter your password to confirm update'}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          }
+                        }}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                >
+                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    </Box>
+                  </>
+                )}
               </Box>
             </DialogContent>
 
-            <DialogActions>
-              <Button onClick={onClose} disabled={isSubmitting}>
+            {/* Footer */}
+            <Box
+              sx={{
+                p: 3,
+                backgroundColor: '#f8fafc',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+              }}
+            >
+              <Button 
+                onClick={onClose} 
+                disabled={isSubmitting}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                }}
+              >
                 Cancel
               </Button>
               <Button
@@ -402,10 +509,20 @@ const ImportReceiptFormModal: React.FC<ImportReceiptFormModalProps> = ({
                 variant="contained"
                 disabled={isSubmitting}
                 startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 4,
+                  background: 'linear-gradient(135deg, #045668 0%, #00b4ff 40%, #1366ba 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #034556 0%, #0099dd 40%, #0f5299 100%)',
+                  }
+                }}
               >
-                {isEditMode ? 'Update' : 'Create'}
+                {isEditMode ? 'Update Receipt' : 'Create Receipt'}
               </Button>
-            </DialogActions>
+            </Box>
           </Form>
         )}
       </Formik>

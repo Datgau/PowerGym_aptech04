@@ -256,7 +256,7 @@ const ImportReceiptList: React.FC = () => {
             </Box>
           </HeaderLeft>
           <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleCreate}>
-            Create Import Receipt
+            Import Receipt
           </AddButton>
         </HeaderSection>
 
@@ -353,9 +353,16 @@ const ImportReceiptList: React.FC = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography>
-                        {receipt.createdByName}
-                      </Typography>
+                      <Box>
+                        <Typography fontWeight={600} fontSize={14}>
+                          {receipt.createdByName}
+                        </Typography>
+                        {receipt.createdByEmail && (
+                          <Typography fontSize={12} color="text.secondary">
+                            {receipt.createdByEmail}
+                          </Typography>
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Typography>
@@ -366,11 +373,11 @@ const ImportReceiptList: React.FC = () => {
                       <Box display="flex" gap={0.5} justifyContent="center">
                         <IconButton
                           size="small"
-                          color="primary"
                           onClick={(e) => handleEdit(receipt.id, e)}
                           sx={{
+                            color: '#ed6c02',
                             '&:hover': {
-                              backgroundColor: 'rgba(0, 102, 255, 0.08)',
+                              backgroundColor: 'rgba(237, 108, 2, 0.08)',
                             },
                           }}
                         >
@@ -419,7 +426,7 @@ const ImportReceiptList: React.FC = () => {
                 Create your first import receipt to get started
               </Typography>
               <AddButton variant="contained" startIcon={<Add />} onClick={handleCreate}>
-                Create Import Receipt
+                Import Receipt
               </AddButton>
             </Box>
           )}

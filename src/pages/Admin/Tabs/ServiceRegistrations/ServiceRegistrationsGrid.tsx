@@ -259,8 +259,10 @@ const ServiceRegistrationsGrid: React.FC = () => {
     setOpenTrainerModal(false);
     // Keep selectedRegistration so ConfirmPaymentModal can open right after
     loadRegistrations();
-    // Auto-open payment modal so admin can confirm payment immediately
-    setOpenPaymentModal(true);
+    // Use setTimeout to ensure trainer modal is fully closed before opening payment modal
+    setTimeout(() => {
+      setOpenPaymentModal(true);
+    }, 100);
   };
   const handlePaymentSuccess = () => {
     setOpenPaymentModal(false);
@@ -586,7 +588,7 @@ const ServiceRegistrationsGrid: React.FC = () => {
       </ContentSection>
 
       {/* ── Trainer Assignment Modal ── */}
-      {selectedRegistration && (
+      {selectedRegistration && openTrainerModal && (
         <TrainerAssignmentModal
           open={openTrainerModal}
           onClose={() => {
@@ -600,7 +602,7 @@ const ServiceRegistrationsGrid: React.FC = () => {
       )}
 
       {/* ── Confirm Payment Modal ── */}
-      {selectedRegistration && (
+      {selectedRegistration && openPaymentModal && !openTrainerModal && (
         <ConfirmPaymentModal
           open={openPaymentModal}
           onClose={() => {

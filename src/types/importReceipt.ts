@@ -16,6 +16,7 @@ export interface ImportReceipt {
   notes?: string;
   createdById: number;
   createdByName: string;
+  createdByEmail?: string;
   createdAt: string;
   itemCount: number;
 }

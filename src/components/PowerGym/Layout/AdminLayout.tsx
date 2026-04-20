@@ -87,7 +87,6 @@ const menuGroups = [
             { text: 'Products', icon: <Inventory /> },
             { text: 'Import Receipts', icon: <Receipt /> },
             { text: 'Orders', icon: <ShoppingCart /> },
-            { text: 'Financial', icon: <AccountBalanceWalletIcon /> },
         ],
     },
     {
@@ -465,7 +464,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab = 0, onTa
                 <MenuItem
                     onClick={() => {
                         setAnchorEl(null);
-                        onTabChange?.(15);
+                        onTabChange?.(14);
                     }}
                     sx={{ gap: 1.5, py: 1 }}
                 >
