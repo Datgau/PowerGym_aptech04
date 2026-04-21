@@ -11,7 +11,7 @@ interface UsePackageSelectionReturn {
   confirmDialogOpen: boolean;
   processingPackage: string | null;
   notification: NotificationMessage | null;
-  handlePackageSelect: (pkg: PackageOption) => void;
+  handlePackageSelect: (pkg: PackageOption) => Promise<void>;
   handleConfirmSelection: () => Promise<void>;
   handleCloseDialog: () => void;
   handleCloseNotification: () => void;
@@ -26,34 +26,26 @@ export const usePackageSelection = ({
   const [notification, setNotification] = useState<NotificationMessage | null>(null);
   const { requireAuth } = useAuth();
 
-  const handlePackageSelect = useCallback((pkg: PackageOption): void => {
+  const handlePackageSelect = useCallback(async (pkg: PackageOption): Promise<void> => {
     if (!requireAuth()) return;
-    setSelectedPackage(pkg);
-    setConfirmDialogOpen(true);
-  }, []);
-
-  const handleConfirmSelection = useCallback(async (): Promise<void> => {
-    if (!selectedPackage) return;
-
+    
     try {
-      setProcessingPackage(String(selectedPackage.id));
-      await onSelectPackage(Number(selectedPackage.id));
+      setProcessingPackage(String(pkg.id));
+      await onSelectPackage(Number(pkg.id));
       
       setNotification({
         id: 'package-success',
         type: 'success',
-        title: 'Registration successful',
-        message: `You have successfully registered for ${selectedPackage.name} package!`,
+        title: 'Package selected',
+        message: `${pkg.name} package selected successfully!`,
         autoHide: true,
-        duration: 5000
+        duration: 3000
       });
-      
-      setConfirmDialogOpen(false);
     } catch (error) {
       setNotification({
         id: 'package-error',
         type: 'error',
-        title: 'Registration failed',
+        title: 'Selection failed',
         message: error instanceof Error ? error.message : 'Please try again later',
         autoHide: true,
         duration: 5000
@@ -61,7 +53,12 @@ export const usePackageSelection = ({
     } finally {
       setProcessingPackage(null);
     }
-  }, [selectedPackage, onSelectPackage]);
+  }, [requireAuth, onSelectPackage]);
+
+  const handleConfirmSelection = useCallback(async (): Promise<void> => {
+    // This is no longer used since we removed the confirmation dialog
+    return Promise.resolve();
+  }, []);
 
   const handleCloseDialog = useCallback((): void => {
     setConfirmDialogOpen(false);

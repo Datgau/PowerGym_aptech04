@@ -4,7 +4,6 @@ import { WorkspacePremium } from '@mui/icons-material';
 import type { PackageOption } from '../../../@type/powergym';
 import PackageCard from './PackageCard';
 import PackagesSkeleton from './PackagesSkeleton';
-import ConfirmationDialog from './ConfirmationDialog';
 import { usePackageSelection } from './usePackageSelection';
 
 interface MembershipPackagesSectionProps {
@@ -198,7 +197,9 @@ const MembershipPackagesSection: React.FC<MembershipPackagesSectionProps> = ({
                             >
                                 <PackageCard
                                     package={pkg}
-                                    onSelect={() => handlePackageSelect(pkg)}
+                                    onSelect={() => {
+                                        handlePackageSelect(pkg).catch(console.error);
+                                    }}
                                     processing={processingPackage === String(pkg.id)}
                                     isActive={activePackageIds.includes(pkg.id)}
                                 />
@@ -207,14 +208,6 @@ const MembershipPackagesSection: React.FC<MembershipPackagesSectionProps> = ({
                     ))}
                 </Box>
             </Container>
-
-            <ConfirmationDialog
-                open={confirmDialogOpen}
-                package={selectedPackage}
-                processing={!!processingPackage}
-                onClose={handleCloseDialog}
-                onConfirm={handleConfirmSelection}
-            />
         </Box>
     );
 };

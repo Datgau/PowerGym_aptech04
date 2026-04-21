@@ -15,13 +15,22 @@ import {
     Stack,
     Divider,
     Tooltip,
-    IconButton
+    IconButton,
+    TextField,
+    InputAdornment,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StoreIcon from '@mui/icons-material/Store';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { useGymServicesPaginated} from "../../hooks/useGymServices.ts";
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { useGymServicesWithSearch } from "../../hooks/useGymServicesWithSearch.ts";
 import ServiceDetailModal from "./ServiceDetailModal.tsx";
 import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
@@ -44,9 +53,15 @@ const Service: React.FC = () => {
     currentPage, 
     totalElements,
     rowsPerPage,
+    searchTerm,
+    selectedCategory,
+    categories,
     handleChangePage,
-    handleChangeRowsPerPage
-  } = useGymServicesPaginated(6);
+    handleChangeRowsPerPage,
+    handleSearchChange,
+    handleCategoryChange,
+    clearFilters
+  } = useGymServicesWithSearch(6);
   const [selectedService, setSelectedService] = useState<any>(null);
   const [selectedServiceForFlow, setSelectedServiceForFlow] = useState<any>(null);
   const { requireAuth } = useAuth();
@@ -146,7 +161,7 @@ const Service: React.FC = () => {
                     letterSpacing: '-0.5px',
                   }}
               >
-                Our Services
+                Fitness Services
               </Typography>
               <Box sx={{
                 width: 56, height: 3,
@@ -163,26 +178,293 @@ const Service: React.FC = () => {
                     mx: 'auto',
                   }}
               >
-                  Choose the training package that fits your goals — from beginner to advanced, every fitness journey starts here.
+                  Choose the training service that fits your goals — from beginner to advanced, every fitness journey starts here.
               </Typography>
             </Box>
           </Container>
         </Box>
           <Box sx={{ background: '#f4f6f9', py: { xs: 6, md: 9 } }}>
           <Container maxWidth="xl">
+              {/* Header with Search */}
               <Stack direction="row" alignItems="flex-end" justifyContent="space-between" mb={5}>
               <Box>
                 <Typography
                     variant="overline"
                     sx={{ color: '#1366ba', fontWeight: 700, letterSpacing: 4, fontSize: '0.68rem' }}
                 >
-                    Service Categories
+                    Fitness Programs
                 </Typography>
                   <Typography variant="h5" fontWeight={700} color="text.primary" mt={0.5}>
-                      {totalElements} Available Services
+                      {totalElements} Available Service{totalElements !== 1 ? 's' : ''}
                   </Typography>
               </Box>
             </Stack>
+
+            {/* Search and Filter Section */}
+            <Box
+              sx={{
+                mb: 4,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(4,86,104,0.08)',
+                boxShadow: '0 8px 32px rgba(4,86,104,0.12)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header */}
+              <Box
+                sx={{
+                  background: BRAND_GRADIENT,
+                  px: 4,
+                  py: 3,
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Decorative elements */}
+                <Box sx={{
+                  position: 'absolute', top: -20, right: -20,
+                  width: 80, height: 80, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.1)',
+                }} />
+                <Box sx={{
+                  position: 'absolute', bottom: -15, left: -15,
+                  width: 60, height: 60, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.05)',
+                }} />
+                
+                <Stack direction="row" alignItems="center" spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
+                  <Box
+                    sx={{
+                      width: 48, height: 48, borderRadius: 2,
+                      background: 'rgba(255,255,255,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backdropFilter: 'blur(10px)',
+                    }}
+                  >
+                    <SearchIcon sx={{ color: '#fff', fontSize: 24 }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700, mb: 0.5 }}>
+                      Find Your Perfect Service
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                      Search by name, description, or browse by category
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              {/* Search Controls */}
+              <Box sx={{ p: 4 }}>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="stretch">
+                  {/* Search Field */}
+                  <Box sx={{ flex: 2 }}>
+                    <TextField
+                      fullWidth
+                      placeholder="Search services by name or description..."
+                      value={searchTerm}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: '#1366ba' }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: searchTerm && (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleSearchChange('')}
+                              sx={{ 
+                                color: '#666',
+                                '&:hover': { 
+                                  backgroundColor: 'rgba(19,102,186,0.08)',
+                                  color: '#1366ba' 
+                                }
+                              }}
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          backgroundColor: '#fff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                          border: '1px solid rgba(4,86,104,0.12)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderColor: '#1366ba',
+                            boxShadow: '0 4px 16px rgba(19,102,186,0.15)',
+                          },
+                          '&.Mui-focused': {
+                            borderColor: '#1366ba',
+                            boxShadow: '0 4px 20px rgba(19,102,186,0.25)',
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
+
+                  {/* Category Filter */}
+                  <Box sx={{ flex: 1, minWidth: 200 }}>
+                    <FormControl fullWidth>
+                      <InputLabel sx={{ color: '#666' }}>Category</InputLabel>
+                      <Select
+                        value={selectedCategory}
+                        onChange={(e) => handleCategoryChange(e.target.value)}
+                        label="Category"
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <FilterListIcon sx={{ color: '#1366ba', ml: 1 }} />
+                          </InputAdornment>
+                        }
+                        sx={{
+                          borderRadius: 3,
+                          backgroundColor: '#fff',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                          border: '1px solid rgba(4,86,104,0.12)',
+                          transition: 'all 0.3s ease',
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#1366ba',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#1366ba',
+                          },
+                          '&:hover': {
+                            boxShadow: '0 4px 16px rgba(19,102,186,0.15)',
+                          },
+                        }}
+                      >
+                        <MenuItem value="">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box
+                              sx={{
+                                width: 8, height: 8, borderRadius: '50%',
+                                background: 'linear-gradient(45deg, #1366ba, #00b4ff)',
+                              }}
+                            />
+                            <em>All Categories</em>
+                          </Box>
+                        </MenuItem>
+                        {categories.map((category) => (
+                          <MenuItem key={category.id} value={category.id.toString()}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box
+                                sx={{
+                                  width: 8, height: 8, borderRadius: '50%',
+                                  background: 'linear-gradient(45deg, #1366ba, #00b4ff)',
+                                }}
+                              />
+                              {category.displayName}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Clear Filters Button */}
+                  {(searchTerm || selectedCategory) && (
+                    <Box sx={{ display: 'flex', alignItems: 'end' }}>
+                      <Button
+                        variant="outlined"
+                        onClick={clearFilters}
+                        startIcon={<ClearIcon />}
+                        sx={{
+                          height: 56,
+                          borderRadius: 3,
+                          borderColor: 'rgba(19,102,186,0.3)',
+                          color: '#1366ba',
+                          backgroundColor: 'rgba(19,102,186,0.04)',
+                          fontWeight: 600,
+                          px: 3,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderColor: '#1366ba',
+                            backgroundColor: 'rgba(19,102,186,0.08)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 16px rgba(19,102,186,0.2)',
+                          },
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    </Box>
+                  )}
+                </Stack>
+
+                {(searchTerm || selectedCategory) && (
+                  <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                    <Stack direction="row" alignItems="center" spacing={2} mb={2}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#666', 
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}
+                      >
+                        <FilterListIcon fontSize="small" />
+                        Active Filters:
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      {searchTerm && (
+                        <Chip
+                          label={`Search: "${searchTerm}"`}
+                          onDelete={() => handleSearchChange('')}
+                          size="medium"
+                          sx={{
+                            background: 'linear-gradient(135deg, rgba(19,102,186,0.1), rgba(0,180,255,0.1))',
+                            color: '#1366ba',
+                            fontWeight: 600,
+                            border: '1px solid rgba(19,102,186,0.2)',
+                            '& .MuiChip-deleteIcon': {
+                              color: '#1366ba',
+                              '&:hover': {
+                                color: '#0d47a1',
+                              },
+                            },
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, rgba(19,102,186,0.15), rgba(0,180,255,0.15))',
+                            },
+                          }}
+                        />
+                      )}
+                      {selectedCategory && (
+                        <Chip
+                          label={`Category: ${categories.find(c => c.id.toString() === selectedCategory)?.displayName}`}
+                          onDelete={() => handleCategoryChange('')}
+                          size="medium"
+                          sx={{
+                            background: 'linear-gradient(135deg, rgba(0,180,255,0.1), rgba(19,102,186,0.1))',
+                            color: '#1366ba',
+                            fontWeight: 600,
+                            border: '1px solid rgba(0,180,255,0.2)',
+                            '& .MuiChip-deleteIcon': {
+                              color: '#1366ba',
+                              '&:hover': {
+                                color: '#0d47a1',
+                              },
+                            },
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, rgba(0,180,255,0.15), rgba(19,102,186,0.15))',
+                            },
+                          }}
+                        />
+                      )}
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
+            </Box>
               {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
                 <CircularProgress size={60} />
@@ -202,9 +484,32 @@ const Service: React.FC = () => {
               </Box>
             ) : services.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" color="text.secondary">
-                  No services available at the moment.
-                </Typography>
+                {searchTerm || selectedCategory ? (
+                  <>
+                    <Typography variant="h6" color="text.secondary" mb={2}>
+                      No services found matching your filters.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={3}>
+                      Try adjusting your search terms or category selection.
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      onClick={clearFilters}
+                      startIcon={<ClearIcon />}
+                      sx={{
+                        borderRadius: 2,
+                        borderColor: '#1366ba',
+                        color: '#1366ba',
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </>
+                ) : (
+                  <Typography variant="h6" color="text.secondary">
+                    No services available at the moment.
+                  </Typography>
+                )}
               </Box>
             ) : (
               <>

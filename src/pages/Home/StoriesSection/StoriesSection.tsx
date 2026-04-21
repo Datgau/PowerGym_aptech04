@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Box, Container, Button, Snackbar, Alert, Typography } from '@mui/material';
+import { Box, Container, Button, Snackbar, Typography } from '@mui/material';
 import { Add as AddIcon, AutoStories } from '@mui/icons-material';
 import StoryCard from './StoryCard.tsx';
 import ViewMoreCard from './ViewMoreCard.tsx';
@@ -10,6 +10,7 @@ import type { StoryItem } from "../../../services/storyService.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { useNavigate } from "react-router-dom";
 import EmptyState from "./EmptyState.tsx";
+import {toast} from "react-toastify";
 
 interface StoriesSectionProps {
     readonly stories: readonly StoryItem[];
@@ -21,7 +22,6 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState('');
     const { requireAuth } = useAuth();
     const navigate = useNavigate();
     const maxStories = 5;
@@ -48,8 +48,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
     };
 
     const handleShareSuccess = () => {
-        setSnackbarMessage('Story submitted successfully! It will appear after admin approval.');
-        setSnackbarOpen(true);
+        toast.success('Story submitted successfully! It will appear after admin approval.');
         if (onStoriesUpdate) onStoriesUpdate();
     };
 
@@ -338,13 +337,6 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ stories, onStoriesUpdat
                 onClose={() => setSnackbarOpen(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <Alert
-                    onClose={() => setSnackbarOpen(false)}
-                    severity="success"
-                    sx={{ width: '100%', borderRadius: 2 }}
-                >
-                    {snackbarMessage}
-                </Alert>
             </Snackbar>
         </Box>
     );

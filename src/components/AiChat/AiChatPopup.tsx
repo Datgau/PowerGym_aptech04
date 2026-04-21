@@ -24,10 +24,10 @@ const ServiceCardItem: React.FC<{ s: ServiceCard }> = ({ s }) => (
       {s.description && <p className="ai-card-desc">{s.description}</p>}
       <div className="ai-card-meta">
         {s.priceFormatted && <span className="ai-card-price">{s.priceFormatted}</span>}
-        {s.duration && <span className="ai-card-sub">{s.duration} minutes</span>}
-        {s.maxParticipants && <span className="ai-card-sub">Max {s.maxParticipants} people</span>}
+        {s.duration && <span className="ai-card-sub">{s.duration} phút</span>}
+        {s.maxParticipants && <span className="ai-card-sub">Tối đa {s.maxParticipants} người</span>}
       </div>
-      <a href="/services" className="ai-card-btn">Register Now →</a>
+      <a href={`/service/${s.id}`} className="ai-card-btn">Đăng ký ngay →</a>
     </div>
   </div>
 );
@@ -37,10 +37,10 @@ const MembershipCardItem: React.FC<{ m: MembershipCard }> = ({ m }) => (
     <div className="ai-card-body">
       <div className="ai-card-header-row">
         <h4 className="ai-card-name">{m.name}</h4>
-        {m.isPopular && <span className="ai-card-badge ai-card-badge--popular">Popular</span>}
+        {m.isPopular && <span className="ai-card-badge ai-card-badge--popular">Phổ biến</span>}
       </div>
       {m.discount && m.discount > 0 && (
-        <span className="ai-card-badge ai-card-badge--discount">{m.discount}% off</span>
+        <span className="ai-card-badge ai-card-badge--discount">Giảm {m.discount}%</span>
       )}
       {m.description && <p className="ai-card-desc">{m.description}</p>}
       <div className="ai-card-meta">
@@ -48,15 +48,15 @@ const MembershipCardItem: React.FC<{ m: MembershipCard }> = ({ m }) => (
         {m.originalPriceFormatted && (
           <span className="ai-card-original-price">{m.originalPriceFormatted}</span>
         )}
-        <span className="ai-card-sub">{m.duration} days</span>
+        <span className="ai-card-sub">{m.duration} ngày</span>
       </div>
       {m.features && m.features.length > 0 && (
         <ul className="ai-card-features">
           {m.features.slice(0, 3).map((f, i) => <li key={i}>✓ {f}</li>)}
-          {m.features.length > 3 && <li className="ai-card-more">+{m.features.length - 3} more benefits</li>}
+          {m.features.length > 3 && <li className="ai-card-more">+{m.features.length - 3} quyền lợi khác</li>}
         </ul>
       )}
-      <a href="/membership" className="ai-card-btn">Register Package →</a>
+      <a href="/pricing" className="ai-card-btn">Đăng ký gói →</a>
     </div>
   </div>
 );
@@ -72,7 +72,7 @@ const TrainerCardItem: React.FC<{ t: TrainerCard }> = ({ t }) => (
       <div>
         <h4 className="ai-card-name">{t.fullName}</h4>
         {t.totalExperienceYears != null && (
-          <span className="ai-card-sub">{t.totalExperienceYears} years experience</span>
+          <span className="ai-card-sub">{t.totalExperienceYears} năm kinh nghiệm</span>
         )}
       </div>
     </div>
@@ -84,7 +84,7 @@ const TrainerCardItem: React.FC<{ t: TrainerCard }> = ({ t }) => (
       </div>
     )}
     {t.bio && <p className="ai-card-desc">{t.bio}</p>}
-    <a href="/trainers" className="ai-card-btn">Book Now →</a>
+    <a href="/service" className="ai-card-btn">Đặt lịch →</a>
   </div>
 );
 
@@ -212,7 +212,7 @@ export const AiChatPopup: React.FC = () => {
                 {/* Service cards */}
                 {item.services && item.services.length > 0 && (
                   <div className="ai-cards-section">
-                    <p className="ai-cards-label">🏋️ Recommended Services</p>
+                    <p className="ai-cards-label">🏋️ Dịch vụ được đề xuất</p>
                     <div className="ai-cards-list">
                       {item.services.map((s) => <ServiceCardItem key={s.id} s={s} />)}
                     </div>
@@ -222,7 +222,7 @@ export const AiChatPopup: React.FC = () => {
                 {/* Membership cards */}
                 {item.memberships && item.memberships.length > 0 && (
                   <div className="ai-cards-section">
-                    <p className="ai-cards-label">🎫 Membership Packages</p>
+                    <p className="ai-cards-label">🎫 Gói thành viên</p>
                     <div className="ai-cards-list">
                       {item.memberships.map((m) => <MembershipCardItem key={m.id} m={m} />)}
                     </div>
@@ -232,7 +232,7 @@ export const AiChatPopup: React.FC = () => {
                 {/* Trainer cards */}
                 {item.trainers && item.trainers.length > 0 && (
                   <div className="ai-cards-section">
-                    <p className="ai-cards-label">👤 Personal Trainers</p>
+                    <p className="ai-cards-label">👤 Huấn luyện viên</p>
                     <div className="ai-cards-list">
                       {item.trainers.map((t) => <TrainerCardItem key={t.id} t={t} />)}
                     </div>

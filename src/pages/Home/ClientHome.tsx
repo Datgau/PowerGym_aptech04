@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMembership } from '../../hooks/useMembership';
-import { useMembershipRegistrationFlow } from '../../hooks/useMembershipRegistrationFlow';
 import membershipPackageService from '../../services/membershipPackageService';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -16,20 +15,34 @@ import {useGymStory} from "../../hooks/useGymStory.ts";
 import BMISection from "./BMISection/BMISection.tsx";
 import HeroBanner from "./HeroBanner/HeroBanner.tsx";
 import {MembershipPackagesSection} from "../../components/PowerGym";
-import PaymentMethodSelectionModal from '../../components/Payment/PaymentMethodSelectionModal.tsx';
 import BankPaymentModal from '../../components/Payment/BankPaymentModal.tsx';
+import PromoCodeModal from '../../components/Payment/PromoCodeModal.tsx';
 import { toast } from 'react-toastify';
+import type { ApplyPromotionResponse } from '../../@type/reward';
 
 const ClientHome: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, requireAuth } = useAuth();
   const { packages, loading: membershipLoading  } = useMembership();
   const { services,  } = useGymServices();
   const { storiesData, refetchStories } = useGymStory();
-  const [selectedPackage, setSelectedPackage] = React.useState<any>(null);
-  const [activePackageIds, setActivePackageIds] = React.useState<number[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [activePackageIds, setActivePackageIds] = useState<number[]>([]);
   
-  const flow = useMembershipRegistrationFlow(selectedPackage?.packageId);
+  // Promo state — set after PromoCodeModal confirms
+  const [promoData, setPromoData] = useState<ApplyPromotionResponse | null>(null);
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [showBankPayment, setShowBankPayment] = useState(false);
+  
+  const finalAmount = promoData?.finalAmount ?? selectedPackage?.numericPrice;
+
+  console.log('ClientHome state:', { 
+    selectedPackage, 
+    promoData, 
+    finalAmount,
+    showPromoModal,
+    showBankPayment 
+  });
 
   useEffect(() => {
     if (user?.id) {
@@ -60,6 +73,8 @@ const ClientHome: React.FC = () => {
   };
 
   const handlePackageSelect = async (numericId: number): Promise<void> => {
+    if (!requireAuth()) return;
+    
     const pkg = packages.find(p => p.id === numericId);
     console.log('Package selected:', { 
       numericId, 
@@ -69,22 +84,36 @@ const ClientHome: React.FC = () => {
       allPackages: packages 
     });
     if (pkg) {
-      setSelectedPackage(pkg);
+      // Create the formatted package object with numericPrice
+      const formattedPackage = {
+        id: pkg.id,
+        packageId: pkg.packageId,
+        name: pkg.name,
+        duration: `${pkg.duration} days`,
+        price: `${pkg.price.toLocaleString('vi-VN')}đ`,
+        numericPrice: pkg.price,
+        originalPrice: pkg.originalPrice ? `${pkg.originalPrice.toLocaleString('vi-VN')}đ` : undefined,
+        features: pkg.features,
+        isPopular: pkg.isPopular,
+        color: pkg.color || (pkg.isPopular ? '#FF4444' : '#155e9a'),
+        description: pkg.description
+      };
+      
+      setSelectedPackage(formattedPackage);
+      setPromoData(null);
+      // Skip payment method selection — open promo modal directly
+      setShowPromoModal(true);
     } else {
       console.error('Package not found for id:', numericId);
     }
   };
 
-  useEffect(() => {
-    if (selectedPackage) {
-      console.log('Selected package changed, triggering payment flow:', selectedPackage);
-      flow.handleRegisterNow();
-    }
-  }, [selectedPackage?.id]);
-
   const handlePaymentSuccess = () => {
     toast.success('Payment successful! Your membership has been activated.');
-    navigate('/membership');
+    loadActivePackages();
+    setShowBankPayment(false);
+    setSelectedPackage(null);
+    setPromoData(null);
   };
 
   const availablePackages = packages.length > 0 ? (() => {
@@ -142,20 +171,25 @@ const ClientHome: React.FC = () => {
         activePackageIds={activePackageIds}
       />
 
-      <PaymentMethodSelectionModal
-        open={flow.showPaymentMethodSelection}
-        onClose={() => flow.setShowPaymentMethodSelection(false)}
-        onSelectBankTransfer={flow.handleSelectBankTransfer}
+      <PromoCodeModal
+        open={showPromoModal}
+        onClose={() => setShowPromoModal(false)}
+        orderAmount={selectedPackage?.numericPrice ?? 0}
         serviceName={selectedPackage?.name}
-        amount={selectedPackage?.price}
+        onConfirm={(promo) => {
+          console.log('PromoCodeModal onConfirm:', { promo, selectedPackage });
+          setPromoData(promo);
+          setShowPromoModal(false);
+          setShowBankPayment(true);
+        }}
       />
 
       <BankPaymentModal
-        open={flow.showBankPayment && !!selectedPackage}
-        onClose={() => flow.setShowBankPayment(false)}
-        onSuccess={() => flow.handlePaymentSuccess(handlePaymentSuccess)}
+        open={showBankPayment && !!selectedPackage}
+        onClose={() => setShowBankPayment(false)}
+        onSuccess={handlePaymentSuccess}
         serviceName={selectedPackage?.name}
-        amount={selectedPackage?.numericPrice}
+        amount={finalAmount}
         serviceId={selectedPackage?.id?.toString()}
         itemType="MEMBERSHIP"
       />
