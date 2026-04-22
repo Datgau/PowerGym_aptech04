@@ -87,6 +87,11 @@ class MembershipPackageService {
     const response = await privateClient.get<ApiResponse<number[]>>('/user/memberships/active-packages');
     return response.data.data;
   }
+
+  async getPackageStats(): Promise<Record<number, number>> {
+    const response = await privateClient.get<ApiResponse<Record<number, number>>>(`${this.BASE_URL}/stats`);
+    return response.data.data;
+  }
 }
 
 export default new MembershipPackageService();

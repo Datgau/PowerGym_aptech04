@@ -217,3 +217,8 @@ export const toggleUserStatus = async (userId: number): Promise<ApiResponse<User
   const response = await privateClient.put(`/admin/user/${userId}/toggle-status`);
   return response.data;
 };
+
+export const registerMembershipForUser = async (userId: number, packageId: number): Promise<ApiResponse<UserMembership>> => {
+  const response = await privateClient.post(`/admin/user/${userId}/membership/${packageId}`);
+  return response.data;
+};

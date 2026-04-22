@@ -12,6 +12,24 @@ export interface MembershipInfo {
   status: 'ACTIVE' | 'EXPIRED' | 'SUSPENDED';
 }
 
+export interface UserMembership {
+  id: number;
+  membershipId: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'SUSPENDED';
+  startDate: string;
+  endDate: string;
+  paidAmount: number;
+  membershipPackage: {
+    id: number;
+    name: string;
+    description: string;
+    duration: number;
+    price: number;
+    features: string[];
+    color: string;
+  };
+}
+
 export interface MembershipPackage {
   id: string;
   name: string;
@@ -65,6 +83,22 @@ export const MembershipService = {
    */
   getMembershipHistory: async (): Promise<ApiResponse<MembershipInfo[]>> => {
     const response = await privateClient.get<ApiResponse<MembershipInfo[]>>('/membership/history');
+    return response.data;
+  },
+
+  /**
+   * Get user's memberships (all)
+   */
+  getUserMemberships: async (): Promise<ApiResponse<UserMembership[]>> => {
+    const response = await privateClient.get<ApiResponse<UserMembership[]>>('/user/memberships');
+    return response.data;
+  },
+
+  /**
+   * Get user's active memberships only
+   */
+  getUserActiveMemberships: async (): Promise<ApiResponse<UserMembership[]>> => {
+    const response = await privateClient.get<ApiResponse<UserMembership[]>>('/user/memberships/active');
     return response.data;
   }
 };

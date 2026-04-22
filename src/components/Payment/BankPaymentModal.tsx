@@ -37,6 +37,8 @@ interface BankPaymentModalProps {
   itemName?: string;
   /** Link payment to a specific ServiceRegistration to avoid ambiguity */
   registrationId?: number | null;
+  /** Target user ID for admin operations (if not provided, uses current user) */
+  targetUserId?: number;
   deliveryInfo?: {
     customerName: string;
     customerPhone: string;
@@ -60,6 +62,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
   amount,
   itemName,
   registrationId,
+  targetUserId,
   deliveryInfo,
   cartItems
 }) => {
@@ -90,6 +93,10 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
 
   useEffect(() => {
     if (open && user?.id) {
+      // For SERVICE type, wait until registrationId is available before initializing payment
+      if (itemType === 'SERVICE' && !registrationId) {
+        return;
+      }
       const initPayment = async () => {
         try {
           setLoading(true);
@@ -97,7 +104,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
           setPaymentSuccess(false);
           
           const request: any = {
-            userId: user.id,
+            userId: targetUserId || user.id, // Use targetUserId for admin operations, fallback to current user
             itemType: itemType
           };
           
@@ -156,7 +163,7 @@ const BankPaymentModal: React.FC<BankPaymentModalProps> = ({
         intervalRef.current = null;
       }
     }
-  }, [open, serviceId, user, itemType, promotionCode, amount, itemName, serviceName]);
+  }, [open, serviceId, user, itemType, promotionCode, amount, itemName, serviceName, registrationId, targetUserId]);
 
   useEffect(() => {
     // Polling mechanism

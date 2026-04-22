@@ -67,6 +67,18 @@ export const registerService = async (data: ServiceRegistrationRequest): Promise
     return response.data;
 };
 
+/**
+ * Admin: Register service for a specific user by userId
+ * Used by admin to register service on behalf of a user (counter registration)
+ */
+export const registerServiceForUser = async (
+  userId: number,
+  data: ServiceRegistrationRequest
+): Promise<ApiResponse<ServiceRegistrationResponse>> => {
+  const response = await privateClient.post(`/service-registrations/admin/for-user/${userId}`, data);
+  return response.data;
+};
+
 export const cancelRegistration = async (id: number): Promise<ApiResponse<void>> => {
   const response = await privateClient.delete(`/service-registrations/${id}`);
   return response.data;
@@ -207,5 +219,42 @@ export const getTrainerBookedSlots = async (
     `/service-registrations/trainer/${trainerId}/schedule`,
     { params: { date } }
   );
+  return response.data;
+};
+
+/**
+ * Get service registrations for a specific user by searching their email
+ * Used by admin to check which services a user has already registered for
+ *
+ * @param userEmail - User's email to search for
+ * @returns Promise with array of ServiceRegistrationResponse for that user
+ */
+export const getUserRegistrations = async (
+  userEmail: string
+): Promise<ApiResponse<ServiceRegistrationResponse[]>> => {
+  const response = await privateClient.get('/service-registrations/all/paginated', {
+    params: {
+      searchQuery: userEmail,
+      page: 0,
+      size: 100, // Get all registrations for this user
+    }
+  });
+  
+  if (response.data.success) {
+    // Filter to only include registrations that exactly match the email
+    // and have ACTIVE or PENDING status
+    const filteredRegistrations = response.data.data.content.filter((reg: ServiceRegistrationResponse) => 
+      reg.user.email === userEmail && 
+      (reg.status === 'ACTIVE' || reg.status === 'PENDING')
+    );
+    
+    return {
+      success: true,
+      data: filteredRegistrations,
+      message: response.data.message,
+      status: response.data.status
+    };
+  }
+  
   return response.data;
 };

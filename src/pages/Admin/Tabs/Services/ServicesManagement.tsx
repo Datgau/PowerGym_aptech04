@@ -19,7 +19,7 @@ import {
   TextField,
   InputAdornment
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility , Build, Search, Clear } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility , Build, Search, Clear, PersonAdd, GroupAdd } from '@mui/icons-material';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import { styled } from '@mui/material/styles';
 import { gymServiceApi, type GymServiceDto } from '../../../../services/gymService.ts';
@@ -33,6 +33,8 @@ import { usePagination } from '../../../../hooks/usePagination.ts';
 import RichTextDisplay from '../../../../components/Common/RichTextDisplay.tsx';
 import ServiceFormModal from "./ServiceFormModal/ServiceFormModal.tsx";
 import StatusFilterToggle from '../../../../components/Common/StatusFilterToggle.tsx';
+import RegisterServiceForExistingUserModal from './RegisterServiceForExistingUserModal.tsx';
+import RegisterServiceForMemberModal from './RegisterServiceForMemberModal.tsx';
 
 /* ─── Styled Components ─────────────────────────────────── */
 
@@ -110,6 +112,8 @@ const ServicesManagement: React.FC = () => {
   const [openDelete, setOpenDelete] = useState(false);
   const [openRegistrations, setOpenRegistrations] = useState(false);
   const [openDetail, setOpenDetail] = useState(false);
+  const [openRegisterExistingUser, setOpenRegisterExistingUser] = useState(false);
+  const [openRegisterMember, setOpenRegisterMember] = useState(false);
   const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   
@@ -304,9 +308,51 @@ const ServicesManagement: React.FC = () => {
             </Typography>
           </Box>
         </HeaderLeft>
-        <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleOpenCreate}>
-          Add Service
-        </AddButton>
+        <Box display="flex" gap={1.5}>
+          <Button
+            variant="outlined"
+            startIcon={<GroupAdd sx={{ fontSize: 18 }} />}
+            onClick={() => setOpenRegisterExistingUser(true)}
+            sx={{
+              borderRadius: 3,
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: 14,
+              padding: '10px 22px',
+              borderColor: '#045668',
+              color: '#045668',
+              '&:hover': {
+                borderColor: '#034557',
+                backgroundColor: 'rgba(4, 86, 104, 0.04)',
+              },
+            }}
+          >
+            Register for Existing User
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<PersonAdd sx={{ fontSize: 18 }} />}
+            onClick={() => setOpenRegisterMember(true)}
+            sx={{
+              borderRadius: 3,
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: 14,
+              padding: '10px 22px',
+              borderColor: '#045668',
+              color: '#045668',
+              '&:hover': {
+                borderColor: '#034557',
+                backgroundColor: 'rgba(4, 86, 104, 0.04)',
+              },
+            }}
+          >
+            Register for Member
+          </Button>
+          <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleOpenCreate}>
+            Add Service
+          </AddButton>
+        </Box>
       </HeaderSection>
 
       {error && (
@@ -568,6 +614,24 @@ const ServicesManagement: React.FC = () => {
         onEdit={(service) => {
           setOpenDetail(false);
           handleOpenEdit(service);
+        }}
+      />
+
+      <RegisterServiceForExistingUserModal
+        open={openRegisterExistingUser}
+        onClose={() => setOpenRegisterExistingUser(false)}
+        onSuccess={() => {
+          setOpenRegisterExistingUser(false);
+          loadData(paginationState.page, paginationState.rowsPerPage);
+        }}
+      />
+
+      <RegisterServiceForMemberModal
+        open={openRegisterMember}
+        onClose={() => setOpenRegisterMember(false)}
+        onSuccess={() => {
+          setOpenRegisterMember(false);
+          loadData(paginationState.page, paginationState.rowsPerPage);
         }}
       />
     </PageWrapper>

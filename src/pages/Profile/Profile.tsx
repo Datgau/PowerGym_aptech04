@@ -36,6 +36,7 @@ import { getMyRegistrations } from '../../services/serviceRegistrationService';
 import type { ServiceRegistrationResponse, TrainerBooking } from '../../services/serviceRegistrationService';
 import { getCurrentTrainerProfile } from '../../services/trainerService';
 import type { TrainerResponse } from '../../services/trainerService';
+import { MembershipService, type UserMembership } from '../../services/membershipService';
 import PowerGymLayout from '../../components/PowerGym/Layout/PowerGymLayout';
 import EditProfileModal from '../../components/Profile/EditProfileModal';
 import BookingStatusModal from '../../components/ServiceRegistration/BookingStatusModal';
@@ -150,8 +151,10 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 const Profile: React.FC = () => {
   const { user, checkAuthStatus } = useAuth();
   const [registrations, setRegistrations] = useState<ServiceRegistrationResponse[]>([]);
+  const [memberships, setMemberships] = useState<UserMembership[]>([]);
   const [trainerProfile, setTrainerProfile] = useState<TrainerResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [membershipLoading, setMembershipLoading] = useState(false);
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
   const [page, setPage] = useState(1);
@@ -192,6 +195,11 @@ const Profile: React.FC = () => {
           console.warn('Error loading registrations:', regError);
         }
       }
+
+      // Load memberships for all users (except admin)
+      if (!isAdmin) {
+        await loadMemberships();
+      }
     } catch (err: any) {
       console.error('Error loading profile data:', err);
       setError(err.message || 'Failed to load profile data');
@@ -200,10 +208,48 @@ const Profile: React.FC = () => {
     }
   };
 
+  const loadMemberships = async () => {
+    try {
+      setMembershipLoading(true);
+      const response = await MembershipService.getUserMemberships();
+      if (response.success) {
+        setMemberships(response.data);
+      }
+    } catch (error: any) {
+      console.warn('Error loading memberships:', error);
+    } finally {
+      setMembershipLoading(false);
+    }
+  };
+
   const formatDate = (dateString?: string): string => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
+  };
+
+  const getMembershipStatus = (membership: UserMembership) => {
+    const now = new Date();
+    const endDate = new Date(membership.endDate);
+    const startDate = new Date(membership.startDate);
+    
+    if (membership.status === 'ACTIVE' && endDate > now && startDate <= now) {
+      return { status: 'ACTIVE', label: 'Active', color: '#4caf50' };
+    } else if (endDate <= now) {
+      return { status: 'EXPIRED', label: 'Expired', color: '#f44336' };
+    } else if (membership.status === 'SUSPENDED') {
+      return { status: 'SUSPENDED', label: 'Suspended', color: '#ff9800' };
+    } else {
+      return { status: membership.status, label: membership.status, color: '#757575' };
+    }
+  };
+
+  const getDaysRemaining = (endDate: string): number => {
+    const now = new Date();
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
   };
 
   const getActiveRegistrations = () => {
@@ -462,6 +508,7 @@ const Profile: React.FC = () => {
                     <Tab label="Personal Info" />
                     {isTrainer && <Tab label="Professional" />}
                     {!isTrainer && !isAdmin && <Tab label="My Services" />}
+                    {!isTrainer && !isAdmin && <Tab label="Membership Packages" />}
                   </Tabs>
                 </Box>
 
@@ -806,6 +853,197 @@ const Profile: React.FC = () => {
                             </Box>
                           )}
                         </>
+                      )}
+                    </Box>
+                  </TabPanel>
+                )}
+
+                {/* Tab: Membership Packages (User only) */}
+                {!isTrainer && !isAdmin && (
+                  <TabPanel value={tabValue} index={2}>
+                    <Box sx={{ p: { xs: 2, md: 3 } }}>
+                      {membershipLoading ? (
+                        <Box display="flex" justifyContent="center" py={4}>
+                          <CircularProgress size={40} sx={{ color: '#00b4ff' }} />
+                        </Box>
+                      ) : memberships.length === 0 ? (
+                        <Box 
+                          textAlign="center" 
+                          py={8}
+                          sx={{
+                            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                            borderRadius: '20px',
+                          }}
+                        >
+                          <CardMembership sx={{ fontSize: 64, color: '#00b4ff', mb: 2, opacity: 0.5 }} />
+                          <Typography variant="h6" color="text.secondary" fontWeight={600}>
+                            No membership packages found
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" mt={1}>
+                            Purchase a membership package to access premium features
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          {memberships.map((membership) => {
+                            const status = getMembershipStatus(membership);
+                            const daysRemaining = getDaysRemaining(membership.endDate);
+                            const pkg = membership.membershipPackage;
+                            
+                            return (
+                              <Card
+                                key={membership.id}
+                                sx={{
+                                  borderRadius: '20px',
+                                  overflow: 'hidden',
+                                  boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                                  border: `2px solid ${pkg.color || '#e5e7eb'}`,
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
+                                  },
+                                }}
+                              >
+                                {/* Header with gradient background */}
+                                <Box
+                                  sx={{
+                                    background: pkg.color || BRAND_GRADIENT,
+                                    color: 'white',
+                                    p: 3,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <Box sx={{
+                                    position: 'absolute',
+                                    top: -20,
+                                    right: -20,
+                                    width: 80,
+                                    height: 80,
+                                    borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.1)',
+                                  }} />
+                                  <Box sx={{
+                                    position: 'absolute',
+                                    bottom: -30,
+                                    left: -30,
+                                    width: 100,
+                                    height: 100,
+                                    borderRadius: '50%',
+                                    background: 'rgba(255,255,255,0.05)',
+                                  }} />
+                                  
+                                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                                      <Box>
+                                        <Typography variant="h5" fontWeight={700} mb={1}>
+                                          {pkg.name}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                          {pkg.description}
+                                        </Typography>
+                                      </Box>
+                                      <Chip
+                                        label={status.label}
+                                        sx={{
+                                          background: status.color,
+                                          color: 'white',
+                                          fontWeight: 600,
+                                          fontSize: '0.875rem',
+                                        }}
+                                      />
+                                    </Box>
+                                    
+                                    <Box display="flex" alignItems="center" gap={3}>
+                                      <Box>
+                                        <Typography variant="h4" fontWeight={800}>
+                                          {pkg.price.toLocaleString('vi-VN')}đ
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                                          {pkg.duration} days package
+                                        </Typography>
+                                      </Box>
+                                      
+                                      {status.status === 'ACTIVE' && (
+                                        <Box textAlign="center">
+                                          <Typography variant="h6" fontWeight={700}>
+                                            {daysRemaining}
+                                          </Typography>
+                                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                                            days left
+                                          </Typography>
+                                        </Box>
+                                      )}
+                                    </Box>
+                                  </Box>
+                                </Box>
+
+                                {/* Content */}
+                                <CardContent sx={{ p: 3 }}>
+                                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                        Start Date
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight={600}>
+                                        {formatDate(membership.startDate)}
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                        End Date
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight={600}>
+                                        {formatDate(membership.endDate)}
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                        Paid Amount
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight={600} color={pkg.color || '#00b4ff'}>
+                                        {membership.paidAmount.toLocaleString('vi-VN')}đ
+                                      </Typography>
+                                    </Box>
+                                    <Box>
+                                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                        Membership ID
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={600} sx={{ fontFamily: 'monospace' }}>
+                                        #{membership.membershipId}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+
+                                  {/* Features */}
+                                  {pkg.features && pkg.features.length > 0 && (
+                                    <Box>
+                                      <Typography variant="subtitle2" fontWeight={700} mb={2} color="#374151">
+                                        Package Features
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        {pkg.features.map((feature, index) => (
+                                          <Chip
+                                            key={index}
+                                            label={feature}
+                                            size="small"
+                                            sx={{
+                                              bgcolor: `${pkg.color || '#00b4ff'}15`,
+                                              color: pkg.color || '#00b4ff',
+                                              fontWeight: 600,
+                                              border: `1px solid ${pkg.color || '#00b4ff'}30`,
+                                            }}
+                                          />
+                                        ))}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </Box>
                       )}
                     </Box>
                   </TabPanel>

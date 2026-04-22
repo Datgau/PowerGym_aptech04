@@ -10,7 +10,8 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
-  Stack
+  Stack,
+  Tooltip
 } from '@mui/material';
 import {
   Add,
@@ -18,7 +19,8 @@ import {
   Delete,
   Star,
   CardMembership,
-  Visibility
+  Visibility,
+  People
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import membershipPackageService from '../../../../services/membershipPackageService';
@@ -26,6 +28,8 @@ import type { MembershipPackageResponse } from '../../../../services/membershipP
 import PackageFormModal from './PackageFormModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import PackageMembersModal from './PackageMembersModal.tsx';
+import RegisterMemberModal from './RegisterMemberModal';
+import RegisterExistingUserModal from './RegisterExistingUserModal';
 import TablePagination from '../../../../components/Common/TablePagination';
 import { usePagination } from '../../../../hooks/usePagination';
 
@@ -98,6 +102,7 @@ const ContentSection = styled(Box)({
 
 const MembershipPackagesPage: React.FC = () => {
   const [allPackages, setAllPackages] = useState<MembershipPackageResponse[]>([]);
+  const [packageStats, setPackageStats] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -109,6 +114,8 @@ const MembershipPackagesPage: React.FC = () => {
   });
   const [membersModalOpen, setMembersModalOpen] = useState(false);
   const [selectedPackageForMembers, setSelectedPackageForMembers] = useState<MembershipPackageResponse | null>(null);
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [registerExistingUserModalOpen, setRegisterExistingUserModalOpen] = useState(false);
 
   const {
     paginationState,
@@ -137,8 +144,12 @@ const MembershipPackagesPage: React.FC = () => {
   const loadPackages = async () => {
     try {
       setLoading(true);
-      const data = await membershipPackageService.getAllPackages();
-      setAllPackages(data);
+      const [packagesData, statsData] = await Promise.all([
+        membershipPackageService.getAllPackages(),
+        membershipPackageService.getPackageStats()
+      ]);
+      setAllPackages(packagesData);
+      setPackageStats(statsData);
     } catch (error: any) {
       console.error('Load packages error:', error);
 
@@ -213,6 +224,16 @@ const MembershipPackagesPage: React.FC = () => {
     );
   };
 
+  const handleRegisterSuccess = () => {
+    showNotification('Member registered successfully', 'success');
+    loadPackages(); // This will reload both packages and stats
+  };
+
+  const handleRegisterExistingUserSuccess = () => {
+    showNotification('Package registered for user successfully', 'success');
+    loadPackages(); // This will reload both packages and stats
+  };
+
   if (loading) {
     return (
         <PageWrapper display="flex" justifyContent="center" alignItems="center" minHeight={360}>
@@ -241,9 +262,51 @@ const MembershipPackagesPage: React.FC = () => {
               </Typography>
             </Box>
           </HeaderLeft>
-          <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleCreate}>
-            Create Package
-          </AddButton>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={<Add sx={{ fontSize: 18 }} />}
+              onClick={() => setRegisterExistingUserModalOpen(true)}
+              sx={{
+                borderColor: '#10b981',
+                color: '#10b981',
+                borderRadius: 12,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: 14,
+                padding: '10px 22px',
+                '&:hover': {
+                  borderColor: '#059669',
+                  backgroundColor: '#f0fdf4',
+                },
+              }}
+            >
+              Register for Existing User
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Add sx={{ fontSize: 18 }} />}
+              onClick={() => setRegisterModalOpen(true)}
+              sx={{
+                borderColor: '#667eea',
+                color: '#667eea',
+                borderRadius: 12,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: 14,
+                padding: '10px 22px',
+                '&:hover': {
+                  borderColor: '#5a67d8',
+                  backgroundColor: '#f7fafc',
+                },
+              }}
+            >
+              Register Package for Member
+            </Button>
+            <AddButton variant="contained" startIcon={<Add sx={{ fontSize: 18 }} />} onClick={handleCreate}>
+              Create Package
+            </AddButton>
+          </Box>
         </HeaderSection>
 
         {/* Package Grid */}
@@ -400,24 +463,53 @@ const MembershipPackagesPage: React.FC = () => {
                           </Typography>
                         </Box>
 
-                        {/* Duration */}
-                        <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              bgcolor: '#f5f7ff',
-                              borderRadius: '6px',
-                              px: 1.25,
-                              py: 0.4,
-                              mb: 2.5,
-                            }}
-                        >
-                          <Typography
-                              variant="caption"
-                              sx={{ color: '#555', fontWeight: 600, fontSize: '0.75rem' }}
+                        {/* Duration and Members Count */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                          <Box
+                              sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                bgcolor: '#f5f7ff',
+                                borderRadius: '6px',
+                                px: 1.25,
+                                py: 0.4,
+                              }}
                           >
-                            {pkg.duration} days
-                          </Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ color: '#555', fontWeight: 600, fontSize: '0.75rem' }}
+                            >
+                              {pkg.duration} days
+                            </Typography>
+                          </Box>
+                          
+                          <Tooltip title={`${packageStats[pkg.id] || 0} members currently registered for this package`} arrow>
+                            <Box
+                                sx={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  bgcolor: '#f0fdf4',
+                                  borderRadius: '6px',
+                                  px: 1.25,
+                                  py: 0.4,
+                                  gap: 0.5,
+                                  cursor: 'help',
+                                  transition: 'all 0.2s ease',
+                                  '&:hover': {
+                                    bgcolor: '#dcfce7',
+                                    transform: 'scale(1.05)',
+                                  },
+                                }}
+                            >
+                              <People sx={{ fontSize: 14, color: '#10b981' }} />
+                              <Typography
+                                  variant="caption"
+                                  sx={{ color: '#10b981', fontWeight: 600, fontSize: '0.75rem' }}
+                              >
+                                {packageStats[pkg.id] || 0} members
+                              </Typography>
+                            </Box>
+                          </Tooltip>
                         </Box>
 
                         {/* Divider */}
@@ -634,6 +726,18 @@ const MembershipPackagesPage: React.FC = () => {
             onClose={() => setMembersModalOpen(false)}
             packageId={selectedPackageForMembers?.id || 0}
             packageName={selectedPackageForMembers?.name || ''}
+        />
+
+        <RegisterMemberModal
+            open={registerModalOpen}
+            onClose={() => setRegisterModalOpen(false)}
+            onSuccess={handleRegisterSuccess}
+        />
+
+        <RegisterExistingUserModal
+            open={registerExistingUserModalOpen}
+            onClose={() => setRegisterExistingUserModalOpen(false)}
+            onSuccess={handleRegisterExistingUserSuccess}
         />
 
         <Snackbar

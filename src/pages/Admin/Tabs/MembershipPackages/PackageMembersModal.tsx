@@ -14,10 +14,13 @@ import {
   TableRow,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  Tooltip,
+  Snackbar
 } from '@mui/material';
-import { Close, Person } from '@mui/icons-material';
+import { Close, Person, Print } from '@mui/icons-material';
 import membershipPackageService from '../../../../services/membershipPackageService';
+import { downloadInvoice } from '../../../../services/api';
 
 interface PackageMembersModalProps {
   open: boolean;
@@ -35,6 +38,8 @@ const PackageMembersModal: React.FC<PackageMembersModalProps> = ({
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [printingInvoice, setPrintingInvoice] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && packageId) {
@@ -71,6 +76,35 @@ const PackageMembersModal: React.FC<PackageMembersModalProps> = ({
         return 'default';
       default:
         return 'default';
+    }
+  };
+
+  const handlePrintInvoice = async (member: any) => {
+    if (!member.orderId) {
+      setError('No payment order found for this membership');
+      return;
+    }
+
+    try {
+      setPrintingInvoice(member.id);
+      const blob = await downloadInvoice(member.orderId);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `membership-invoice-${member.orderId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Show success message
+      setSuccessMessage(`Invoice downloaded successfully for ${member.user?.fullName}`);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to download invoice');
+    } finally {
+      setPrintingInvoice(null);
     }
   };
 
@@ -155,6 +189,7 @@ const PackageMembersModal: React.FC<PackageMembersModalProps> = ({
                   <TableCell><strong>End Date</strong></TableCell>
                   <TableCell><strong>Status</strong></TableCell>
                   <TableCell align="right"><strong>Amount</strong></TableCell>
+                  <TableCell align="center"><strong>Actions</strong></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -182,6 +217,44 @@ const PackageMembersModal: React.FC<PackageMembersModalProps> = ({
                     <TableCell align="right">
                       {member.paidAmount?.toLocaleString('vi-VN')}đ
                     </TableCell>
+                    <TableCell align="center">
+                      <Tooltip
+                        title={
+                          !member.orderId
+                            ? 'No payment order available'
+                            : 'Download membership invoice'
+                        }
+                      >
+                        <span>
+                          <IconButton
+                            size="small"
+                            onClick={() => handlePrintInvoice(member)}
+                            disabled={!member.orderId || printingInvoice === member.id}
+                            sx={{
+                              color: member.orderId ? '#1976d2' : '#ccc',
+                              backgroundColor: member.orderId ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                              borderRadius: '8px',
+                              width: 32,
+                              height: 32,
+                              '&:hover': {
+                                backgroundColor: member.orderId ? 'rgba(25, 118, 210, 0.12)' : 'transparent',
+                                transform: member.orderId ? 'scale(1.05)' : 'none',
+                              },
+                              '&:disabled': {
+                                backgroundColor: 'transparent',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {printingInvoice === member.id ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <Print fontSize="small" />
+                            )}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -189,6 +262,23 @@ const PackageMembersModal: React.FC<PackageMembersModalProps> = ({
           </TableContainer>
         )}
       </DialogContent>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSuccessMessage(null)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
